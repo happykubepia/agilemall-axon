@@ -1,0 +1,82 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.1' apply false
+    id 'io.spring.dependency-management' version '1.1.4' apply false
+}
+
+allprojects {
+    group = "com.agilemall"
+    version = "0.0.1-SNAPSHOT"
+    repositories {
+        mavenCentral()
+    }
+    sourceCompatibility = '17'
+
+    test {
+        useJUnitPlatform()
+    }
+}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'java-library'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+        //mySQL
+        runtimeOnly 'com.mysql:mysql-connector-j'
+        //axon framework
+        implementation 'org.axonframework:axon-spring-boot-starter:4.9.1'
+        //Google core utilities
+        implementation 'com.google.guava:guava:33.0.0-jre'
+        //Apache utilities
+        implementation 'org.apache.commons:commons-lang3:3.14.0'
+    }
+}
+
+//bootJar { enabled = false }
+
+project(':order') {
+    bootJar { enabled = true }
+    jar { enabled = false }
+    dependencies {
+        implementation project(':common')
+    }
+}
+project(':delivery') {
+    bootJar { enabled = true }
+    jar { enabled = false }
+    dependencies {
+        implementation project(':common')
+
+    }
+}
+project(':inventory') {
+    bootJar { enabled = true }
+    jar { enabled = false }
+    dependencies {
+        implementation project(':common')
+
+    }
+}
+project(':payment') {
+    bootJar { enabled = true }
+    jar { enabled = false }
+    dependencies {
+        implementation project(':common')
+
+    }
+}
+

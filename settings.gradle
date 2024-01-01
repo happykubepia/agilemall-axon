@@ -1,0 +1,6 @@
+rootProject.name = 'agilemall-axon'
+include 'common'
+include 'delivery'
+include 'inventory'
+include 'order'
+include 'payment'
