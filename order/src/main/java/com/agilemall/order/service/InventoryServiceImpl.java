@@ -2,6 +2,7 @@ package com.agilemall.order.service;
 
 import com.agilemall.common.dto.InventoryDTO;
 import com.agilemall.common.quries.GetInventoryByProductIdQuery;
+import com.agilemall.order.dto.OrderDetailDTO;
 import com.agilemall.order.events.OrderCreatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
@@ -17,24 +18,32 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public boolean isValidInventory(OrderCreatedEvent event) {
-        int totalRequestQty = event.getOrderDetails().stream().mapToInt(o -> o.getQty()).sum();
-        boolean isValidInventory = false;
+        log.info("Executing isValidInventory");
 
-        GetInventoryByProductIdQuery getInventoryByProductIdQuery = new GetInventoryByProductIdQuery(event.getOrderId());
+        GetInventoryByProductIdQuery getInventoryByProductIdQuery;
+        int reqQty;
+        boolean existInventory = true;
 
         InventoryDTO inventoryDTO;
         try {
-            inventoryDTO = queryGateway.query(getInventoryByProductIdQuery, ResponseTypes.instanceOf(InventoryDTO.class)).join();
-            log.info("totalRequestQty: {}, inventoryDTO.getInventoryQty: {}", totalRequestQty, inventoryDTO.getInventoryQty());
+            for(OrderDetailDTO orderDetail:event.getOrderDetails()) {
+                getInventoryByProductIdQuery = new GetInventoryByProductIdQuery(orderDetail.getProductId());
+                inventoryDTO = queryGateway.query(getInventoryByProductIdQuery, ResponseTypes.instanceOf(InventoryDTO.class)).join();
+                reqQty = orderDetail.getQty();
+                log.info("requestQty: {}, inventoryDTO.getInventoryQty: {}", reqQty, inventoryDTO.getInventoryQty());
 
-            if(totalRequestQty <= inventoryDTO.getInventoryQty() || inventoryDTO.getInventoryQty() != 0) {
-                isValidInventory = true;
+                if (reqQty > inventoryDTO.getInventoryQty() || inventoryDTO.getInventoryQty() == 0) {
+                    existInventory = false;
+                    log.info("Product Id: {} => 재고 없음", orderDetail.getProductId());
+                } else {
+                    log.info("Product Id: {} => 재고 있음", orderDetail.getProductId());
+                }
+
             }
-            log.info("재고여부: {}", isValidInventory);
         } catch(Exception e) {
             log.error(e.getMessage());
         }
 
-        return isValidInventory;
+        return existInventory;
     }
 }

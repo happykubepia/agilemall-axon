@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  selector:
+    matchLabels:
+      app: order
+  replicas: 1
+  template:
+    metadata:
+      name: order
+      labels:
+        app: order
+    spec:
+      imagePullSecrets:
+        - name: dockerhub
+      containers:
+        - name: order
+          image: docker.io/hiondal/order:latest
+          imagePullPolicy: Always
+          env:
+            - name: SERVER_PORT
+              value: "18080"
+          envFrom:
+            - configMapRef:
+                name: order
+            - secretRef:
+                name: order
+          
+          ports:
+            - name: port1
+              containerPort: 8081
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: order
+data:
+  AXON_HOST: axon-axon-server-se
+  AXON_PORT: "8124"
+  DB_SERVER: mysql
+  DB_PORT: "3306"
+  DB_NAME: "orderDB"
+
+---
+
+kind: Secret
+apiVersion: v1
+metadata:
+  name: order
+type: Opaque
+stringData:
+  DB_USERNAME: root
+  DB_PASSWORD: P@ssw0rd$
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: order
+spec:
+  type: ClusterIP
+  selector:
+    app: order
+  ports:
+    - name: order
+      port: 8080
+      targetPort: 18080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: order
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: order.192.168.49.2.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: order
+                port:
+                  number: 8080
+                  

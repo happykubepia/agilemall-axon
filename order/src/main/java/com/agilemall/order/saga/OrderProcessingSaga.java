@@ -26,9 +26,12 @@ public class OrderProcessingSaga {
     @SagaEventHandler(associationProperty = "orderId")
     private void handle(OrderCreatedEvent event) {
         log.info("[Saga] OrderCreatedEvent in Saga for Order Id: {}", event.getOrderId());
+        log.info("[Saga] STEP 1: Order is saved. Next is validating inventory!");
         boolean isValidInventory;
         try {
+
             isValidInventory = inventoryService.isValidInventory(event);
+            log.info("[Saga] STEP 2: Validating inventory is finished. Next is requesting payment!");
 
             if(isValidInventory) {
                 //결제 처리
@@ -56,9 +59,10 @@ public class OrderProcessingSaga {
     @SagaEventHandler(associationProperty = "orderId")
     private void handle(PaymentProcessedEvent event) {
         log.info("[Saga] PaymentProcessedEvent in Saga for Order Id: {}", event.getOrderId());
+        log.info("[Saga] STEP 3: Payment is completed. Next is requesting delivery!");
         try {
             DeliveryOrderCommand deliveryOrderCommand = DeliveryOrderCommand.builder()
-                    .deliveryId(RandomStringUtils.random(15, false, true))
+                    .deliveryId("SHIP_"+RandomStringUtils.random(10, false, true))
                     .orderId(event.getOrderId())
                     .build();
             commandGateway.sendAndWait(deliveryOrderCommand);
@@ -77,7 +81,7 @@ public class OrderProcessingSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderDeliveriedEvent event) {
         log.info("[Saga] OrderDeliveriedEvent in Saga for Order Id: {}", event.getOrderId());
-
+        log.info("[Saga] STEP 4: Delivery is saved. Next is finish order process!");
         CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
                 .orderId(event.getOrderId())
                 .orderStatus("APPROVED")
@@ -90,7 +94,7 @@ public class OrderProcessingSaga {
     @EndSaga
     public void handle(OrderCompletedEvent event) {
         log.info("[Saga] OrderCompletedEvent in Saga for Order Id: {}", event.getOrderId());
-
+        log.info("[Saga] STEP 5: Order saga is all completed!");
     }
 
     @SagaEventHandler(associationProperty = "orderId")

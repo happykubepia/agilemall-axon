@@ -25,10 +25,12 @@ public class OrderController {
 
     @PostMapping
     public String createOrder(@RequestBody OrderDTO orderDTO) {
-        String orderId = RandomStringUtils.random(15, false, true);
-        String paymentId = RandomStringUtils.random(15, false, true);
+        log.info("[@PostMapping] Executing createOrder: {}", orderDTO.toString());
+
+        String orderId = "ORDER_"+RandomStringUtils.random(9, false, true);
+        String paymentId = "PAY_"+RandomStringUtils.random(11, false, true);
         String userId = RandomStringUtils.randomAlphanumeric(10).toLowerCase() + "@gmail.com";
-        //log.info("####### 0");
+
         //주문상세 주문ID, 주문금액 설정
         List<OrderDetailDTO> newOrderDetails = orderDTO.getOrderDetails().stream()
                 .map(o -> new OrderDetailDTO(orderId, o.getProductId(), o.getOrderSeq(), o.getQty(), o.getOrderAmt()))
@@ -37,15 +39,15 @@ public class OrderController {
 
         //주문금액합계
         int totalOrderAmt = newOrderDetails.stream().mapToInt(OrderDetailDTO::getOrderAmt).sum();
-        //log.info("####### 1");
+
         //결제정보 설정
         List<PaymentDetailDTO> newPaymentDetails = orderDTO.getPaymentDetails().stream()
                 .map(p -> new PaymentDetailDTO(orderId, paymentId, p.getPaymentGbcd(), p.getPaymentAmt()))
                 .collect(Collectors.toList());
-        //log.info("####### 2");
+
         //결제금액 합계
         int totalPaymentAmt = newPaymentDetails.stream().mapToInt(PaymentDetailDTO::getPaymentAmt).sum();
-        //log.info("####### 3");
+
         CreateOrderCommand createOrderCommand = CreateOrderCommand.builder()
                 .orderId(orderId)
                 .userId(userId)
@@ -55,9 +57,9 @@ public class OrderController {
                 .paymentDetails(newPaymentDetails)
                 .totalPaymentAmt(totalPaymentAmt)
                 .build();
-        //log.info("####### 4");
+
         commandGateway.sendAndWait(createOrderCommand);
-       // log.info("####### 5");
+
         return "Order Created";
     }
 }
