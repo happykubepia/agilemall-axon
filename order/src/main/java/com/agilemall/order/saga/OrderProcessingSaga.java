@@ -30,7 +30,7 @@ public class OrderProcessingSaga {
     @SagaEventHandler(associationProperty = "orderId")
     private void handle(OrderCreatedEvent event) {
         log.info("[Saga] OrderCreatedEvent is received for Order Id: {}", event.getOrderId());
-        log.info("[Saga] STEP 1: Next transaction is [CreatePaymentCommand]");
+        log.info("===== [Saga] Transaction #3: <CreatePaymentCommand> =====");
 
         orderDetails = event.getOrderDetails();
 
@@ -57,7 +57,7 @@ public class OrderProcessingSaga {
     @SagaEventHandler(associationProperty = "orderId")
     private void handle(PaymentProcessedEvent event) {
         log.info("[Saga] [CreatePaymentCommand] is finished for Order Id: {}", event.getOrderId());
-        log.info("[Saga] STEP 2: Next transaction is [DeliveryOrderCommand]");
+        log.info("===== [Saga] Transaction #4: <DeliveryOrderCommand> =====");
         try {
             DeliveryOrderCommand deliveryOrderCommand = DeliveryOrderCommand.builder()
                     .deliveryId("SHIP_"+RandomStringUtils.random(10, false, true))
@@ -78,7 +78,7 @@ public class OrderProcessingSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderDeliveriedEvent event) {
         log.info("[Saga] [DeliveryOrderCommand] is finished for Order Id: {}", event.getOrderId());
-        log.info("[Saga] STEP 3: Next transaction is [InventoryQtyAdjustCommand]");
+        log.info("===== [Saga] Transaction #5: <InventoryQtyAdjustCommand> =====");
         try {
             List<InventoryQtyAdjustDTO> adjustQtyList = new ArrayList<>();
             InventoryQtyAdjustDTO adjustQty;
@@ -116,7 +116,7 @@ public class OrderProcessingSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(InventoryQtyAdjustedEvent event) {
         log.info("[Saga] [InventoryQtyAdjustCommand] is finished for Order Id: {}", event.getOrderId());
-        log.info("[Saga] STEP 4: Next transaction is [CompleteOrderCommand]");
+        log.info("===== [Saga] Transaction #6: <CompleteOrderCommand> =====");
 
         try {
             CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
@@ -158,7 +158,7 @@ public class OrderProcessingSaga {
     @EndSaga
     public void handle(OrderCompletedEvent event) {
         log.info("[Saga] [CompleteOrderCommand] is finished for Order Id: {}", event.getOrderId());
-        log.info("[Saga] STEP 5: Order saga is all completed!");
+        log.info("===== [Saga] Transaction FINISHED =====");
     }
 
     @SagaEventHandler(associationProperty = "orderId")

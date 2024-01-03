@@ -1,0 +1,289 @@
+Forwarding from 127.0.0.1:32700 -> 3306
+Forwarding from [::1]:32700 -> 3306
+Handling connection for 32700
+Handling connection for 32700
+E0104 04:43:51.510182   68041 portforward.go:409] an error occurred forwarding 32700 -> 3306: error forwarding port 3306 to pod 83b021d614dadbeaf4a5e3890512ca11b8ff0d38a1905fd2f074da524837d0c0, uid : exit status 1: 2024/01/03 19:43:51 socat[1779894] E connect(5, AF=2 127.0.0.1:3306, 16): Connection refused
+E0104 04:43:51.510768   68041 portforward.go:409] an error occurred forwarding 32700 -> 3306: error forwarding port 3306 to pod 83b021d614dadbeaf4a5e3890512ca11b8ff0d38a1905fd2f074da524837d0c0, uid : exit status 1: 2024/01/03 19:43:51 socat[1779895] E connect(5, AF=2 127.0.0.1:3306, 16): Connection refused
+error: lost connection to pod
+Forwarding from 127.0.0.1:32700 -> 3306
+Forwarding from [::1]:32700 -> 3306
+Handling connection for 32700
+Handling connection for 32700
+E0104 04:44:08.324316   68080 portforward.go:409] an error occurred forwarding 32700 -> 3306: error forwarding port 3306 to pod 83b021d614dadbeaf4a5e3890512ca11b8ff0d38a1905fd2f074da524837d0c0, uid : exit status 1: 2024/01/03 19:44:08 socat[1780342] E connect(5, AF=2 127.0.0.1:3306, 16): Connection refused
+error: lost connection to pod
+Forwarding from 127.0.0.1:32700 -> 3306
+Forwarding from [::1]:32700 -> 3306
+Handling connection for 32700
+Handling connection for 32700
+E0104 04:44:19.425850   68122 portforward.go:409] an error occurred forwarding 32700 -> 3306: error forwarding port 3306 to pod 83b021d614dadbeaf4a5e3890512ca11b8ff0d38a1905fd2f074da524837d0c0, uid : exit status 1: 2024/01/03 19:44:19 socat[1780570] E connect(5, AF=2 127.0.0.1:3306, 16): Connection refused
+E0104 04:44:19.426295   68122 portforward.go:409] an error occurred forwarding 32700 -> 3306: error forwarding port 3306 to pod 83b021d614dadbeaf4a5e3890512ca11b8ff0d38a1905fd2f074da524837d0c0, uid : exit status 1: 2024/01/03 19:44:19 socat[1780569] E connect(5, AF=2 127.0.0.1:3306, 16): Connection refused
+error: lost connection to pod
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Forwarding from 127.0.0.1:32700 -> 3306
+Forwarding from [::1]:32700 -> 3306
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+E0104 04:51:01.033506   68796 portforward.go:409] an error occurred forwarding 32700 -> 3306: error forwarding port 3306 to pod 83b021d614dadbeaf4a5e3890512ca11b8ff0d38a1905fd2f074da524837d0c0, uid : exit status 1: 2024/01/03 19:51:00 socat[1785114] E write(5, 0xaaab1cf13000, 40): Broken pipe
+error: lost connection to pod
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Forwarding from 127.0.0.1:32700 -> 3306
+Forwarding from [::1]:32700 -> 3306
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+E0104 04:51:42.749951   69296 portforward.go:409] an error occurred forwarding 32700 -> 3306: error forwarding port 3306 to pod 83b021d614dadbeaf4a5e3890512ca11b8ff0d38a1905fd2f074da524837d0c0, uid : exit status 1: 2024/01/03 19:51:42 socat[1788346] E connect(5, AF=2 127.0.0.1:3306, 16): Connection refused
+error: lost connection to pod
+Forwarding from 127.0.0.1:32700 -> 3306
+Forwarding from [::1]:32700 -> 3306
+Handling connection for 32700
+Handling connection for 32700
+Handling connection for 32700
+E0104 04:51:57.966358   69349 portforward.go:409] an error occurred forwarding 32700 -> 3306: error forwarding port 3306 to pod 83b021d614dadbeaf4a5e3890512ca11b8ff0d38a1905fd2f074da524837d0c0, uid : exit status 1: 2024/01/03 19:51:57 socat[1788947] E connect(5, AF=2 127.0.0.1:3306, 16): Connection refused
+error: lost connection to pod
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]
+Unable to listen on port 32700: Listeners failed to create with the following errors: [unable to create listener: Error listen tcp4 127.0.0.1:32700: bind: address already in use unable to create listener: Error listen tcp6 [::1]:32700: bind: address already in use]
+error: unable to listen on any of the requested ports: [{32700 3306}]

@@ -35,10 +35,12 @@ public class OrderController {
     @Operation(summary = "신규 상품 주문 API")
     public String createOrder(@RequestBody OrderReqDTO orderReqDTO) {
         log.info("[@PostMapping] Executing createOrder: {}", orderReqDTO.toString());
+        log.info("===== [OrderController] Transaction START =====");
 
         /*
         제품 재고 정보를 Query하여 재고 여부를 검사
         */
+        log.info("===== [OrderController] Transaction #1: <isValidInventory> =====");
         List<ResultVO<InventoryDTO>> inventories = inventoryService.getInventory(orderReqDTO.getOrderReqDetails());
         String retCheck = isValidInventory(inventories);
         if(!retCheck.isEmpty()) {
@@ -77,6 +79,7 @@ public class OrderController {
                 .totalPaymentAmt(totalPaymentAmt)
                 .build();
 
+        log.info("===== [OrderController] Transaction #2: <CreateOrderCommand> =====");
         log.info("[CreateOrderCommand] {}", createOrderCommand.toString());
 
         commandGateway.sendAndWait(createOrderCommand);
