@@ -118,12 +118,40 @@ public class OrderProcessingSaga {
         log.info("[Saga] [InventoryQtyAdjustCommand] is finished for Order Id: {}", event.getOrderId());
         log.info("[Saga] STEP 4: Next transaction is [CompleteOrderCommand]");
 
-        CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
+        try {
+            CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
+                    .orderId(event.getOrderId())
+                    .orderStatus("APPROVED")
+                    .build();
+
+            commandGateway.sendAndWait(completeOrderCommand);
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            cancelInventoryQtyAdjustCommand(event);
+        }
+
+    }
+    private void cancelInventoryQtyAdjustCommand(InventoryQtyAdjustedEvent event) {
+        List<InventoryQtyAdjustDTO> adjustQtyList = new ArrayList<>();
+        InventoryQtyAdjustDTO adjustQty;
+
+        for(OrderDetailDTO order:orderDetails) {
+            adjustQty = InventoryQtyAdjustDTO.builder()
+                    .productId(order.getProductId())
+                    .adjustType(InventoryQtyAdjustType.INCREASE.value())
+                    .adjustQty(order.getQty())
+                    .build();
+
+            adjustQtyList.add(adjustQty);
+        }
+
+        InventoryQtyAdjustCommand inventoryQtyAdjustCommand = InventoryQtyAdjustCommand.builder()
+                .inventoryId(event.getInventoryId())
                 .orderId(event.getOrderId())
-                .orderStatus("APPROVED")
+                .inventoryQtyAdjustDetails(adjustQtyList)
                 .build();
 
-        commandGateway.sendAndWait(completeOrderCommand);
+        commandGateway.sendAndWait(inventoryQtyAdjustCommand);
     }
 
     @SagaEventHandler(associationProperty = "orderId")
