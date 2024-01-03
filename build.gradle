@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.1' apply false
-    id 'io.spring.dependency-management' version '1.1.4' apply false
+    id 'org.springframework.boot' version '3.2.1'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
 
 allprojects {
@@ -45,38 +45,3 @@ subprojects {
         implementation 'org.apache.commons:commons-lang3:3.14.0'
     }
 }
-
-//bootJar { enabled = false }
-
-project(':order') {
-    bootJar { enabled = true }
-    jar { enabled = false }
-    dependencies {
-        implementation project(':common')
-    }
-}
-project(':delivery') {
-    bootJar { enabled = true }
-    jar { enabled = false }
-    dependencies {
-        implementation project(':common')
-
-    }
-}
-project(':inventory') {
-    bootJar { enabled = true }
-    jar { enabled = false }
-    dependencies {
-        implementation project(':common')
-
-    }
-}
-project(':payment') {
-    bootJar { enabled = true }
-    jar { enabled = false }
-    dependencies {
-        implementation project(':common')
-
-    }
-}
-

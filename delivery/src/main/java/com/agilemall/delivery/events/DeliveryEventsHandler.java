@@ -1,5 +1,7 @@
 package com.agilemall.delivery.events;
 
+import com.agilemall.common.dto.DeliveryStatus;
+import com.agilemall.common.events.DeliveryCancelledEvent;
 import com.agilemall.common.events.OrderDeliveriedEvent;
 import com.agilemall.delivery.entity.Delivery;
 import com.agilemall.delivery.repository.DeliveryRepository;
@@ -17,8 +19,19 @@ public class DeliveryEventsHandler {
 
     @EventHandler
     public void on(OrderDeliveriedEvent event) {
+        log.info("[@EventHandler] Handle OrderDeliveriedEvent");
+
         Delivery delivery = new Delivery();
         BeanUtils.copyProperties(event, delivery);
+        deliveryRepository.save(delivery);
+    }
+
+    @EventHandler
+    public void on(DeliveryCancelledEvent event) {
+        log.info("[@EventHandler] Handle DeliveryCancelledEvent");
+
+        Delivery delivery = deliveryRepository.findById(event.getDeliveryId()).get();
+        delivery.setDeliveryStatus(DeliveryStatus.CANCELED.value());
         deliveryRepository.save(delivery);
     }
 }

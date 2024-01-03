@@ -1,9 +1,12 @@
 package com.agilemall.order.controller;
 
+import com.agilemall.common.dto.InventoryDTO;
 import com.agilemall.common.dto.PaymentDetailDTO;
+import com.agilemall.common.vo.ResultVO;
 import com.agilemall.order.command.CreateOrderCommand;
-import com.agilemall.order.dto.OrderDTO;
 import com.agilemall.order.dto.OrderDetailDTO;
+import com.agilemall.order.dto.OrderReqDTO;
+import com.agilemall.order.service.InventoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -25,19 +28,31 @@ import java.util.stream.Collectors;
 public class OrderController {
     @Autowired
     private CommandGateway commandGateway;
+    @Autowired
+    private InventoryService inventoryService;
 
     @PostMapping("/orders")
     @Operation(summary = "신규 상품 주문 API")
-    public String createOrder(@RequestBody OrderDTO orderDTO) {
-        log.info("[@PostMapping] Executing createOrder: {}", orderDTO.toString());
+    public String createOrder(@RequestBody OrderReqDTO orderReqDTO) {
+        log.info("[@PostMapping] Executing createOrder: {}", orderReqDTO.toString());
+
+        /*
+        제품 재고 정보를 Query하여 재고 여부를 검사
+        */
+        List<ResultVO<InventoryDTO>> inventories = inventoryService.getInventory(orderReqDTO.getOrderReqDetails());
+        String retCheck = isValidInventory(inventories);
+        if(!retCheck.isEmpty()) {
+            return retCheck;
+        }
 
         String orderId = "ORDER_"+RandomStringUtils.random(9, false, true);
         String paymentId = "PAY_"+RandomStringUtils.random(11, false, true);
-        String userId = RandomStringUtils.randomAlphanumeric(10).toLowerCase() + "@gmail.com";
+        //String userId = RandomStringUtils.randomAlphanumeric(10).toLowerCase() + "@gmail.com";
+        String userId = orderReqDTO.getUserId();
 
-        //주문상세 주문ID, 주문금액 설정
-        List<OrderDetailDTO> newOrderDetails = orderDTO.getOrderDetails().stream()
-                .map(o -> new OrderDetailDTO(orderId, o.getProductId(), o.getOrderSeq(), o.getQty(), o.getOrderAmt()))
+        //주문상세 주문 ID, 주문금액 설정
+        List<OrderDetailDTO> newOrderDetails = orderReqDTO.getOrderReqDetails().stream()
+                .map(o -> new OrderDetailDTO(orderId, o.getProductId(), o.getOrderSeq(), o.getQty(), o.getQty() * getUnitPrice(inventories, o.getProductId())))
                 .collect(Collectors.toList());
         //*참고)Stream: https://futurecreator.github.io/2018/08/26/java-8-streams/
 
@@ -45,8 +60,8 @@ public class OrderController {
         int totalOrderAmt = newOrderDetails.stream().mapToInt(OrderDetailDTO::getOrderAmt).sum();
 
         //결제정보 설정
-        List<PaymentDetailDTO> newPaymentDetails = orderDTO.getPaymentDetails().stream()
-                .map(p -> new PaymentDetailDTO(orderId, paymentId, p.getPaymentGbcd(), p.getPaymentAmt()))
+        List<PaymentDetailDTO> newPaymentDetails = orderReqDTO.getPaymentReqDetails().stream()
+                .map(p -> new PaymentDetailDTO(orderId, paymentId, p.getPaymentGbcd(), (int) Math.round(p.getPaymentRate() * totalOrderAmt)))
                 .collect(Collectors.toList());
 
         //결제금액 합계
@@ -62,8 +77,29 @@ public class OrderController {
                 .totalPaymentAmt(totalPaymentAmt)
                 .build();
 
+        log.info("[CreateOrderCommand] {}", createOrderCommand.toString());
+
         commandGateway.sendAndWait(createOrderCommand);
 
         return "Order Created";
+
+    }
+
+    private String isValidInventory(List<ResultVO<InventoryDTO>> inventories) {
+        for(ResultVO<InventoryDTO> retVo:inventories) {
+            if(!retVo.isReturnCode()) {
+                return "재고없음: " + retVo.getResult().getProductId();
+            }
+        }
+        return "";
+    }
+
+    private int getUnitPrice(List<ResultVO<InventoryDTO>> inventories, String productId) {
+        for(ResultVO<InventoryDTO> retVo:inventories) {
+            if(retVo.getResult().getProductId().equals(productId)) {
+                return retVo.getResult().getUnitPrice();
+            }
+        }
+        return 0;
     }
 }

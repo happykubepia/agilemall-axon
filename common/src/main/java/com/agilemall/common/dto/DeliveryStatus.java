@@ -1,11 +1,11 @@
-package com.agilemall.delivery.dto;
+package com.agilemall.common.dto;
 
 public enum DeliveryStatus {
-    REQUESTED("10"),
+    CREATED("10"),
     CANCELED("20"),
     COMPLETED("30");
 
-    private String value;
+    private final String value;
 
     DeliveryStatus(String value) {
         this.value = value;

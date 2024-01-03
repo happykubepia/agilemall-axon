@@ -1,14 +1,17 @@
 package com.agilemall.delivery.aggregate;
 
+import com.agilemall.common.command.CancelDeliveryCommand;
 import com.agilemall.common.command.DeliveryOrderCommand;
+import com.agilemall.common.events.DeliveryCancelledEvent;
 import com.agilemall.common.events.OrderDeliveriedEvent;
-import com.agilemall.delivery.dto.DeliveryStatus;
+import com.agilemall.common.dto.DeliveryStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
+import org.springframework.beans.BeanUtils;
 
 @Slf4j
 @Aggregate
@@ -30,7 +33,7 @@ public class DeliveryAggregate {
         OrderDeliveriedEvent orderDeliveriedEvent = OrderDeliveriedEvent.builder()
                 .orderId(deliveryOrderCommand.getOrderId())
                 .deliveryId(deliveryOrderCommand.getDeliveryId())
-                .deliveryStatus(DeliveryStatus.REQUESTED.value())
+                .deliveryStatus(DeliveryStatus.CANCELED.value())
                 .build();
 
         AggregateLifecycle.apply(orderDeliveriedEvent);
@@ -45,5 +48,23 @@ public class DeliveryAggregate {
         this.deliveryId = event.getDeliveryId();
         this.deliveryStatus = event.getDeliveryStatus();
 
+    }
+
+    @CommandHandler
+    public void handle(CancelDeliveryCommand cancelDeliveryCommand) {
+        log.info("Executing CancelDeliveryCommand for Order Id : {} and Delivery Id: {}",
+                cancelDeliveryCommand.getOrderId(), cancelDeliveryCommand.getDeliveryId());
+
+        DeliveryCancelledEvent deliveryCancelledEvent = new DeliveryCancelledEvent();
+        BeanUtils.copyProperties(cancelDeliveryCommand, deliveryCancelledEvent);
+
+        AggregateLifecycle.apply(deliveryCancelledEvent);
+    }
+
+    @EventSourcingHandler
+    public void on(DeliveryCancelledEvent event) {
+        log.info("Executing DeliveryCancelledEvent for Order Id : {} and Delivery Id: {}",
+                event.getOrderId(), event.getDeliveryId());
+        this.deliveryStatus = event.getDeliveryStatus();
     }
 }

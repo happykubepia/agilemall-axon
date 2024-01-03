@@ -1,9 +1,11 @@
 package com.agilemall.order.saga;
 
 import com.agilemall.common.command.*;
+import com.agilemall.common.dto.InventoryQtyAdjustDTO;
+import com.agilemall.common.dto.InventoryQtyAdjustType;
 import com.agilemall.common.events.*;
+import com.agilemall.order.dto.OrderDetailDTO;
 import com.agilemall.order.events.OrderCreatedEvent;
-import com.agilemall.order.service.InventoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -13,38 +15,34 @@ import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Saga
 @Slf4j
 public class OrderProcessingSaga {
     @Autowired
     private transient CommandGateway commandGateway;
 
-    @Autowired
-    private InventoryService inventoryService;
+    private List<OrderDetailDTO> orderDetails;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void handle(OrderCreatedEvent event) {
-        log.info("[Saga] OrderCreatedEvent in Saga for Order Id: {}", event.getOrderId());
-        log.info("[Saga] STEP 1: Order is saved. Next is validating inventory!");
-        boolean isValidInventory;
+        log.info("[Saga] OrderCreatedEvent is received for Order Id: {}", event.getOrderId());
+        log.info("[Saga] STEP 1: Next transaction is [CreatePaymentCommand]");
+
+        orderDetails = event.getOrderDetails();
+
         try {
-
-            isValidInventory = inventoryService.isValidInventory(event);
-            log.info("[Saga] STEP 2: Validating inventory is finished. Next is requesting payment!");
-
-            if(isValidInventory) {
-                //결제 처리
-                CreatePaymentCommand createPaymentCommand = CreatePaymentCommand.builder()
-                        .paymentId(event.getPaymentId())
-                        .orderId(event.getOrderId())
-                        .totalPaymentAmt(event.getTotalPaymentAmt())
-                        .paymentDetails(event.getPaymentDetails())
-                        .build();
-                commandGateway.sendAndWait(createPaymentCommand);
-            } else {
-                cancelOrderCommand(event.getOrderId());
-            }
+            //결제 처리
+            CreatePaymentCommand createPaymentCommand = CreatePaymentCommand.builder()
+                    .paymentId(event.getPaymentId())
+                    .orderId(event.getOrderId())
+                    .totalPaymentAmt(event.getTotalPaymentAmt())
+                    .paymentDetails(event.getPaymentDetails())
+                    .build();
+            commandGateway.sendAndWait(createPaymentCommand);
         } catch(Exception e) {
             log.error(e.getMessage());
             cancelOrderCommand(event.getOrderId());
@@ -58,8 +56,8 @@ public class OrderProcessingSaga {
 
     @SagaEventHandler(associationProperty = "orderId")
     private void handle(PaymentProcessedEvent event) {
-        log.info("[Saga] PaymentProcessedEvent in Saga for Order Id: {}", event.getOrderId());
-        log.info("[Saga] STEP 3: Payment is completed. Next is requesting delivery!");
+        log.info("[Saga] [CreatePaymentCommand] is finished for Order Id: {}", event.getOrderId());
+        log.info("[Saga] STEP 2: Next transaction is [DeliveryOrderCommand]");
         try {
             DeliveryOrderCommand deliveryOrderCommand = DeliveryOrderCommand.builder()
                     .deliveryId("SHIP_"+RandomStringUtils.random(10, false, true))
@@ -75,13 +73,51 @@ public class OrderProcessingSaga {
     private void cancelPaymentCommand(PaymentProcessedEvent event) {
         CancelPaymentCommand cancelPaymentCommand = new CancelPaymentCommand(event.getPaymentId(), event.getOrderId());
         commandGateway.sendAndWait(cancelPaymentCommand);
-
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderDeliveriedEvent event) {
-        log.info("[Saga] OrderDeliveriedEvent in Saga for Order Id: {}", event.getOrderId());
-        log.info("[Saga] STEP 4: Delivery is saved. Next is finish order process!");
+        log.info("[Saga] [DeliveryOrderCommand] is finished for Order Id: {}", event.getOrderId());
+        log.info("[Saga] STEP 3: Next transaction is [InventoryQtyAdjustCommand]");
+        try {
+            List<InventoryQtyAdjustDTO> adjustQtyList = new ArrayList<>();
+            InventoryQtyAdjustDTO adjustQty;
+
+            for(OrderDetailDTO order:orderDetails) {
+                adjustQty = InventoryQtyAdjustDTO.builder()
+                        .productId(order.getProductId())
+                        .adjustType(InventoryQtyAdjustType.DECREASE.value())
+                        .adjustQty(order.getQty())
+                        .build();
+                //log.info("adjustQty: {}", adjustQty.toString());
+                adjustQtyList.add(adjustQty);
+            }
+
+            InventoryQtyAdjustCommand inventoryQtyAdjustCommand = InventoryQtyAdjustCommand.builder()
+                    .inventoryId(RandomStringUtils.random(15, false, true))
+                    .orderId(event.getOrderId())
+                    .inventoryQtyAdjustDetails(adjustQtyList)
+                    .build();
+
+            commandGateway.sendAndWait(inventoryQtyAdjustCommand);
+
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            cancelDeliveryCommand(event);
+        }
+    }
+
+
+    private void cancelDeliveryCommand(OrderDeliveriedEvent event) {
+        CancelDeliveryCommand cancelDeliveryCommand = new CancelDeliveryCommand(event.getDeliveryId(), event.getOrderId());
+        commandGateway.sendAndWait(cancelDeliveryCommand);
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(InventoryQtyAdjustedEvent event) {
+        log.info("[Saga] [InventoryQtyAdjustCommand] is finished for Order Id: {}", event.getOrderId());
+        log.info("[Saga] STEP 4: Next transaction is [CompleteOrderCommand]");
+
         CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
                 .orderId(event.getOrderId())
                 .orderStatus("APPROVED")
@@ -93,7 +129,7 @@ public class OrderProcessingSaga {
     @SagaEventHandler(associationProperty = "orderId")
     @EndSaga
     public void handle(OrderCompletedEvent event) {
-        log.info("[Saga] OrderCompletedEvent in Saga for Order Id: {}", event.getOrderId());
+        log.info("[Saga] [CompleteOrderCommand] is finished for Order Id: {}", event.getOrderId());
         log.info("[Saga] STEP 5: Order saga is all completed!");
     }
 
@@ -101,13 +137,6 @@ public class OrderProcessingSaga {
     @EndSaga
     public void handle(OrderCancelledEvent event) {
         log.info("[Saga] OrderCancelledEvent in Saga for Order Id: {}", event.getOrderId());
-    }
-
-    @SagaEventHandler(associationProperty = "orderId")
-    @EndSaga
-    public void handle(PaymentCancelledEvent event) {
-        log.info("[Saga] PaymentCancelledEvent in Saga for Order Id: {}", event.getOrderId());
-        cancelOrderCommand(event.getOrderId());
     }
 
 }

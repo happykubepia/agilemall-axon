@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class InventoryDTO {
+public class InventoryQtyAdjustDTO {
     private String productId;
-    private int inventoryQty;
-    private int unitPrice;
+    private String adjustType;
+    private int adjustQty;
 }
