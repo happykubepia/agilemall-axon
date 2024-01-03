@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment
+  labels:
+    app: payment
+spec:
+  selector:
+    matchLabels:
+      app: payment
+  replicas: 1
+  template:
+    metadata:
+      name: payment
+      labels:
+        app: payment
+    spec:
+      imagePullSecrets:
+        - name: dockerhub
+      containers:
+        - name: payment
+          image: docker.io/hiondal/payment:latest
+          imagePullPolicy: Always
+          env:
+            - name: SERVER_PORT
+              value: "18080"
+          envFrom:
+            - configMapRef:
+                name: payment
+            - secretRef:
+                name: payment
+          
+          ports:
+            - name: port1
+              containerPort: 8081
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: payment
+data:
+  AXON_HOST: axon-axon-server-se
+  AXON_PORT: "8124"
+  DB_SERVER: mysql
+  DB_PORT: "3306"
+  DB_NAME: "paymentDB"
+
+---
+
+kind: Secret
+apiVersion: v1
+metadata:
+  name: payment
+type: Opaque
+stringData:
+  DB_USERNAME: root
+  DB_PASSWORD: P@ssw0rd$
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment
+spec:
+  type: ClusterIP
+  selector:
+    app: payment
+  ports:
+    - name: payment
+      port: 8080
+      targetPort: 18080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: payment
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: payment.192.168.49.2.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: payment
+                port:
+                  number: 8080
+                  

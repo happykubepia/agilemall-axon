@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery
+  labels:
+    app: delivery
+spec:
+  selector:
+    matchLabels:
+      app: delivery
+  replicas: 1
+  template:
+    metadata:
+      name: delivery
+      labels:
+        app: delivery
+    spec:
+      imagePullSecrets:
+        - name: dockerhub
+      containers:
+        - name: delivery
+          image: docker.io/hiondal/delivery:latest
+          imagePullPolicy: Always
+          env:
+            - name: SERVER_PORT
+              value: "18080"
+          envFrom:
+            - configMapRef:
+                name: delivery
+            - secretRef:
+                name: delivery
+          
+          ports:
+            - name: port1
+              containerPort: 8081
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1024Mi
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: delivery
+data:
+  AXON_HOST: axon-axon-server-se
+  AXON_PORT: "8124"
+  DB_SERVER: mysql
+  DB_PORT: "3306"
+  DB_NAME: "deliveryDB"
+
+---
+
+kind: Secret
+apiVersion: v1
+metadata:
+  name: delivery
+type: Opaque
+stringData:
+  DB_USERNAME: root
+  DB_PASSWORD: P@ssw0rd$
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: delivery
+spec:
+  type: ClusterIP
+  selector:
+    app: delivery
+  ports:
+    - name: delivery
+      port: 8080
+      targetPort: 18080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: delivery
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: delivery.192.168.49.2.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: delivery
+                port:
+                  number: 8080
+                  

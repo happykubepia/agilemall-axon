@@ -4,6 +4,8 @@ import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.order.command.CreateOrderCommand;
 import com.agilemall.order.dto.OrderDTO;
 import com.agilemall.order.dto.OrderDetailDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -16,14 +18,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Tag(name = "Order service API", description="Order service API" )
 @Slf4j
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/v1")
 public class OrderController {
     @Autowired
     private CommandGateway commandGateway;
 
-    @PostMapping
+    @PostMapping("/orders")
+    @Operation(summary = "신규 상품 주문 API")
     public String createOrder(@RequestBody OrderDTO orderDTO) {
         log.info("[@PostMapping] Executing createOrder: {}", orderDTO.toString());
 

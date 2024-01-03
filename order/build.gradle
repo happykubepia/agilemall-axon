@@ -2,5 +2,11 @@ plugins {
 
 }
 dependencies {
+    // Swagger
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.3.0'
 
+}
+
+bootJar {
+    archiveFileName = "order.jar"
 }
