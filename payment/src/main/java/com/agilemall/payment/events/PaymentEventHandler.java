@@ -1,23 +1,31 @@
 package com.agilemall.payment.events;
 
+import com.agilemall.common.config.Constants;
 import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.common.dto.PaymentStatus;
 import com.agilemall.common.events.PaymentCancelledEvent;
 import com.agilemall.common.events.PaymentProcessedEvent;
+import com.agilemall.common.events.ReportUpdateEvent;
 import com.agilemall.payment.entity.Payment;
 import com.agilemall.payment.entity.PaymentDetail;
 import com.agilemall.payment.entity.PaymentDetailIdentity;
 import com.agilemall.payment.repository.PaymentRepository;
+import com.lmax.disruptor.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Component
+@EnableRetry
 public class PaymentEventHandler {
     @Autowired
     private PaymentRepository paymentRepository;
@@ -55,5 +63,16 @@ public class PaymentEventHandler {
         payment.setPaymentStatus(PaymentStatus.CANCELED.value());
 
         paymentRepository.save(payment);
+    }
+
+    @EventHandler
+    @Retryable(
+            maxAttempts = Constants.RETRYABLE_MAXATTEMPTS,
+            retryFor = { IOException.class, TimeoutException.class, RuntimeException.class},
+            backoff = @Backoff(delay = Constants.RETRYABLE_DELAY)
+    )
+    public void on(ReportUpdateEvent event) {
+        log.info("[@EventHandler] Handle ReportUpdateEvent");
+
     }
 }

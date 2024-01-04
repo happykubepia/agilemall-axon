@@ -1,0 +1,9 @@
+plugins {
+}
+dependencies {
+    implementation project(':common')
+}
+
+bootJar {
+    archiveFileName = "report.jar"
+}
