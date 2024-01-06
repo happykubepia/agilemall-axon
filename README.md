@@ -106,8 +106,9 @@ application 최상위 디렉토리에서 수행
     delete from orderDB.token_entry;
     delete from paymentDB.token_entry;
     delete from deliveryDB.token_entry;
-    ```
-> 에러 발생 후 Saga transaction이 모두 실행 되었는데 Payment, Delivery의 Event handler가 실행 안될 때
+    ``` 
+
+> 에러 발생 후 Saga transaction이 모두 실행 되었는데 Payment, Delivery의 Event handler가 실행 안될 때 
   - 원인: Order와 다른 서비스의 token index값이 일치 하지 않기 때문임 
   - 각 DB의 token_entry 테이블의 데이터 삭제. 삭제 하면 자동으로 Last token index값으로 일치 시킴
     ```
