@@ -25,9 +25,12 @@ public class InventoryProjection {
         int unitPrice = 0;
         Optional <Inventory> optInventory = inventoryRepository.findById(query.getProductId());
         if(optInventory.isPresent()) {
-            inventoryQty = optInventory.get().getInventoryQty();
-            unitPrice = optInventory.get().getUnitPrice();
+            Inventory inventory = optInventory.get();
+            return new InventoryDTO(
+                    inventory.getProductId(), inventory.getProductName(),
+                    inventory.getUnitPrice(), inventory.getInventoryQty());
+        } else {
+            return null;
         }
-        return new InventoryDTO(query.getProductId(), inventoryQty, unitPrice);
     }
 }

@@ -6,7 +6,7 @@ import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.common.events.OrderCancelledEvent;
 import com.agilemall.common.events.OrderCompletedEvent;
 import com.agilemall.order.command.CreateOrderCommand;
-import com.agilemall.order.dto.OrderDetailDTO;
+import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.order.events.OrderCreatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;

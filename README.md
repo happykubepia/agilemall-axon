@@ -106,6 +106,7 @@ application 최상위 디렉토리에서 수행
     delete from orderDB.token_entry;
     delete from paymentDB.token_entry;
     delete from deliveryDB.token_entry;
+    delete from inventoryDB.token_entry;
     ``` 
 
 > 에러 발생 후 Saga transaction이 모두 실행 되었는데 Payment, Delivery의 Event handler가 실행 안될 때 
@@ -115,12 +116,14 @@ application 최상위 디렉토리에서 수행
     delete from orderDB.token_entry;
     delete from paymentDB.token_entry;
     delete from deliveryDB.token_entry;
+    delete from inventoryDB.token_entry;
     ```
   - Token값 확인 
   ```
   select cast(token as char) from orderDB.token_entry;
   select cast(token as char) from paymentDB.token_entry;
   select cast(token as char) from deliveryDB.token_entry;
+  select cast(token as char) from inventoryDB.token_entry;
   ```
 
 > AXONIQ-2000 에러

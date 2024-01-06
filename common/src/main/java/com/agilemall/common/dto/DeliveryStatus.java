@@ -3,7 +3,8 @@ package com.agilemall.common.dto;
 public enum DeliveryStatus {
     CREATED("10"),
     CANCELED("20"),
-    COMPLETED("30");
+    DELIVERING("30"),
+    COMPLETED("40");
 
     private final String value;
 

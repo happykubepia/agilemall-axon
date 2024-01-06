@@ -1,7 +1,7 @@
 package com.agilemall.order.command;
 
 import com.agilemall.common.dto.PaymentDetailDTO;
-import com.agilemall.order.dto.OrderDetailDTO;
+import com.agilemall.common.dto.OrderDetailDTO;
 import lombok.Builder;
 import lombok.Data;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;

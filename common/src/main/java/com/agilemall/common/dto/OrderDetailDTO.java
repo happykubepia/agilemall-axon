@@ -1,4 +1,4 @@
-package com.agilemall.order.dto;
+package com.agilemall.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

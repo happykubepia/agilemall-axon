@@ -1,16 +1,15 @@
-package com.agilemall.common.dto;
+package com.agilemall.common.command;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class InventoryDTO {
+public class CreateInventoryCommand {
+    @TargetAggregateIdentifier
     private String productId;
+
     private String productName;
     private int unitPrice;
     private int inventoryQty;

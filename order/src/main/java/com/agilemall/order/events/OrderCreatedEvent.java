@@ -1,7 +1,7 @@
 package com.agilemall.order.events;
 
 import com.agilemall.common.dto.PaymentDetailDTO;
-import com.agilemall.order.dto.OrderDetailDTO;
+import com.agilemall.common.dto.OrderDetailDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;

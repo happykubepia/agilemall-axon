@@ -1,15 +1,12 @@
-package com.agilemall.common.dto;
+package com.agilemall.common.events;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class InventoryDTO {
+public class CreateInventoryEvent {
     private String productId;
     private String productName;
     private int unitPrice;

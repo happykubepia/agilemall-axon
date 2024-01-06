@@ -3,7 +3,7 @@ package com.agilemall.order.events;
 import com.agilemall.common.dto.OrderStatus;
 import com.agilemall.common.events.OrderCancelledEvent;
 import com.agilemall.common.events.OrderCompletedEvent;
-import com.agilemall.order.dto.OrderDetailDTO;
+import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.order.entity.Order;
 import com.agilemall.order.entity.OrderDetail;
 import com.agilemall.order.entity.OrderDetailIdentity;
@@ -84,20 +84,6 @@ public class OrderEventsHandler {
             // compensate Order
             compensatingService.cancelOrderCommand(aggregateIdMap);
             //------------------------------
-
-            /*
-            //request compensating transaction of Inventory service
-            Order order = orderRepository.findById(event.getOrderId()).get();
-            List<OrderDetailDTO> orderDetails = order.getOrderDetails().stream()
-                    .map(o -> new OrderDetailDTO(order.getOrderId(), o.getProductId(), 0, o.getQty(), o.getOrderAmt()))
-                    .collect(Collectors.toList());
-
-            compensatingService.cancelInventoryQtyAdjustCommand(
-                    event.getOrderId(),
-                    event.getAggregateIdMap().get(ServiceName.INVENTORY),
-                    orderDetails);
-
- */
         }
 
     }
@@ -108,7 +94,6 @@ public class OrderEventsHandler {
         Order order = orderRepository.findById(event.getOrderId()).get();
         order.setOrderStatus(event.getOrderStatus());
         orderRepository.save(order);
-        //requestSendUpdateReport(event.getOrderId(), event.getOrderStatus());
     }
 
 }

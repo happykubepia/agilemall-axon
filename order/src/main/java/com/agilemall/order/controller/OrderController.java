@@ -4,7 +4,7 @@ import com.agilemall.common.dto.InventoryDTO;
 import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.common.vo.ResultVO;
 import com.agilemall.order.command.CreateOrderCommand;
-import com.agilemall.order.dto.OrderDetailDTO;
+import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.order.dto.OrderReqDTO;
 import com.agilemall.order.service.InventoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1")
 public class OrderController {
     @Autowired
-    private CommandGateway commandGateway;
+    private transient CommandGateway commandGateway;
     @Autowired
     private InventoryService inventoryService;
 
@@ -44,12 +44,12 @@ public class OrderController {
         log.info("===== [OrderController] Transaction #1: <isValidInventory> =====");
         List<ResultVO<InventoryDTO>> inventories = inventoryService.getInventory(orderReqDTO.getOrderReqDetails());
         String retCheck = isValidInventory(inventories);
-        if(!retCheck.isEmpty()) {
+        if (!retCheck.isEmpty()) {
             return retCheck;
         }
 
-        String orderId = "ORDER_"+RandomStringUtils.random(9, false, true);
-        String paymentId = "PAY_"+RandomStringUtils.random(11, false, true);
+        String orderId = "ORDER_" + RandomStringUtils.random(9, false, true);
+        String paymentId = "PAY_" + RandomStringUtils.random(11, false, true);
         //String userId = RandomStringUtils.randomAlphanumeric(10).toLowerCase() + "@gmail.com";
         String userId = orderReqDTO.getUserId();
 
@@ -87,24 +87,23 @@ public class OrderController {
         commandGateway.sendAndWait(createOrderCommand);
 
         return "Order Created";
-
     }
 
-    private String isValidInventory(List<ResultVO<InventoryDTO>> inventories) {
-        for(ResultVO<InventoryDTO> retVo:inventories) {
-            if(!retVo.isReturnCode()) {
+    private String isValidInventory (List < ResultVO < InventoryDTO >> inventories) {
+        for (ResultVO<InventoryDTO> retVo : inventories) {
+            if (!retVo.isReturnCode()) {
                 return "재고없음: " + retVo.getResult().getProductId();
             }
         }
         return "";
     }
 
-    private int getUnitPrice(List<ResultVO<InventoryDTO>> inventories, String productId) {
+    private int getUnitPrice (List < ResultVO < InventoryDTO >> inventories, String productId){
         InventoryDTO inventory;
-        for(ResultVO<InventoryDTO> retVo:inventories) {
+        for (ResultVO<InventoryDTO> retVo : inventories) {
             inventory = retVo.getResult();
             //log.info("==>{} vs {}", inventory.getProductId(), productId);
-            if(inventory.getProductId().equals(productId)) {
+            if (inventory.getProductId().equals(productId)) {
                 return inventory.getUnitPrice();
             }
         }

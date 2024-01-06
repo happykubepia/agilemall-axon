@@ -84,50 +84,8 @@ public class OrderProcessingSaga {
                 compensatingService.cancelOrderCommand(aggregateIdMap);
             }
         });
-
-
     }
 
-/*
-    @SagaEventHandler(associationProperty = "orderId")
-    public void handle(OrderDeliveredEvent event) {
-        log.info("[Saga] [DeliveryOrderCommand] is finished for Order Id: {}", event.getOrderId());
-        log.info("===== [Saga] Transaction #5: <InventoryQtyAdjustCommand> =====");
-
-        aggregateIdMap.put(ServiceName.DELIVERY.value(), event.getDeliveryId());
-
-        List<InventoryQtyAdjustDTO> adjustQtyList = new ArrayList<>();
-        InventoryQtyAdjustDTO adjustQty;
-
-        for(OrderDetailDTO order:orderDetails) {
-            adjustQty = InventoryQtyAdjustDTO.builder()
-                    .productId(order.getProductId())
-                    .adjustType(InventoryQtyAdjustType.DECREASE.value())
-                    .adjustQty(order.getQty())
-                    .build();
-
-            adjustQtyList.add(adjustQty);
-        }
-
-        InventoryQtyDecreaseCommand inventoryQtyDecreaseCommand = InventoryQtyDecreaseCommand.builder()
-                .inventoryId(RandomStringUtils.random(15, false, true))
-                .orderId(event.getOrderId())
-                .inventoryQtyAdjustDetails(adjustQtyList)
-                .aggregateIdMap(aggregateIdMap)
-                .build();
-
-        commandGateway.sendAndWait(inventoryQtyDecreaseCommand);
-        /*
-        commandGateway.send(inventoryQtyDecreaseCommand, (commandMessage, resultMessage) -> {
-            if(resultMessage.isExceptional()) {
-                log.info("Error is occurred during handle <CompletedOrderCommand>: {}",String.valueOf(resultMessage.exceptionResult()));
-                compensatingService.cancelDeliveryCommand(event);
-            }
-        });
-
-
-    }
-*/
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderDeliveredEvent event) {
         log.info("[Saga] [DeliveryOrderCommand] is finished for Order Id: {}", event.getOrderId());

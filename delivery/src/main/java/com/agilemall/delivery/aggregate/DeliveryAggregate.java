@@ -5,6 +5,8 @@ import com.agilemall.common.command.DeliveryOrderCommand;
 import com.agilemall.common.events.DeliveryCancelledEvent;
 import com.agilemall.common.events.OrderDeliveredEvent;
 import com.agilemall.common.dto.DeliveryStatus;
+import com.agilemall.delivery.command.DeliveryUpdateCommand;
+import com.agilemall.delivery.events.DeliveryUpdateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -42,13 +44,12 @@ public class DeliveryAggregate {
 
     @EventSourcingHandler
     public void on(OrderDeliveredEvent event) {
-        log.info("[@EventSourcingHandler] Executing OrderDeliveriedEvent for Order Id: {} and Delivery Id: {}",
+        log.info("[@EventSourcingHandler] Executing OrderDeliveredEvent for Order Id: {} and Delivery Id: {}",
                 event.getOrderId(), event.getDeliveryId());
 
         this.orderId = event.getOrderId();
         this.deliveryId = event.getDeliveryId();
         this.deliveryStatus = event.getDeliveryStatus();
-
     }
 
     @CommandHandler
@@ -66,6 +67,21 @@ public class DeliveryAggregate {
     public void on(DeliveryCancelledEvent event) {
         log.info("Executing DeliveryCancelledEvent for Order Id : {} and Delivery Id: {}",
                 event.getOrderId(), event.getDeliveryId());
+        this.deliveryStatus = event.getDeliveryStatus();
+    }
+
+    @CommandHandler
+    public void handle(DeliveryUpdateCommand deliveryUpdateCommand) {
+        log.info("Executing DeliveryUpdateCommand for Delivery Id : {}", deliveryUpdateCommand.getDeliveryId());
+
+        DeliveryUpdateEvent deliveryUpdateEvent = new DeliveryUpdateEvent();
+        BeanUtils.copyProperties(deliveryUpdateCommand, deliveryUpdateEvent);
+
+        AggregateLifecycle.apply(deliveryUpdateEvent);
+    }
+    @EventSourcingHandler
+    public void on(DeliveryUpdateEvent event) {
+        log.info("[@EventSourcing] Executing DeliveryUpdateEvent for Delivery Id : {}", event.getDeliveryId());
         this.deliveryStatus = event.getDeliveryStatus();
     }
 }

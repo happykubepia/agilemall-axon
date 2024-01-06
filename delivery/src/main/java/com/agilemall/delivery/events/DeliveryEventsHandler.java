@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -49,9 +50,11 @@ public class DeliveryEventsHandler {
     public void on(DeliveryCancelledEvent event) {
         log.info("[@EventHandler] Handle DeliveryCancelledEvent");
 
-        Delivery delivery = deliveryRepository.findById(event.getDeliveryId()).get();
-        delivery.setDeliveryStatus(DeliveryStatus.CANCELED.value());
-        deliveryRepository.save(delivery);
+        Delivery delivery = getEntry(event.getDeliveryId());
+        if(delivery != null) {
+            delivery.setDeliveryStatus(DeliveryStatus.CANCELED.value());
+            deliveryRepository.save(delivery);
+        }
     }
 
     private void compensatePayment(HashMap<String, String> aggregateIdMap) {
@@ -80,6 +83,27 @@ public class DeliveryEventsHandler {
         }
     }
 
+    @EventHandler
+    public void handle(DeliveryUpdateEvent event) {
+        log.info("[DeliveryEventsHandler] Executing DeliveryUpdateEvent for Delivery Id: {}", event.getDeliveryId());
+
+        Delivery delivery = getEntry(event.getDeliveryId());
+        if(delivery != null) {
+            delivery.setDeliveryStatus(event.getDeliveryStatus());
+            deliveryRepository.save(delivery);
+        }
+    }
+
+    private Delivery getEntry(String deliveryId) {
+        Delivery delivery = null;
+        Optional<Delivery> optDelivery = deliveryRepository.findById(deliveryId);
+        if(optDelivery.isPresent()) {
+            delivery = optDelivery.get();
+        } else {
+            log.info("Can't get entry for Delivery Id: {}", deliveryId);
+        }
+        return delivery;
+    }
 
 /*
     @EventHandler

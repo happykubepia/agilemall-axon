@@ -1,6 +1,7 @@
 plugins {
 }
 dependencies {
+    // include common application
     implementation project(':common')
 }
 
