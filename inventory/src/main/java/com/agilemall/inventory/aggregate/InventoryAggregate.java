@@ -1,8 +1,10 @@
 package com.agilemall.inventory.aggregate;
 
-import com.agilemall.common.command.InventoryQtyAdjustCommand;
+import com.agilemall.common.command.InventoryQtyDecreaseCommand;
+import com.agilemall.common.command.InventoryQtyIncreaseCommand;
 import com.agilemall.common.dto.InventoryQtyAdjustDTO;
-import com.agilemall.common.events.InventoryQtyAdjustedEvent;
+import com.agilemall.common.events.InventoryQtyDecreaseEvent;
+import com.agilemall.common.events.InventoryQtyIncreaseEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -23,21 +25,44 @@ public class InventoryAggregate {
     public InventoryAggregate() { }
 
     @CommandHandler
-    public InventoryAggregate(InventoryQtyAdjustCommand inventoryQtyAdjustCommand) {
-        log.info("[@CommandHandler] Executing InventoryAggregate for InventoryId:{} and Order Id:{}", inventoryQtyAdjustCommand.getInventoryId(), inventoryQtyAdjustCommand.getOrderId());
+    public InventoryAggregate(InventoryQtyDecreaseCommand inventoryQtyDecreaseCommand) {
+        log.info("[@CommandHandler] Executing InventoryQtyDecreaseCommand for InventoryId:{} and Order Id:{}", inventoryQtyDecreaseCommand.getInventoryId(), inventoryQtyDecreaseCommand.getOrderId());
 
-        InventoryQtyAdjustedEvent inventoryQtyAdjustedEvent = InventoryQtyAdjustedEvent.builder()
-                .inventoryId(inventoryQtyAdjustCommand.getInventoryId())
-                .orderId(inventoryQtyAdjustCommand.getOrderId())
-                .inventoryQtyAdjustDetails(inventoryQtyAdjustCommand.getInventoryQtyAdjustDetails())
+        InventoryQtyDecreaseEvent inventoryQtyDecreaseEvent = InventoryQtyDecreaseEvent.builder()
+                .inventoryId(inventoryQtyDecreaseCommand.getInventoryId())
+                .orderId(inventoryQtyDecreaseCommand.getOrderId())
+                .inventoryQtyAdjustDetails(inventoryQtyDecreaseCommand.getInventoryQtyAdjustDetails())
+                .aggregateIdMap(inventoryQtyDecreaseCommand.getAggregateIdMap())
                 .build();
 
-        AggregateLifecycle.apply(inventoryQtyAdjustedEvent);
+        AggregateLifecycle.apply(inventoryQtyDecreaseEvent);
     }
 
     @EventSourcingHandler
-    public void on(InventoryQtyAdjustedEvent event) {
-        log.info("[@EventSourcingHandler] Executing on ..");
+    public void on(InventoryQtyDecreaseEvent event) {
+        log.info("[@EventSourcingHandler] Executing InventoryQtyDecreaseEvent");
+        this.inventoryId = event.getInventoryId();
+        this.orderId = event.getOrderId();
+        this.inventoryQtyAdjustDetails = event.getInventoryQtyAdjustDetails();
+    }
+
+    //보상 트랜잭션
+    @CommandHandler
+    public void handle(InventoryQtyIncreaseCommand inventoryQtyIncreaseCommand) {
+        log.info("[@CommandHandler] Executing InventoryQtyIncreaseCommand for InventoryId:{} and Order Id:{}",
+                inventoryQtyIncreaseCommand.getInventoryId(), inventoryQtyIncreaseCommand.getOrderId());
+
+        InventoryQtyIncreaseEvent inventoryQtyIncreaseEvent = InventoryQtyIncreaseEvent.builder()
+                .inventoryId(inventoryQtyIncreaseCommand.getInventoryId())
+                .orderId(inventoryQtyIncreaseCommand.getOrderId())
+                .inventoryQtyAdjustDetails(inventoryQtyIncreaseCommand.getInventoryQtyAdjustDetails())
+                .build();
+
+        AggregateLifecycle.apply(inventoryQtyIncreaseEvent);
+    }
+    @EventSourcingHandler
+    public void on(InventoryQtyIncreaseEvent event) {
+        log.info("[@EventSourcingHandler] Executing InventoryQtyIncreaseEvent");
         this.inventoryId = event.getInventoryId();
         this.orderId = event.getOrderId();
         this.inventoryQtyAdjustDetails = event.getInventoryQtyAdjustDetails();

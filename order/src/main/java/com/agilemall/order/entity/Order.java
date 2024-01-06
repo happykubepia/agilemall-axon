@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -20,6 +21,9 @@ public final class Order implements Serializable {
 
     @Column(name="user_id", nullable = false, length = 30)
     private String userId;
+
+    @Column(name = "order_datetime",nullable = false, columnDefinition = "TIMESTAMP")
+    private LocalDateTime orderDatetime;
 
     @Column(name="order_status", nullable = false, length = 2)
     private String orderStatus;

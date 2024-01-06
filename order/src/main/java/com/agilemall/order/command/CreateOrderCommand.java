@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -14,6 +15,7 @@ public class CreateOrderCommand {
     @TargetAggregateIdentifier
     private String orderId;
     private String userId;
+    private LocalDateTime orderDatetime;
     private String orderStatus;
     private int totalOrderAmt;
     private List<OrderDetailDTO> orderDetails;

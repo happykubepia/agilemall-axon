@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class InventoryQtyAdjustedEvent {
+public class InventoryQtyIncreaseEvent {
     private String inventoryId;
     private String orderId;
     private List<InventoryQtyAdjustDTO> inventoryQtyAdjustDetails;

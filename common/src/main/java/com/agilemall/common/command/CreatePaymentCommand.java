@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Data
@@ -15,5 +16,6 @@ public class CreatePaymentCommand {
     private String orderId;
     private int totalPaymentAmt;
     private List<PaymentDetailDTO> paymentDetails;
+    private HashMap<String, String> aggregateIdMap;
 }
 

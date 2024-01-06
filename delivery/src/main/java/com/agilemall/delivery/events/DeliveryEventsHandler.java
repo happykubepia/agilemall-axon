@@ -1,38 +1,48 @@
 package com.agilemall.delivery.events;
 
-import com.agilemall.common.config.Constants;
+import com.agilemall.common.command.CancelOrderCommand;
+import com.agilemall.common.command.CancelPaymentCommand;
 import com.agilemall.common.dto.DeliveryStatus;
+import com.agilemall.common.dto.ServiceName;
 import com.agilemall.common.events.DeliveryCancelledEvent;
-import com.agilemall.common.events.OrderDeliveriedEvent;
-import com.agilemall.common.events.ReportUpdateEvent;
+import com.agilemall.common.events.OrderDeliveredEvent;
 import com.agilemall.delivery.entity.Delivery;
 import com.agilemall.delivery.repository.DeliveryRepository;
-import com.lmax.disruptor.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
+import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.util.HashMap;
 
 @Slf4j
-@Component
-@EnableRetry
+@Service
 public class DeliveryEventsHandler {
     @Autowired
     private DeliveryRepository deliveryRepository;
+    @Autowired
+    private transient CommandGateway commandGateway;
 
     @EventHandler
-    public void on(OrderDeliveriedEvent event) {
-        log.info("[@EventHandler] Handle OrderDeliveriedEvent");
+    public void on(OrderDeliveredEvent event) {
+        log.info("[@EventHandler] Handle OrderDeliveredEvent");
+        try {
+            Delivery delivery = new Delivery();
+            BeanUtils.copyProperties(event, delivery);
+            deliveryRepository.save(delivery);
+        } catch(Exception e) {
+            log.error("Error is occurred during handle OrderDeliveredEvent: {}", e.getMessage());
+            //-- request compensating transactions
+            HashMap<String, String> aggregateIdMap = event.getAggregateIdMap();
+            // compensate Payment
+            compensatePayment(aggregateIdMap);
+            // compensate Order
+            compensateOrder(aggregateIdMap);
+            //------------------------------
 
-        Delivery delivery = new Delivery();
-        BeanUtils.copyProperties(event, delivery);
-        deliveryRepository.save(delivery);
+        }
     }
 
     @EventHandler
@@ -44,6 +54,34 @@ public class DeliveryEventsHandler {
         deliveryRepository.save(delivery);
     }
 
+    private void compensatePayment(HashMap<String, String> aggregateIdMap) {
+        log.info("[DeliveryEventHandler] cancelPayment for Order Id: {}", aggregateIdMap.get(ServiceName.ORDER.value()));
+
+        try {
+            //do compensating transaction: Payment
+            CancelPaymentCommand cancelPaymentCommand = new CancelPaymentCommand(
+                    aggregateIdMap.get(ServiceName.PAYMENT.value()),
+                    aggregateIdMap.get(ServiceName.ORDER.value()));
+            commandGateway.sendAndWait(cancelPaymentCommand);
+
+        } catch (Exception e) {
+            log.error("Error is occurred during <cancelPaymentCommand>: {}", e.getMessage());
+        }
+    }
+
+    private void compensateOrder(HashMap<String, String> aggregateIdMap) {
+        log.info("[DeliveryEventHandler] compensateOrder for Order Id: {}", aggregateIdMap.get(ServiceName.ORDER.value()));
+
+        try {
+            CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(aggregateIdMap.get(ServiceName.ORDER.value()));
+            commandGateway.sendAndWait(cancelOrderCommand);
+        } catch(Exception e) {
+            log.error("Error is occurred during <cancelOrderCommand>: {}", e.getMessage());
+        }
+    }
+
+
+/*
     @EventHandler
     @Retryable(
             maxAttempts = Constants.RETRYABLE_MAXATTEMPTS,
@@ -54,4 +92,6 @@ public class DeliveryEventsHandler {
         log.info("[@EventHandler] Handle ReportUpdateEvent");
 
     }
+*/
 }
+

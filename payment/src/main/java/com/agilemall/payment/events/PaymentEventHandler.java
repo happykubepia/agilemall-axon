@@ -1,60 +1,68 @@
 package com.agilemall.payment.events;
 
-import com.agilemall.common.config.Constants;
+import com.agilemall.common.command.CancelOrderCommand;
 import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.common.dto.PaymentStatus;
+import com.agilemall.common.dto.ServiceName;
 import com.agilemall.common.events.PaymentCancelledEvent;
 import com.agilemall.common.events.PaymentProcessedEvent;
-import com.agilemall.common.events.ReportUpdateEvent;
 import com.agilemall.payment.entity.Payment;
 import com.agilemall.payment.entity.PaymentDetail;
 import com.agilemall.payment.entity.PaymentDetailIdentity;
 import com.agilemall.payment.repository.PaymentRepository;
-import com.lmax.disruptor.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
+import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
 @Component
-@EnableRetry
+//@EnableRetry
 public class PaymentEventHandler {
     @Autowired
     private PaymentRepository paymentRepository;
+    @Autowired
+    private transient CommandGateway commandGateway;
 
     @EventHandler
     public void on(PaymentProcessedEvent event) {
-        log.info("[@EventHandler] Executing on..");
+        log.info("[@EventHandler] Executing handle <PaymentProcessedEvent>");
         log.info(event.toString());
 
         List<PaymentDetail> newPaymentDetails = new ArrayList<>();
 
-        Payment payment = new Payment();
-        payment.setPaymentId(event.getPaymentId());
-        payment.setOrderId(event.getOrderId());
-        payment.setTotalPaymentAmt(event.getTotalPaymentAmt());
-        payment.setPaymentStatus(PaymentStatus.COMPLETED.value());
+        try {
+            Payment payment = new Payment();
+            payment.setPaymentId(event.getPaymentId());
+            payment.setOrderId(event.getOrderId());
+            payment.setTotalPaymentAmt(event.getTotalPaymentAmt());
+            payment.setPaymentStatus(PaymentStatus.COMPLETED.value());
 
-        for(PaymentDetailDTO paymentDetail:event.getPaymentDetails()) {
-            PaymentDetailIdentity paymentDetailIdentity = new PaymentDetailIdentity(
-                    paymentDetail.getPaymentId(), paymentDetail.getPaymentGbcd()
-            );
-            PaymentDetail newPaymentDetail = new PaymentDetail();
-            newPaymentDetail.setPaymentDetailIdentity(paymentDetailIdentity);
+            for(PaymentDetailDTO paymentDetail:event.getPaymentDetails()) {
+                PaymentDetailIdentity paymentDetailIdentity = new PaymentDetailIdentity(
+                        paymentDetail.getPaymentId(), paymentDetail.getPaymentGbcd()
+                );
+                PaymentDetail newPaymentDetail = new PaymentDetail();
+                newPaymentDetail.setPaymentDetailIdentity(paymentDetailIdentity);
+                newPaymentDetail.setPaymentAmt(paymentDetail.getPaymentAmt());
+                newPaymentDetails.add(newPaymentDetail);
+            }
+            payment.setPaymentDetails(newPaymentDetails);
 
-            newPaymentDetails.add(newPaymentDetail);
+            paymentRepository.save(payment);
+        } catch(Exception e) {
+            log.error("Error is occurred during handle <PaymentProcessedEvent>: {}", e.getMessage());
+            //-- request compensating transactions
+            HashMap<String, String> aggregateIdMap = event.getAggregateIdMap();
+            // compensate Order
+            compensateOrder(aggregateIdMap);
+            //------------------------------
         }
-        payment.setPaymentDetails(newPaymentDetails);
-
-        paymentRepository.save(payment);
     }
 
     @EventHandler
@@ -65,6 +73,17 @@ public class PaymentEventHandler {
         paymentRepository.save(payment);
     }
 
+    private void compensateOrder(HashMap<String, String> aggregateIdMap) {
+        log.info("[PaymentEventHandler] compensateOrder for Order Id: {}", aggregateIdMap.get(ServiceName.ORDER.value()));
+
+        try {
+            CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(aggregateIdMap.get(ServiceName.ORDER.value()));
+            commandGateway.sendAndWait(cancelOrderCommand);
+        } catch(Exception e) {
+            log.error("Error is occurred during <cancelOrderCommand>: {}", e.getMessage());
+        }
+    }
+/*
     @EventHandler
     @Retryable(
             maxAttempts = Constants.RETRYABLE_MAXATTEMPTS,
@@ -75,4 +94,6 @@ public class PaymentEventHandler {
         log.info("[@EventHandler] Handle ReportUpdateEvent");
 
     }
+
+ */
 }

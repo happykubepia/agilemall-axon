@@ -4,12 +4,14 @@ import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.order.dto.OrderDetailDTO;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 public class OrderCreatedEvent {
     private String orderId;
     private String userId;
+    private LocalDateTime orderDatetime;
     private String orderStatus;
     private int totalOrderAmt;
     private List<OrderDetailDTO> orderDetails;

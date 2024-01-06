@@ -1,38 +1,32 @@
 package com.agilemall.order.events;
 
-import com.agilemall.common.config.Constants;
 import com.agilemall.common.dto.OrderStatus;
 import com.agilemall.common.events.OrderCancelledEvent;
 import com.agilemall.common.events.OrderCompletedEvent;
-import com.agilemall.common.events.ReportUpdateEvent;
 import com.agilemall.order.dto.OrderDetailDTO;
 import com.agilemall.order.entity.Order;
 import com.agilemall.order.entity.OrderDetail;
 import com.agilemall.order.entity.OrderDetailIdentity;
 import com.agilemall.order.repository.OrderRepository;
+import com.agilemall.order.service.CompensatingService;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.eventhandling.EventHandler;
-import org.axonframework.eventhandling.gateway.EventGateway;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component
-@EnableRetry
+//@EnableRetry
 public class OrderEventsHandler {
     @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
-    private EventGateway eventGateway;
+    private CompensatingService compensatingService;
 
     @EventHandler
     public void on(OrderCreatedEvent event) {
@@ -42,6 +36,7 @@ public class OrderEventsHandler {
         Order order = new Order();
         order.setOrderId(event.getOrderId());
         order.setUserId(event.getUserId());
+        order.setOrderDatetime(event.getOrderDatetime());
         order.setOrderStatus(OrderStatus.CREATED.value());
         order.setTotalOrderAmt(event.getTotalOrderAmt());
 
@@ -51,7 +46,7 @@ public class OrderEventsHandler {
             newOrderDetail.setOrderDetailIdentity(newOrderDetailIdentity);
             newOrderDetail.setProductId(orderDetail.getProductId());
             newOrderDetail.setQty(orderDetail.getQty());
-            newOrderDetail.setOrderAmt(newOrderDetail.getOrderAmt());
+            newOrderDetail.setOrderAmt(orderDetail.getOrderAmt());
 
             newOrderDetails.add(newOrderDetail);
         }
@@ -63,18 +58,48 @@ public class OrderEventsHandler {
     public void on(OrderCompletedEvent event) {
         log.info("[@EventHandler] Executing on OrderCompletedEvent for Order Id:{}", event.getOrderId());
 
-        //Get order info
-        Order order = orderRepository.findById(event.getOrderId()).get();
+        try {
+            //Get order info
+            Order order = orderRepository.findById(event.getOrderId()).get();
 
-        Order newOrder = new Order();
-        newOrder.setOrderId(event.getOrderId());
-        newOrder.setUserId(order.getUserId());
-        newOrder.setTotalOrderAmt(order.getTotalOrderAmt());
-        newOrder.setOrderStatus(OrderStatus.APPROVED.value());
+            Order newOrder = new Order();
+            newOrder.setOrderId(event.getOrderId());
+            newOrder.setUserId(order.getUserId());
+            newOrder.setOrderDatetime(order.getOrderDatetime());
+            newOrder.setTotalOrderAmt(order.getTotalOrderAmt());
+            newOrder.setOrderStatus(event.getOrderStatus());
 
-        orderRepository.save(newOrder);
+            //throw new Exception();
+            orderRepository.save(newOrder);
 
-        requestSendUpdateReport(event.getOrderId(), newOrder.getOrderStatus());
+        } catch(Exception e) {
+            log.error("Error is occur during handle <OrderCompletedEvent>: {}", e.getMessage());
+
+            //-- request compensating transactions
+            HashMap<String, String> aggregateIdMap = event.getAggregateIdMap();
+            // compensate Delivery
+            compensatingService.cancelDeliveryCommand(aggregateIdMap);
+            // compensate Payment
+            compensatingService.cancelPaymentCommand(aggregateIdMap);
+            // compensate Order
+            compensatingService.cancelOrderCommand(aggregateIdMap);
+            //------------------------------
+
+            /*
+            //request compensating transaction of Inventory service
+            Order order = orderRepository.findById(event.getOrderId()).get();
+            List<OrderDetailDTO> orderDetails = order.getOrderDetails().stream()
+                    .map(o -> new OrderDetailDTO(order.getOrderId(), o.getProductId(), 0, o.getQty(), o.getOrderAmt()))
+                    .collect(Collectors.toList());
+
+            compensatingService.cancelInventoryQtyAdjustCommand(
+                    event.getOrderId(),
+                    event.getAggregateIdMap().get(ServiceName.INVENTORY),
+                    orderDetails);
+
+ */
+        }
+
     }
 
     @EventHandler
@@ -82,27 +107,9 @@ public class OrderEventsHandler {
         log.info("[@EventHandler] Executing OrderCancelledEvent in OrderEventHandler");
         Order order = orderRepository.findById(event.getOrderId()).get();
         order.setOrderStatus(event.getOrderStatus());
-
         orderRepository.save(order);
-
-        requestSendUpdateReport(event.getOrderId(), event.getOrderStatus());
+        //requestSendUpdateReport(event.getOrderId(), event.getOrderStatus());
     }
 
-    //각 서비스에 Report service에 추가/갱신된 정보를 보내도록 Event 전송
-    @Retryable(
-            maxAttempts = Constants.RETRYABLE_MAXATTEMPTS,
-            retryFor = {IOException.class, TimeoutException.class, RuntimeException.class},
-            backoff = @Backoff(delay = Constants.RETRYABLE_DELAY)
-    )
-
-    public void requestSendUpdateReport(String orderId, String orderStatus) {
-        log.info("[@EventHandler] Executing requestSendUpdateReport in OrderEventHandler for order Id: {}", orderId);
-        log.info("===== [OrderEventsHandler] Transaction #7: Retryable transaction <requestSendUpdateReport> =====");
-        ReportUpdateEvent reportUpdateEvent = ReportUpdateEvent.builder()
-                .orderId(orderId)
-                .orderStatus(orderStatus)
-                .build();
-
-        eventGateway.publish(reportUpdateEvent);
-    }
 }
+

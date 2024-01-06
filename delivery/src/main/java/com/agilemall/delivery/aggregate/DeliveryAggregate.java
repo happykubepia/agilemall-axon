@@ -3,7 +3,7 @@ package com.agilemall.delivery.aggregate;
 import com.agilemall.common.command.CancelDeliveryCommand;
 import com.agilemall.common.command.DeliveryOrderCommand;
 import com.agilemall.common.events.DeliveryCancelledEvent;
-import com.agilemall.common.events.OrderDeliveriedEvent;
+import com.agilemall.common.events.OrderDeliveredEvent;
 import com.agilemall.common.dto.DeliveryStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
@@ -30,17 +30,18 @@ public class DeliveryAggregate {
         log.info("[@CommandHandler] Executing DeliveryAggregate for Order Id: {} and Delivery ID: {}",
                 deliveryOrderCommand.getOrderId(), deliveryOrderCommand.getDeliveryId());
 
-        OrderDeliveriedEvent orderDeliveriedEvent = OrderDeliveriedEvent.builder()
+        OrderDeliveredEvent orderDeliveredEvent = OrderDeliveredEvent.builder()
                 .orderId(deliveryOrderCommand.getOrderId())
                 .deliveryId(deliveryOrderCommand.getDeliveryId())
-                .deliveryStatus(DeliveryStatus.CANCELED.value())
+                .deliveryStatus(DeliveryStatus.CREATED.value())
+                .aggregateIdMap(deliveryOrderCommand.getAggregateIdMap())
                 .build();
 
-        AggregateLifecycle.apply(orderDeliveriedEvent);
+        AggregateLifecycle.apply(orderDeliveredEvent);
     }
 
     @EventSourcingHandler
-    public void on(OrderDeliveriedEvent event) {
+    public void on(OrderDeliveredEvent event) {
         log.info("[@EventSourcingHandler] Executing OrderDeliveriedEvent for Order Id: {} and Delivery Id: {}",
                 event.getOrderId(), event.getDeliveryId());
 

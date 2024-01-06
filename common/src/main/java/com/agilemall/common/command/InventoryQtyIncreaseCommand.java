@@ -1,18 +1,17 @@
 package com.agilemall.common.command;
 
+import com.agilemall.common.dto.InventoryQtyAdjustDTO;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
-import java.util.HashMap;
+import java.util.List;
 
 @Data
-@Value
 @Builder
-public class CompleteOrderCommand {
+public class InventoryQtyIncreaseCommand {
     @TargetAggregateIdentifier
+    private String inventoryId;
     private String orderId;
-    private String orderStatus;
-    private HashMap<String, String> aggregateIdMap;
+    private List<InventoryQtyAdjustDTO> inventoryQtyAdjustDetails;
 }

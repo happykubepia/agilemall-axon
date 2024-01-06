@@ -5,7 +5,6 @@ import com.agilemall.common.command.CreatePaymentCommand;
 import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.common.events.PaymentCancelledEvent;
 import com.agilemall.common.events.PaymentProcessedEvent;
-import com.agilemall.payment.repository.PaymentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -13,22 +12,22 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
 @Aggregate
 @Slf4j
 public class PaymentAggregate {
+//    @Autowired
+//    private PaymentRepository paymentRepository;
+
     @AggregateIdentifier
     private String paymentId;
+
     private String orderId;
     private int totalPaymentAmt;
     private String paymentStatus;
     private List<PaymentDetailDTO> paymentDetails;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
 
     public PaymentAggregate() {
 
@@ -43,7 +42,8 @@ public class PaymentAggregate {
                 createPaymentCommand.getPaymentId(),
                 createPaymentCommand.getOrderId(),
                 createPaymentCommand.getTotalPaymentAmt(),
-                createPaymentCommand.getPaymentDetails()
+                createPaymentCommand.getPaymentDetails(),
+                createPaymentCommand.getAggregateIdMap()
         );
 
         AggregateLifecycle.apply(paymentProcessedEvent);
@@ -76,4 +76,5 @@ public class PaymentAggregate {
 
         this.paymentStatus = event.getPaymentStatus();
     }
+
 }

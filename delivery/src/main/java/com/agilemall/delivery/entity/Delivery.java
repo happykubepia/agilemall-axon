@@ -24,4 +24,5 @@ public class Delivery {
 
     @Column(name = "delivery_status", nullable = false, length = 2)
     private String deliveryStatus;
+
 }

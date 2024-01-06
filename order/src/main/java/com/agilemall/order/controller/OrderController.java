@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,6 +73,7 @@ public class OrderController {
         CreateOrderCommand createOrderCommand = CreateOrderCommand.builder()
                 .orderId(orderId)
                 .userId(userId)
+                .orderDatetime(LocalDateTime.now())
                 .totalOrderAmt(totalOrderAmt)
                 .orderDetails(newOrderDetails)
                 .paymentId(paymentId)
@@ -98,9 +100,12 @@ public class OrderController {
     }
 
     private int getUnitPrice(List<ResultVO<InventoryDTO>> inventories, String productId) {
+        InventoryDTO inventory;
         for(ResultVO<InventoryDTO> retVo:inventories) {
-            if(retVo.getResult().getProductId().equals(productId)) {
-                return retVo.getResult().getUnitPrice();
+            inventory = retVo.getResult();
+            //log.info("==>{} vs {}", inventory.getProductId(), productId);
+            if(inventory.getProductId().equals(productId)) {
+                return inventory.getUnitPrice();
             }
         }
         return 0;

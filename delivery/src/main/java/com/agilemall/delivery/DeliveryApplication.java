@@ -1,4 +1,5 @@
 package com.agilemall.delivery;
+
 import com.agilemall.delivery.config.AxonConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
