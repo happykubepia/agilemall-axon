@@ -87,14 +87,14 @@ application 최상위 디렉토리에서 수행
 
 ## Trouble shooint
 
-- Project build 시 'Task classes not found in root project'라는 에러 발생시 
+> Project build 시 'Task classes not found in root project'라는 에러 발생시 
   - 'File > Invalidated Caches' 수행하여 Cache 삭제 후 재시작 하면 됨 
   - 참고) https://dlrudtn108.tistory.com/39
 
 
-- 에러 발생 후 Order의 EventHandler가 실행 안될 때
+> 에러 발생 후 Order의 EventHandler가 실행 안될 때 
   원인: Order와 다른 서비스의 token index값이 일치 하지 않기 때문임 
-  - orders, order_detail의 모든 record 삭제
+  - orders, order_detail의 모든 record 삭제 
   ```
   delete  from orderDB.order_detail;
   delete from orderDB.orders;
@@ -107,7 +107,7 @@ application 최상위 디렉토리에서 수행
     delete from paymentDB.token_entry;
     delete from deliveryDB.token_entry;
     ```
-- 에러 발생 후 Saga transaction이 모두 실행 되었는데 Payment, Delivery의 Event handler가 실행 안될 때
+> 에러 발생 후 Saga transaction이 모두 실행 되었는데 Payment, Delivery의 Event handler가 실행 안될 때
   - 원인: Order와 다른 서비스의 token index값이 일치 하지 않기 때문임 
   - 각 DB의 token_entry 테이블의 데이터 삭제. 삭제 하면 자동으로 Last token index값으로 일치 시킴
     ```
@@ -122,7 +122,7 @@ application 최상위 디렉토리에서 수행
   select cast(token as char) from deliveryDB.token_entry;
   ```
 
-- AXONIQ-2000 에러
+> AXONIQ-2000 에러
 Error occurred during store batch operation: 
 io.axoniq.axonserver.exception.MessagingPlatformException: [AXONIQ-2000] Invalid sequence number 0 for aggregate
   - 원인1) Aggregate class의 @AggregateIdentifier로 지정한 property가 유일한 값이 아니면 발생 
@@ -136,7 +136,7 @@ io.axoniq.axonserver.exception.MessagingPlatformException: [AXONIQ-2000] Invalid
     private transient CommandGateway commandGateway;
 
 
-- 참고
+> 참고
   - MySQL 데이터 디렉토리 찾기 
 ```
 mysql> show variables like 'datadir';
