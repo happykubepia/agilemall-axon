@@ -85,7 +85,7 @@ application 최상위 디렉토리에서 수행
 
 ----
 
-## Trouble shooint
+## Trouble shooting
 
 > Project build 시 'Task classes not found in root project'라는 에러 발생시 
   - 'File > Invalidated Caches' 수행하여 Cache 삭제 후 재시작 하면 됨 
