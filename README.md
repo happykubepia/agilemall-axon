@@ -1,6 +1,6 @@
 # Microservice Pattern Example using Axon framwork
 
-Source code를 보시려면  [여기](https://github.com/happykubepia/agilemall-axon.git)를 누르세요. 
+source code를 보시려면  [여기](https://github.com/happykubepia/agilemall-axon.git)를 누르세요. 
 
 ## 사전준비
 - IntelliJ 설치: multi module and gradle project를 만들기 위해서 IntelliJ 필요
