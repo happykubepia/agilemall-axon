@@ -30,4 +30,5 @@ public class Payment implements Serializable {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "payment_id", updatable = false)
     private List<PaymentDetail> paymentDetails;
+
 }

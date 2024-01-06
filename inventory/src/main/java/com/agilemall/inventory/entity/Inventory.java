@@ -28,5 +28,4 @@ public class Inventory implements Serializable {
 
     @Column(name = "inventory_qty", nullable = false)
     private int inventoryQty;
-
 }
