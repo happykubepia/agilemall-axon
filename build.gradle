@@ -43,9 +43,5 @@ subprojects {
         implementation 'com.google.guava:guava:33.0.0-jre'
         //Apache utilities
         implementation 'org.apache.commons:commons-lang3:3.14.0'
-
-        //Retryable library
-        //implementation 'org.springframework.retry:spring-retry'
-        //implementation 'org.springframework:spring-aspects'
     }
 }

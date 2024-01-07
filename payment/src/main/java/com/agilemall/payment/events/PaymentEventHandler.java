@@ -83,17 +83,5 @@ public class PaymentEventHandler {
             log.error("Error is occurred during <cancelOrderCommand>: {}", e.getMessage());
         }
     }
-/*
-    @EventHandler
-    @Retryable(
-            maxAttempts = Constants.RETRYABLE_MAXATTEMPTS,
-            retryFor = { IOException.class, TimeoutException.class, RuntimeException.class},
-            backoff = @Backoff(delay = Constants.RETRYABLE_DELAY)
-    )
-    public void on(ReportUpdateEvent event) {
-        log.info("[@EventHandler] Handle ReportUpdateEvent");
 
-    }
-
- */
 }
