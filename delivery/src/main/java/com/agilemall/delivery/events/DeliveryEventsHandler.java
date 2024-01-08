@@ -2,10 +2,10 @@ package com.agilemall.delivery.events;
 
 import com.agilemall.common.command.CancelOrderCommand;
 import com.agilemall.common.command.CancelPaymentCommand;
-import com.agilemall.common.dto.DeliveryStatus;
-import com.agilemall.common.dto.ServiceName;
+import com.agilemall.common.dto.DeliveryStatusEnum;
+import com.agilemall.common.dto.ServiceNameEnum;
 import com.agilemall.common.events.DeliveryCancelledEvent;
-import com.agilemall.common.events.OrderDeliveredEvent;
+import com.agilemall.common.events.DeliveryCreatedEvent;
 import com.agilemall.delivery.entity.Delivery;
 import com.agilemall.delivery.repository.DeliveryRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -27,20 +27,20 @@ public class DeliveryEventsHandler {
     private transient CommandGateway commandGateway;
 
     @EventHandler
-    public void on(OrderDeliveredEvent event) {
-        log.info("[@EventHandler] Handle OrderDeliveredEvent");
+    public void on(DeliveryCreatedEvent event) {
+        log.info("[@EventHandler] Handle DeliveryCreatedEvent");
         try {
             Delivery delivery = new Delivery();
             BeanUtils.copyProperties(event, delivery);
             deliveryRepository.save(delivery);
         } catch(Exception e) {
-            log.error("Error is occurred during handle OrderDeliveredEvent: {}", e.getMessage());
+            log.error("Error is occurred during handle DeliveryCreatedEvent: {}", e.getMessage());
             //-- request compensating transactions
             HashMap<String, String> aggregateIdMap = event.getAggregateIdMap();
             // compensate Payment
-            compensatePayment(aggregateIdMap);
+            cancelPayment(aggregateIdMap);
             // compensate Order
-            compensateOrder(aggregateIdMap);
+            cancelOrder(aggregateIdMap);
             //------------------------------
 
         }
@@ -52,19 +52,19 @@ public class DeliveryEventsHandler {
 
         Delivery delivery = getEntry(event.getDeliveryId());
         if(delivery != null) {
-            delivery.setDeliveryStatus(DeliveryStatus.CANCELED.value());
+            delivery.setDeliveryStatus(DeliveryStatusEnum.CANCELED.value());
             deliveryRepository.save(delivery);
         }
     }
 
-    private void compensatePayment(HashMap<String, String> aggregateIdMap) {
-        log.info("[DeliveryEventHandler] cancelPayment for Order Id: {}", aggregateIdMap.get(ServiceName.ORDER.value()));
+    private void cancelPayment(HashMap<String, String> aggregateIdMap) {
+        log.info("[DeliveryEventHandler] cancelPayment for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
 
         try {
             //do compensating transaction: Payment
             CancelPaymentCommand cancelPaymentCommand = new CancelPaymentCommand(
-                    aggregateIdMap.get(ServiceName.PAYMENT.value()),
-                    aggregateIdMap.get(ServiceName.ORDER.value()));
+                    aggregateIdMap.get(ServiceNameEnum.PAYMENT.value()),
+                    aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
             commandGateway.sendAndWait(cancelPaymentCommand);
 
         } catch (Exception e) {
@@ -72,11 +72,11 @@ public class DeliveryEventsHandler {
         }
     }
 
-    private void compensateOrder(HashMap<String, String> aggregateIdMap) {
-        log.info("[DeliveryEventHandler] compensateOrder for Order Id: {}", aggregateIdMap.get(ServiceName.ORDER.value()));
+    private void cancelOrder(HashMap<String, String> aggregateIdMap) {
+        log.info("[DeliveryEventHandler] cancelOrder for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
 
         try {
-            CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(aggregateIdMap.get(ServiceName.ORDER.value()));
+            CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
             commandGateway.sendAndWait(cancelOrderCommand);
         } catch(Exception e) {
             log.error("Error is occurred during <cancelOrderCommand>: {}", e.getMessage());
@@ -84,8 +84,8 @@ public class DeliveryEventsHandler {
     }
 
     @EventHandler
-    public void handle(DeliveryUpdateEvent event) {
-        log.info("[DeliveryEventsHandler] Executing DeliveryUpdateEvent for Delivery Id: {}", event.getDeliveryId());
+    public void handle(DeliveryUpdatedEvent event) {
+        log.info("[DeliveryEventsHandler] Handle <DeliveryUpdatedEvent> for Delivery Id: {}", event.getDeliveryId());
 
         Delivery delivery = getEntry(event.getDeliveryId());
         if(delivery != null) {
@@ -104,18 +104,5 @@ public class DeliveryEventsHandler {
         }
         return delivery;
     }
-
-/*
-    @EventHandler
-    @Retryable(
-            maxAttempts = Constants.RETRYABLE_MAXATTEMPTS,
-            retryFor = { IOException.class, TimeoutException.class, RuntimeException.class},
-            backoff = @Backoff(delay = Constants.RETRYABLE_DELAY)
-    )
-    public void on(ReportUpdateEvent event) {
-        log.info("[@EventHandler] Handle ReportUpdateEvent");
-
-    }
-*/
 }
 

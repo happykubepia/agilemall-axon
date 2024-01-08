@@ -1,10 +1,10 @@
 package com.agilemall.inventory.aggregate;
 
 import com.agilemall.common.command.CreateInventoryCommand;
-import com.agilemall.common.command.InventoryQtyUpdateCommand;
-import com.agilemall.common.dto.InventoryQtyAdjustType;
-import com.agilemall.common.events.CreateInventoryEvent;
-import com.agilemall.common.events.InventoryQtyUpdateEvent;
+import com.agilemall.common.command.UpdateInventoryQtyCommand;
+import com.agilemall.common.dto.InventoryQtyAdjustTypeEnum;
+import com.agilemall.common.events.InventoryCreatedEvent;
+import com.agilemall.common.events.InventoryQtyUpdatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -27,16 +27,16 @@ public class InventoryAggregate {
 
     @CommandHandler
     public InventoryAggregate(CreateInventoryCommand createInventoryCommand) {
-        log.info("[@CommandHandler] Executing CreateInventoryCommand for Product Id:{}", createInventoryCommand.getProductId());
+        log.info("[@CommandHandler] Executing <CreateInventoryCommand> for Product Id:{}", createInventoryCommand.getProductId());
 
-        CreateInventoryEvent createInventoryEvent = new CreateInventoryEvent();
-        BeanUtils.copyProperties(createInventoryCommand, createInventoryEvent);
-        AggregateLifecycle.apply(createInventoryEvent);
+        InventoryCreatedEvent inventoryCreatedEvent = new InventoryCreatedEvent();
+        BeanUtils.copyProperties(createInventoryCommand, inventoryCreatedEvent);
+        AggregateLifecycle.apply(inventoryCreatedEvent);
     }
 
     @EventSourcingHandler
-    public void on(CreateInventoryEvent event) {
-        log.info("[@EventSourcingHandler] Executing CreateInventoryEvent");
+    public void on(InventoryCreatedEvent event) {
+        log.info("[@EventSourcingHandler] Executing <CreateInventoryEvent>");
         this.productId = event.getProductId();
         this.productName = event.getProductName();
         this.unitPrice = event.getUnitPrice();
@@ -45,24 +45,24 @@ public class InventoryAggregate {
 
     //보상 트랜잭션
     @CommandHandler
-    public void handle(InventoryQtyUpdateCommand inventoryQtyUpdateCommand) {
-        log.info("[@CommandHandler] Executing InventoryQtyUpdateCommand for productId:{}", inventoryQtyUpdateCommand.getProductId());
+    public void handle(UpdateInventoryQtyCommand updateInventoryQtyCommand) {
+        log.info("[@CommandHandler] Executing <updateInventoryQtyCommand> for productId:{}", updateInventoryQtyCommand.getProductId());
 
-        InventoryQtyUpdateEvent inventoryQtyUpdateEvent = InventoryQtyUpdateEvent.builder()
-                .productId(inventoryQtyUpdateCommand.getProductId())
-                .adjustType(inventoryQtyUpdateCommand.getAdjustType())
-                .adjustQty(inventoryQtyUpdateCommand.getAdjustQty())
+        InventoryQtyUpdatedEvent inventoryQtyUpdatedEvent = InventoryQtyUpdatedEvent.builder()
+                .productId(updateInventoryQtyCommand.getProductId())
+                .adjustType(updateInventoryQtyCommand.getAdjustType())
+                .adjustQty(updateInventoryQtyCommand.getAdjustQty())
                 .build();
 
-        AggregateLifecycle.apply(inventoryQtyUpdateEvent);
+        AggregateLifecycle.apply(inventoryQtyUpdatedEvent);
     }
     @EventSourcingHandler
-    public void on(InventoryQtyUpdateEvent event) {
-        log.info("[@EventSourcingHandler] Executing InventoryQtyUpdateEvent");
+    public void on(InventoryQtyUpdatedEvent event) {
+        log.info("[@EventSourcingHandler] Executing <InventoryQtyUpdatedEvent>");
         this.productId = event.getProductId();
-        if(InventoryQtyAdjustType.DECREASE.value().equals(event.getAdjustType())) {
+        if(InventoryQtyAdjustTypeEnum.DECREASE.value().equals(event.getAdjustType())) {
             this.inventoryQty -= event.getAdjustQty();
-        } else if(InventoryQtyAdjustType.INCREASE.value().equals(event.getAdjustType())) {
+        } else if(InventoryQtyAdjustTypeEnum.INCREASE.value().equals(event.getAdjustType())) {
             this.inventoryQty += event.getAdjustQty();
         }
     }

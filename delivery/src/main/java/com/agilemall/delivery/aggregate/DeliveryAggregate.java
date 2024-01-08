@@ -1,12 +1,11 @@
 package com.agilemall.delivery.aggregate;
 
 import com.agilemall.common.command.CancelDeliveryCommand;
-import com.agilemall.common.command.DeliveryOrderCommand;
+import com.agilemall.common.command.CreateDeliveryCommand;
 import com.agilemall.common.events.DeliveryCancelledEvent;
-import com.agilemall.common.events.OrderDeliveredEvent;
-import com.agilemall.common.dto.DeliveryStatus;
-import com.agilemall.delivery.command.DeliveryUpdateCommand;
-import com.agilemall.delivery.events.DeliveryUpdateEvent;
+import com.agilemall.common.events.DeliveryCreatedEvent;
+import com.agilemall.delivery.command.UpdateDeliveryCommand;
+import com.agilemall.delivery.events.DeliveryUpdatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -28,23 +27,23 @@ public class DeliveryAggregate {
     }
 
     @CommandHandler
-    public DeliveryAggregate(DeliveryOrderCommand deliveryOrderCommand) {
-        log.info("[@CommandHandler] Executing DeliveryAggregate for Order Id: {} and Delivery ID: {}",
-                deliveryOrderCommand.getOrderId(), deliveryOrderCommand.getDeliveryId());
+    public DeliveryAggregate(CreateDeliveryCommand createDeliveryCommand) {
+        log.info("[@CommandHandler] Executing <CreateDeliveryCommand> for Order Id: {} and Delivery ID: {}",
+                createDeliveryCommand.getOrderId(), createDeliveryCommand.getDeliveryId());
 
-        OrderDeliveredEvent orderDeliveredEvent = OrderDeliveredEvent.builder()
-                .orderId(deliveryOrderCommand.getOrderId())
-                .deliveryId(deliveryOrderCommand.getDeliveryId())
-                .deliveryStatus(DeliveryStatus.CREATED.value())
-                .aggregateIdMap(deliveryOrderCommand.getAggregateIdMap())
+        DeliveryCreatedEvent deliveryCreatedEvent = DeliveryCreatedEvent.builder()
+                .orderId(createDeliveryCommand.getOrderId())
+                .deliveryId(createDeliveryCommand.getDeliveryId())
+                .deliveryStatus(createDeliveryCommand.getDeliveryStatus())
+                .aggregateIdMap(createDeliveryCommand.getAggregateIdMap())
                 .build();
 
-        AggregateLifecycle.apply(orderDeliveredEvent);
+        AggregateLifecycle.apply(deliveryCreatedEvent);
     }
 
     @EventSourcingHandler
-    public void on(OrderDeliveredEvent event) {
-        log.info("[@EventSourcingHandler] Executing OrderDeliveredEvent for Order Id: {} and Delivery Id: {}",
+    public void on(DeliveryCreatedEvent event) {
+        log.info("[@EventSourcingHandler] Executing <DeliveryCreatedEvent> for Order Id: {} and Delivery Id: {}",
                 event.getOrderId(), event.getDeliveryId());
 
         this.orderId = event.getOrderId();
@@ -54,7 +53,7 @@ public class DeliveryAggregate {
 
     @CommandHandler
     public void handle(CancelDeliveryCommand cancelDeliveryCommand) {
-        log.info("Executing CancelDeliveryCommand for Order Id : {} and Delivery Id: {}",
+        log.info("[@CommandHandler] Executing <CancelDeliveryCommand> for Order Id : {} and Delivery Id: {}",
                 cancelDeliveryCommand.getOrderId(), cancelDeliveryCommand.getDeliveryId());
 
         DeliveryCancelledEvent deliveryCancelledEvent = new DeliveryCancelledEvent();
@@ -65,22 +64,22 @@ public class DeliveryAggregate {
 
     @EventSourcingHandler
     public void on(DeliveryCancelledEvent event) {
-        log.info("Executing DeliveryCancelledEvent for Order Id : {} and Delivery Id: {}",
+        log.info("[@EventSourcingHandler] Executing <DeliveryCancelledEvent> for Order Id : {} and Delivery Id: {}",
                 event.getOrderId(), event.getDeliveryId());
         this.deliveryStatus = event.getDeliveryStatus();
     }
 
     @CommandHandler
-    public void handle(DeliveryUpdateCommand deliveryUpdateCommand) {
-        log.info("Executing DeliveryUpdateCommand for Delivery Id : {}", deliveryUpdateCommand.getDeliveryId());
+    public void handle(UpdateDeliveryCommand updateDeliveryCommand) {
+        log.info("Executing DeliveryUpdateCommand for Delivery Id : {}", updateDeliveryCommand.getDeliveryId());
 
-        DeliveryUpdateEvent deliveryUpdateEvent = new DeliveryUpdateEvent();
-        BeanUtils.copyProperties(deliveryUpdateCommand, deliveryUpdateEvent);
+        DeliveryUpdatedEvent deliveryUpdatedEvent = new DeliveryUpdatedEvent();
+        BeanUtils.copyProperties(updateDeliveryCommand, deliveryUpdatedEvent);
 
-        AggregateLifecycle.apply(deliveryUpdateEvent);
+        AggregateLifecycle.apply(deliveryUpdatedEvent);
     }
     @EventSourcingHandler
-    public void on(DeliveryUpdateEvent event) {
+    public void on(DeliveryUpdatedEvent event) {
         log.info("[@EventSourcing] Executing DeliveryUpdateEvent for Delivery Id : {}", event.getDeliveryId());
         this.deliveryStatus = event.getDeliveryStatus();
     }

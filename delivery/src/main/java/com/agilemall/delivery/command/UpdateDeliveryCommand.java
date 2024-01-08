@@ -6,7 +6,7 @@ import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 @Value
 @Builder
-public class DeliveryUpdateCommand {
+public class UpdateDeliveryCommand {
     @TargetAggregateIdentifier
     String deliveryId;
 

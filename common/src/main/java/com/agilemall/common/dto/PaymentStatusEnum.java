@@ -1,12 +1,13 @@
 package com.agilemall.common.dto;
 
-public enum PaymentGbcd {
-    CARD("10"),
-    POINT("20");
+public enum PaymentStatusEnum {
+    CREATED("10"),
+    CANCELED("20"),
+    COMPLETED("30");
 
     private final String value;
 
-    PaymentGbcd(String value) {
+    PaymentStatusEnum(String value) {
         this.value = value;
     }
 

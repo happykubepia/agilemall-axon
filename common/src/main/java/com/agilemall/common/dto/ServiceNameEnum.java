@@ -1,6 +1,6 @@
 package com.agilemall.common.dto;
 
-public enum ServiceName {
+public enum ServiceNameEnum {
     ORDER("order"),
     PAYMENT("payment"),
     DELIVERY("delivery"),
@@ -8,7 +8,7 @@ public enum ServiceName {
     REPORT("report");
 
     private final String value;
-    ServiceName(String value) {
+    ServiceNameEnum(String value) {
         this.value = value;
     }
     public String value() {

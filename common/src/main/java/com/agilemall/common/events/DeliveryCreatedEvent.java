@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 @Data
 @Builder
-public class OrderDeliveredEvent {
+public class DeliveryCreatedEvent {
     private String orderId;
     private String deliveryId;
     private String deliveryStatus;

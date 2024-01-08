@@ -8,9 +8,10 @@ import java.util.HashMap;
 
 @Value
 @Builder
-public class DeliveryOrderCommand {
+public class CreateDeliveryCommand {
     @TargetAggregateIdentifier
     String deliveryId;
     String orderId;
+    String deliveryStatus;
     private HashMap<String, String> aggregateIdMap;
 }

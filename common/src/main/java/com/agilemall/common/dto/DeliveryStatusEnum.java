@@ -1,6 +1,6 @@
 package com.agilemall.common.dto;
 
-public enum DeliveryStatus {
+public enum DeliveryStatusEnum {
     CREATED("10"),
     CANCELED("20"),
     DELIVERING("30"),
@@ -8,7 +8,7 @@ public enum DeliveryStatus {
 
     private final String value;
 
-    DeliveryStatus(String value) {
+    DeliveryStatusEnum(String value) {
         this.value = value;
     }
 

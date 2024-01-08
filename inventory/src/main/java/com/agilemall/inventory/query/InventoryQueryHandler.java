@@ -13,13 +13,13 @@ import java.util.Optional;
 
 @Slf4j
 @Component
-public class InventoryProjection {
+public class InventoryQueryHandler {
     @Autowired
     private InventoryRepository inventoryRepository;
 
     @QueryHandler
-    public InventoryDTO getInventory(GetInventoryByProductIdQuery query) {
-        log.info("[@QueryHandler] getInventoryByProductId in InventoryProjection for Product Id: {}", query.getProductId());
+    public InventoryDTO handle(GetInventoryByProductIdQuery query) {
+        log.info("[@QueryHandler] Handle <GetInventoryByProductIdQuery> for Product Id: {}", query.getProductId());
 
         int inventoryQty = 0;
         int unitPrice = 0;

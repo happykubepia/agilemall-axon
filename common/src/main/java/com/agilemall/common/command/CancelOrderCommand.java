@@ -1,6 +1,6 @@
 package com.agilemall.common.command;
 
-import com.agilemall.common.dto.OrderStatus;
+import com.agilemall.common.dto.OrderStatusEnum;
 import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
@@ -8,5 +8,5 @@ import org.axonframework.modelling.command.TargetAggregateIdentifier;
 public class CancelOrderCommand {
     @TargetAggregateIdentifier
     String orderId;
-    String orderStatus = OrderStatus.CANCELED.value();
+    String orderStatus = OrderStatusEnum.CANCELED.value();
 }

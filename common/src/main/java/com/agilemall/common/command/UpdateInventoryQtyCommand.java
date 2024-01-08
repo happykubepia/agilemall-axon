@@ -6,7 +6,7 @@ import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 @Data
 @Builder
-public class InventoryQtyUpdateCommand {
+public class UpdateInventoryQtyCommand {
     @TargetAggregateIdentifier
     private String productId;
     private String adjustType;

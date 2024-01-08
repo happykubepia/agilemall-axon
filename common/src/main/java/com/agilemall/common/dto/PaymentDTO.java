@@ -15,6 +15,6 @@ public class PaymentDTO {
     private String orderId;
     private String paymentId;
     private int totalPaymentAmt;
-    private PaymentStatus paymentStatus;
+    private String paymentStatus;
     private List<PaymentDetailDTO> paymentDetails;
 }

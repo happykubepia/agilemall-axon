@@ -1,12 +1,12 @@
 package com.agilemall.common.dto;
 
-public enum InventoryQtyAdjustType {
+public enum InventoryQtyAdjustTypeEnum {
     INCREASE("+"),
     DECREASE("-");
 
     private String value;
 
-    InventoryQtyAdjustType(String value) {
+    InventoryQtyAdjustTypeEnum(String value) {
         this.value = value;
     }
     public String value() {

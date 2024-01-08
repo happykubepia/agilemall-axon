@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaymentProcessedEvent {
+public class PaymentCreatedEvent {
     private String paymentId;
     private String orderId;
     private int totalPaymentAmt;

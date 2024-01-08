@@ -1,12 +1,12 @@
-package com.agilemall.delivery.dto;
+package com.agilemall.common.dto;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
+@NoArgsConstructor
 public class DeliveryDTO {
     private String deliveryId;
     private String orderId;

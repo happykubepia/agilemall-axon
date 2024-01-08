@@ -1,7 +1,7 @@
 package com.agilemall.delivery.controller;
 
 import com.agilemall.common.vo.ResultVO;
-import com.agilemall.delivery.dto.DeliveryDTO;
+import com.agilemall.common.dto.DeliveryDTO;
 import com.agilemall.delivery.entity.Delivery;
 import com.agilemall.delivery.service.DeliveryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,13 +32,14 @@ public class DeliveryController {
     })
     public ResponseEntity<ResultVO<Delivery>> getDelivery(
             @PathVariable(name = "orderId", required = true) String orderId) {
+        log.info("[@GetMapping(\"/delivery/{orderId}\")] Executing <getDelivery>: {}", orderId);
         return new ResponseEntity<>(deliveryService.getDelivery(orderId), HttpStatus.OK);
     }
 
     @PutMapping("/delivery")
     @Operation(summary = "배송정보 업데이트", description = "deliveryStatus: 10(Created), 20(Cancelled), 30(Delivering), 40(Completed)")
     public ResponseEntity<ResultVO<DeliveryDTO>> updateDeliveryStatus(@RequestBody DeliveryDTO deliveryDTO) {
-        log.info("[@PutMapping] Executing updateDelivery: {}", deliveryDTO.toString());
+        log.info("[@PutMapping '/delivery'] Executing updateDelivery: {}", deliveryDTO.toString());
 
         ResultVO<DeliveryDTO> retVo = deliveryService.updateDeliveryStatus(deliveryDTO);
         return new ResponseEntity<>(retVo, HttpStatus.OK);

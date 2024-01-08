@@ -1,6 +1,6 @@
 package com.agilemall.order.events;
 
-import com.agilemall.common.dto.OrderStatus;
+import com.agilemall.common.dto.OrderStatusEnum;
 import com.agilemall.common.events.OrderCancelledEvent;
 import com.agilemall.common.events.OrderCompletedEvent;
 import com.agilemall.common.dto.OrderDetailDTO;
@@ -30,14 +30,15 @@ public class OrderEventsHandler {
 
     @EventHandler
     public void on(OrderCreatedEvent event) {
-        log.info("[@EventHandler] Executing on OrderCreatedEvent");
+        log.info("[@EventHandler] Handle <OrderCreatedEvent> for Order Id: {}", event.getOrderId());
+
         List<OrderDetail> newOrderDetails = new ArrayList<>();
 
         Order order = new Order();
         order.setOrderId(event.getOrderId());
         order.setUserId(event.getUserId());
         order.setOrderDatetime(event.getOrderDatetime());
-        order.setOrderStatus(OrderStatus.CREATED.value());
+        order.setOrderStatus(OrderStatusEnum.CREATED.value());
         order.setTotalOrderAmt(event.getTotalOrderAmt());
 
         for(OrderDetailDTO orderDetail:event.getOrderDetails()) {
@@ -56,7 +57,7 @@ public class OrderEventsHandler {
 
     @EventHandler
     public void on(OrderCompletedEvent event) {
-        log.info("[@EventHandler] Executing on OrderCompletedEvent for Order Id:{}", event.getOrderId());
+        log.info("[@EventHandler] Executing on <OrderCompletedEvent> for Order Id:{}", event.getOrderId());
 
         try {
             //Get order info
@@ -78,11 +79,11 @@ public class OrderEventsHandler {
             //-- request compensating transactions
             HashMap<String, String> aggregateIdMap = event.getAggregateIdMap();
             // compensate Delivery
-            compensatingService.cancelDeliveryCommand(aggregateIdMap);
+            compensatingService.cancelDelivery(aggregateIdMap);
             // compensate Payment
-            compensatingService.cancelPaymentCommand(aggregateIdMap);
+            compensatingService.cancelPayment(aggregateIdMap);
             // compensate Order
-            compensatingService.cancelOrderCommand(aggregateIdMap);
+            compensatingService.cancelOrder(aggregateIdMap);
             //------------------------------
         }
 
@@ -90,7 +91,7 @@ public class OrderEventsHandler {
 
     @EventHandler
     public void on(OrderCancelledEvent event) {
-        log.info("[@EventHandler] Executing OrderCancelledEvent in OrderEventHandler");
+        log.info("[@EventHandler] Executing <OrderCancelledEvent> for Order Id: {}", event.getOrderId());
         Order order = orderRepository.findById(event.getOrderId()).get();
         order.setOrderStatus(event.getOrderStatus());
         orderRepository.save(order);

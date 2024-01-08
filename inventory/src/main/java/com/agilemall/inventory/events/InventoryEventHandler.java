@@ -1,8 +1,8 @@
 package com.agilemall.inventory.events;
 
-import com.agilemall.common.dto.InventoryQtyAdjustType;
-import com.agilemall.common.events.CreateInventoryEvent;
-import com.agilemall.common.events.InventoryQtyUpdateEvent;
+import com.agilemall.common.dto.InventoryQtyAdjustTypeEnum;
+import com.agilemall.common.events.InventoryCreatedEvent;
+import com.agilemall.common.events.InventoryQtyUpdatedEvent;
 import com.agilemall.inventory.entity.Inventory;
 import com.agilemall.inventory.repository.InventoryRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +20,8 @@ public class InventoryEventHandler {
     InventoryRepository inventoryRepository;
 
     @EventHandler
-    public void on(CreateInventoryEvent event) {
-        log.info("[@EventHandler] Executing CreateInventoryEvent");
+    public void on(InventoryCreatedEvent event) {
+        log.info("[@EventHandler] Handle <InventoryCreatedEvent> for Product: {}", event.getProductName());
 
         Inventory inventory = new Inventory();
         inventory.setProductId(event.getProductId());
@@ -33,16 +33,16 @@ public class InventoryEventHandler {
     }
 
     @EventHandler
-    public void on(InventoryQtyUpdateEvent event) {
-        log.info("[@EventHandler] Executing InventoryQtyUpdateEvent");
+    public void on(InventoryQtyUpdatedEvent event) {
+        log.info("[@EventHandler] Handle <InventoryQtyUpdatedEvent> for Product Id: {}", event.getProductId());
 
         Optional <Inventory> optInventory = inventoryRepository.findById(event.getProductId());
         if(optInventory.isPresent()) {
             Inventory inventory = optInventory.get();
             int qty = 0;
-            if(InventoryQtyAdjustType.INCREASE.value().equals(event.getAdjustType())) {
+            if(InventoryQtyAdjustTypeEnum.INCREASE.value().equals(event.getAdjustType())) {
                 qty = inventory.getInventoryQty()+ event.getAdjustQty();
-            } else if(InventoryQtyAdjustType.DECREASE.value().equals(event.getAdjustType())) {
+            } else if(InventoryQtyAdjustTypeEnum.DECREASE.value().equals(event.getAdjustType())) {
                 qty = inventory.getInventoryQty() - event.getAdjustQty();
                 if(qty < 0) qty = 0;
             }

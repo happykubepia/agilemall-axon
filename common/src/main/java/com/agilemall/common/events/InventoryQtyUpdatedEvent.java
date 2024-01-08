@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class InventoryQtyUpdateEvent {
+public class InventoryQtyUpdatedEvent {
     private String productId;
     private String adjustType;
     private int adjustQty;

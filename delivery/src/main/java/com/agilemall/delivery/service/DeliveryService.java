@@ -1,14 +1,13 @@
 package com.agilemall.delivery.service;
 
-import com.agilemall.common.command.InventoryQtyUpdateCommand;
+import com.agilemall.common.command.UpdateInventoryQtyCommand;
 import com.agilemall.common.config.Constants;
-import com.agilemall.common.dto.DeliveryStatus;
-import com.agilemall.common.dto.InventoryQtyAdjustType;
+import com.agilemall.common.dto.DeliveryStatusEnum;
+import com.agilemall.common.dto.InventoryQtyAdjustTypeEnum;
 import com.agilemall.common.dto.OrderDetailDTO;
-import com.agilemall.common.quries.GetOrderDetailsByOrderIdQuery;
 import com.agilemall.common.vo.ResultVO;
-import com.agilemall.delivery.command.DeliveryUpdateCommand;
-import com.agilemall.delivery.dto.DeliveryDTO;
+import com.agilemall.delivery.command.UpdateDeliveryCommand;
+import com.agilemall.common.dto.DeliveryDTO;
 import com.agilemall.delivery.entity.Delivery;
 import com.agilemall.delivery.repository.DeliveryRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +34,7 @@ public class DeliveryService {
     private DeliveryRepository deliveryRepository;
 
     public ResultVO<Delivery> getDelivery(String orderId) {
+        log.info("[DeliveryService] Executing <getDelivery> for Order Id: {}", orderId);
         ResultVO<Delivery> retVo = new ResultVO<>();
         Delivery delivery = deliveryRepository.findByOrderId(orderId);
         if(delivery != null) {
@@ -54,9 +54,10 @@ public class DeliveryService {
         ResultVO<DeliveryDTO> retVo = new ResultVO<>();
 
         //-- Devering 상태로 변경 시 Inventory의 재고량을 줄이는 요청을 먼저 수행
-        if(DeliveryStatus.DELIVERING.value().equals(deliveryDTO.getDeliveryStatus())) {
-            GetOrderDetailsByOrderIdQuery qry = new GetOrderDetailsByOrderIdQuery(deliveryDTO.getOrderId());
-            List<OrderDetailDTO> orderDetails = queryGateway.query(qry,
+        if(DeliveryStatusEnum.DELIVERING.value().equals(deliveryDTO.getDeliveryStatus())) {
+            List<OrderDetailDTO> orderDetails = queryGateway.query(
+                    Constants.QUERY_ORDER_DETAIL,
+                    deliveryDTO.getOrderId(),
                     ResponseTypes.multipleInstancesOf(OrderDetailDTO.class)).join();
             if(orderDetails == null) {
                 retVo.setReturnCode(false);
@@ -65,12 +66,12 @@ public class DeliveryService {
             }
 
             log.info("Get Order details: {}", orderDetails);
-            InventoryQtyUpdateCommand cmd;
+            UpdateInventoryQtyCommand cmd;
             List<OrderDetailDTO> successList = new ArrayList<>();
             for(OrderDetailDTO item:orderDetails) {
-                cmd = InventoryQtyUpdateCommand.builder()
+                cmd = UpdateInventoryQtyCommand.builder()
                         .productId(item.getProductId())
-                        .adjustType(InventoryQtyAdjustType.DECREASE.value())
+                        .adjustType(InventoryQtyAdjustTypeEnum.DECREASE.value())
                         .adjustQty(item.getQty())
                         .build();
                 try {
@@ -84,9 +85,9 @@ public class DeliveryService {
             //실패한 처리가 있을때는 rollback 처리함
             if(successList.size() < orderDetails.size()) {
                 for(OrderDetailDTO item:successList) {
-                    cmd = InventoryQtyUpdateCommand.builder()
+                    cmd = UpdateInventoryQtyCommand.builder()
                             .productId(item.getProductId())
-                            .adjustType(InventoryQtyAdjustType.INCREASE.value())
+                            .adjustType(InventoryQtyAdjustTypeEnum.INCREASE.value())
                             .adjustQty(item.getQty())
                             .build();
                     commandGateway.sendAndWait(cmd);
@@ -103,13 +104,15 @@ public class DeliveryService {
     }
 
     private ResultVO<DeliveryDTO> update(DeliveryDTO deliveryDTO) {
+        log.info("[DeliveryService] Executing <update> for Delivery Id: {}", deliveryDTO.getDeliveryId());
+
         ResultVO<DeliveryDTO> retVo = new ResultVO<>();
         try {
-            DeliveryUpdateCommand deliveryUpdateCommand = DeliveryUpdateCommand.builder()
+            UpdateDeliveryCommand updateDeliveryCommand = UpdateDeliveryCommand.builder()
                     .deliveryId(deliveryDTO.getDeliveryId())
                     .deliveryStatus(deliveryDTO.getDeliveryStatus())
                     .build();
-            commandGateway.sendAndWait(deliveryUpdateCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+            commandGateway.sendAndWait(updateDeliveryCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
             retVo.setReturnCode(true);
             retVo.setReturnMessage("Update delivery status to <"+deliveryDTO.getDeliveryStatus()+"> is success!");
             retVo.setResult(deliveryDTO);

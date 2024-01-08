@@ -150,6 +150,8 @@ mysql> show variables like 'datadir';
 | datadir       | /var/lib/mysql/ |
 +---------------+---------------
 ```
+  - JPA 참고: https://exhibitlove.tistory.com/262
+  
 
 
 

@@ -1,6 +1,6 @@
 package com.agilemall.common.command;
 
-import com.agilemall.common.dto.PaymentStatus;
+import com.agilemall.common.dto.PaymentStatusEnum;
 import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
@@ -9,5 +9,5 @@ public class CancelPaymentCommand {
     @TargetAggregateIdentifier
     String paymentId;
     String orderId;
-    String paymentStatus = PaymentStatus.CANCELED.value();
+    String paymentStatus = PaymentStatusEnum.CANCELED.value();
 }

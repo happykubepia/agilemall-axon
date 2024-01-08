@@ -1,6 +1,6 @@
 package com.agilemall.common.dto;
 
-public enum OrderStatus {
+public enum OrderStatusEnum {
     CREATED("10"),
     CANCELED("20"),
     COMPLETED("30"),
@@ -8,7 +8,7 @@ public enum OrderStatus {
 
     private final String value;
 
-    OrderStatus(String value) {
+    OrderStatusEnum(String value) {
         this.value = value;
     }
 
