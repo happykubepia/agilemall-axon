@@ -1,11 +1,13 @@
 package com.agilemall.common.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class ReportDTO {
     private String reportId;
     private String orderId;

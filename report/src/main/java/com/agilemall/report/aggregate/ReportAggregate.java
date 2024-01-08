@@ -1,9 +1,11 @@
 package com.agilemall.report.aggregate;
 
 import com.agilemall.common.command.CreateReportCommand;
+import com.agilemall.common.command.UpdateReportDeliveryStatusCommand;
 import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.common.events.ReportCreatedEvent;
+import com.agilemall.common.events.ReportDeliveryStatusUpdatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -75,5 +77,20 @@ public class ReportAggregate {
         this.deliveryId = event.getDeliveryId();
         this.deliveryStatus = event.getDeliveryStatus();
 
+    }
+
+    @CommandHandler
+    private void handle(UpdateReportDeliveryStatusCommand cmd) {
+        log.info("[@CommandHandler] Handle <UpdateReportDeliveryStatusCommand> for Order Id: {}", cmd.getOrderId());
+        ReportDeliveryStatusUpdatedEvent event = new ReportDeliveryStatusUpdatedEvent();
+        BeanUtils.copyProperties(cmd, event);
+        apply(event);
+    }
+
+    @EventSourcingHandler
+    private void on(ReportDeliveryStatusUpdatedEvent event) {
+        log.info("[@EventSourcingHandler] Handle <ReportDeliveryStatusUpdatedEvent> for Order Id: {}", event.getOrderId());
+
+        this.deliveryStatus = event.getDeliveryStatus();
     }
 }

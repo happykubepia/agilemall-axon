@@ -35,13 +35,8 @@ public class PaymentAggregate {
         log.info("[@CommandHandler] Executing PaymentAggregate..");
         log.info(createPaymentCommand.toString());
 
-        PaymentCreatedEvent paymentCreatedEvent = PaymentCreatedEvent.builder()
-                .paymentId(createPaymentCommand.getPaymentId())
-                .orderId(createPaymentCommand.getOrderId())
-                .totalPaymentAmt(createPaymentCommand.getTotalPaymentAmt())
-                .paymentDetails(createPaymentCommand.getPaymentDetails())
-                .aggregateIdMap(createPaymentCommand.getAggregateIdMap())
-                .build();
+        PaymentCreatedEvent paymentCreatedEvent = new PaymentCreatedEvent();
+        BeanUtils.copyProperties(createPaymentCommand, paymentCreatedEvent);
 
         AggregateLifecycle.apply(paymentCreatedEvent);
     }

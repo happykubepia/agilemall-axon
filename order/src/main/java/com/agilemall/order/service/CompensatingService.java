@@ -21,7 +21,8 @@ public class CompensatingService {
         log.info("[CompensatingService] Executing <cancelOrder> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
 
         try {
-            CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+            CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
+                    .orderId(aggregateIdMap.get(ServiceNameEnum.ORDER.value())).build();
             commandGateway.sendAndWait(cancelOrderCommand);
         } catch(Exception e) {
             log.error("Error is occurred during <cancelOrderCommand>: {}", e.getMessage());
@@ -34,9 +35,10 @@ public class CompensatingService {
 
         try {
             //do compensating transaction: Payment
-            CancelPaymentCommand cancelPaymentCommand = new CancelPaymentCommand(
-                    aggregateIdMap.get(ServiceNameEnum.PAYMENT.value()),
-                    aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+            CancelPaymentCommand cancelPaymentCommand = CancelPaymentCommand.builder()
+                    .paymentId(aggregateIdMap.get(ServiceNameEnum.PAYMENT.value()))
+                    .orderId(aggregateIdMap.get(ServiceNameEnum.ORDER.value()))
+                    .build();
             commandGateway.sendAndWait(cancelPaymentCommand);
 
         } catch (Exception e) {
@@ -48,9 +50,10 @@ public class CompensatingService {
         log.info("[CompensatingService] Executing <cancelDelivery> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
         try {
             //do compensating transaction: Delivery
-            CancelDeliveryCommand cancelDeliveryCommand = new CancelDeliveryCommand(
-                    aggregateIdMap.get(ServiceNameEnum.DELIVERY.value()),
-                    aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+            CancelDeliveryCommand cancelDeliveryCommand = CancelDeliveryCommand.builder()
+                    .deliveryId(aggregateIdMap.get(ServiceNameEnum.DELIVERY.value()))
+                    .orderId(aggregateIdMap.get(ServiceNameEnum.ORDER.value()))
+                    .build();
             commandGateway.sendAndWait(cancelDeliveryCommand);
         } catch(Exception e) {
             log.error("Error is occurred during <cancelDeliveryCommand>: {}", e.getMessage());

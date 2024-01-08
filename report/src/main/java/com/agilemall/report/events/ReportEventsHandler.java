@@ -1,6 +1,7 @@
 package com.agilemall.report.events;
 
 import com.agilemall.common.events.ReportCreatedEvent;
+import com.agilemall.common.events.ReportDeliveryStatusUpdatedEvent;
 import com.agilemall.report.entity.Report;
 import com.agilemall.report.repository.ReportRepository;
 import com.google.gson.Gson;
@@ -33,6 +34,17 @@ public class ReportEventsHandler {
             reportRepository.save(report);
         } catch(Exception e) {
             log.error("Error is occurred during handle <ReportCreatedEvent>: {}", e.getMessage());
+        }
+    }
+
+    @EventHandler
+    private void on(ReportDeliveryStatusUpdatedEvent event) {
+        log.info("[@EventHandler] Handle <ReportDeliveryStatusUpdatedEvent> for Order Id: {}", event.getOrderId());
+
+        Report report = reportRepository.findByOrderId(event.getOrderId());
+        if(report != null) {
+            report.setDeliveryStatus(event.getDeliveryStatus());
+            reportRepository.save(report);
         }
     }
 }

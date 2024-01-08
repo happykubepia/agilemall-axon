@@ -2,6 +2,7 @@ package com.agilemall.delivery.events;
 
 import com.agilemall.common.command.CancelOrderCommand;
 import com.agilemall.common.command.CancelPaymentCommand;
+import com.agilemall.common.command.UpdateReportDeliveryStatusCommand;
 import com.agilemall.common.dto.DeliveryStatusEnum;
 import com.agilemall.common.dto.ServiceNameEnum;
 import com.agilemall.common.events.DeliveryCancelledEvent;
@@ -62,9 +63,10 @@ public class DeliveryEventsHandler {
 
         try {
             //do compensating transaction: Payment
-            CancelPaymentCommand cancelPaymentCommand = new CancelPaymentCommand(
-                    aggregateIdMap.get(ServiceNameEnum.PAYMENT.value()),
-                    aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+            CancelPaymentCommand cancelPaymentCommand = CancelPaymentCommand.builder()
+                    .paymentId(aggregateIdMap.get(ServiceNameEnum.PAYMENT.value()))
+                    .orderId(aggregateIdMap.get(ServiceNameEnum.ORDER.value()))
+                    .build();
             commandGateway.sendAndWait(cancelPaymentCommand);
 
         } catch (Exception e) {
@@ -76,7 +78,8 @@ public class DeliveryEventsHandler {
         log.info("[DeliveryEventHandler] cancelOrder for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
 
         try {
-            CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+            CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
+                    .orderId(aggregateIdMap.get(ServiceNameEnum.ORDER.value())).build();
             commandGateway.sendAndWait(cancelOrderCommand);
         } catch(Exception e) {
             log.error("Error is occurred during <cancelOrderCommand>: {}", e.getMessage());
@@ -91,6 +94,14 @@ public class DeliveryEventsHandler {
         if(delivery != null) {
             delivery.setDeliveryStatus(event.getDeliveryStatus());
             deliveryRepository.save(delivery);
+
+            //-- Send UpdateReportDeliveryStatusCommand to Report service
+            UpdateReportDeliveryStatusCommand cmd = UpdateReportDeliveryStatusCommand.builder()
+                    .orderId(event.getOrderId())
+                    .deliveryStatus(event.getDeliveryStatus())
+                    .build();
+
+            commandGateway.send(cmd);
         }
     }
 

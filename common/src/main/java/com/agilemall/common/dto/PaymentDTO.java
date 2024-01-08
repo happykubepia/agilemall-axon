@@ -9,6 +9,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class PaymentDTO {
     private String orderId;
     private String paymentId;

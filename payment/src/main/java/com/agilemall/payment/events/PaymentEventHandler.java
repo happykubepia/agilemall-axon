@@ -78,7 +78,8 @@ public class PaymentEventHandler {
         log.info("[PaymentEventHandler] cancelOrder for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
 
         try {
-            CancelOrderCommand cancelOrderCommand = new CancelOrderCommand(aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+            CancelOrderCommand cancelOrderCommand = CancelOrderCommand.builder()
+                    .orderId(aggregateIdMap.get(ServiceNameEnum.ORDER.value())).build();
             commandGateway.sendAndWait(cancelOrderCommand);
         } catch(Exception e) {
             log.error("Error is occurred during <cancelOrderCommand>: {}", e.getMessage());

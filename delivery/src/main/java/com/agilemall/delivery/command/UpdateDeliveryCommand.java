@@ -9,6 +9,6 @@ import org.axonframework.modelling.command.TargetAggregateIdentifier;
 public class UpdateDeliveryCommand {
     @TargetAggregateIdentifier
     String deliveryId;
-
+    String orderId;
     String deliveryStatus;
 }

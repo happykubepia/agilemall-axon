@@ -110,6 +110,7 @@ public class DeliveryService {
         try {
             UpdateDeliveryCommand updateDeliveryCommand = UpdateDeliveryCommand.builder()
                     .deliveryId(deliveryDTO.getDeliveryId())
+                    .orderId(deliveryDTO.getOrderId())
                     .deliveryStatus(deliveryDTO.getDeliveryStatus())
                     .build();
             commandGateway.sendAndWait(updateDeliveryCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
