@@ -31,12 +31,8 @@ public class DeliveryAggregate {
         log.info("[@CommandHandler] Executing <CreateDeliveryCommand> for Order Id: {} and Delivery ID: {}",
                 createDeliveryCommand.getOrderId(), createDeliveryCommand.getDeliveryId());
 
-        DeliveryCreatedEvent deliveryCreatedEvent = DeliveryCreatedEvent.builder()
-                .orderId(createDeliveryCommand.getOrderId())
-                .deliveryId(createDeliveryCommand.getDeliveryId())
-                .deliveryStatus(createDeliveryCommand.getDeliveryStatus())
-                .aggregateIdMap(createDeliveryCommand.getAggregateIdMap())
-                .build();
+        DeliveryCreatedEvent deliveryCreatedEvent = new DeliveryCreatedEvent();
+        BeanUtils.copyProperties(createDeliveryCommand, deliveryCreatedEvent);
 
         AggregateLifecycle.apply(deliveryCreatedEvent);
     }

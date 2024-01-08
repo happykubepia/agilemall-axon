@@ -1,26 +1,26 @@
 package com.agilemall.order.command;
 
-import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.common.dto.OrderDetailDTO;
+import com.agilemall.common.dto.PaymentDetailDTO;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Value
 @Builder
 public class CreateOrderCommand {
     @TargetAggregateIdentifier
-    private String orderId;
-    private String userId;
-    private LocalDateTime orderDatetime;
-    private String orderStatus;
-    private int totalOrderAmt;
-    private List<OrderDetailDTO> orderDetails;
-    private String paymentId;
-    private List<PaymentDetailDTO> paymentDetails;
-    private int totalPaymentAmt;
+    String orderId;
+    String userId;
+    LocalDateTime orderDatetime;
+    String orderStatus;
+    int totalOrderAmt;
+    List<OrderDetailDTO> orderDetails;
+    String paymentId;
+    List<PaymentDetailDTO> paymentDetails;
+    int totalPaymentAmt;
 
 }

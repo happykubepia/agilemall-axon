@@ -1,16 +1,16 @@
 package com.agilemall.common.command;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
-@Data
+@Value
 @Builder
 public class CreateInventoryCommand {
     @TargetAggregateIdentifier
-    private String productId;
+    String productId;
 
-    private String productName;
-    private int unitPrice;
-    private int inventoryQty;
+    String productName;
+    int unitPrice;
+    int inventoryQty;
 }

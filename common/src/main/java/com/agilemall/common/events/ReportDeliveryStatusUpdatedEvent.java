@@ -1,10 +1,9 @@
-package com.agilemall.common.dto;
+package com.agilemall.common.events;
 
 import lombok.Data;
 
 @Data
-public class DeliveryDTO {
-    private String deliveryId;
+public class ReportDeliveryStatusUpdatedEvent {
     private String orderId;
     private String deliveryStatus;
 }

@@ -3,13 +3,11 @@ package com.agilemall.common.events;
 import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.common.dto.PaymentDetailDTO;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
 public class ReportCreatedEvent {
     private String reportId;
     private String orderId;

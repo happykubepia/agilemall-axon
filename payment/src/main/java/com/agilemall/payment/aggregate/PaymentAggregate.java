@@ -35,13 +35,13 @@ public class PaymentAggregate {
         log.info("[@CommandHandler] Executing PaymentAggregate..");
         log.info(createPaymentCommand.toString());
 
-        PaymentCreatedEvent paymentCreatedEvent = new PaymentCreatedEvent(
-                createPaymentCommand.getPaymentId(),
-                createPaymentCommand.getOrderId(),
-                createPaymentCommand.getTotalPaymentAmt(),
-                createPaymentCommand.getPaymentDetails(),
-                createPaymentCommand.getAggregateIdMap()
-        );
+        PaymentCreatedEvent paymentCreatedEvent = PaymentCreatedEvent.builder()
+                .paymentId(createPaymentCommand.getPaymentId())
+                .orderId(createPaymentCommand.getOrderId())
+                .totalPaymentAmt(createPaymentCommand.getTotalPaymentAmt())
+                .paymentDetails(createPaymentCommand.getPaymentDetails())
+                .aggregateIdMap(createPaymentCommand.getAggregateIdMap())
+                .build();
 
         AggregateLifecycle.apply(paymentCreatedEvent);
     }

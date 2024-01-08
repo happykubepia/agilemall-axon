@@ -2,20 +2,20 @@ package com.agilemall.common.command;
 
 import com.agilemall.common.dto.PaymentDetailDTO;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 import java.util.HashMap;
 import java.util.List;
 
-@Data
+@Value
 @Builder
 public class CreatePaymentCommand {
     @TargetAggregateIdentifier
-    private String paymentId;
-    private String orderId;
-    private int totalPaymentAmt;
-    private List<PaymentDetailDTO> paymentDetails;
-    private HashMap<String, String> aggregateIdMap;
+    String paymentId;
+    String orderId;
+    int totalPaymentAmt;
+    List<PaymentDetailDTO> paymentDetails;
+    HashMap<String, String> aggregateIdMap;
 }
 

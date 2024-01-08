@@ -12,6 +12,7 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Bean;
 
 @Slf4j
 @Aggregate
@@ -48,11 +49,8 @@ public class InventoryAggregate {
     public void handle(UpdateInventoryQtyCommand updateInventoryQtyCommand) {
         log.info("[@CommandHandler] Executing <updateInventoryQtyCommand> for productId:{}", updateInventoryQtyCommand.getProductId());
 
-        InventoryQtyUpdatedEvent inventoryQtyUpdatedEvent = InventoryQtyUpdatedEvent.builder()
-                .productId(updateInventoryQtyCommand.getProductId())
-                .adjustType(updateInventoryQtyCommand.getAdjustType())
-                .adjustQty(updateInventoryQtyCommand.getAdjustQty())
-                .build();
+        InventoryQtyUpdatedEvent inventoryQtyUpdatedEvent = new InventoryQtyUpdatedEvent();
+        BeanUtils.copyProperties(updateInventoryQtyCommand, inventoryQtyUpdatedEvent);
 
         AggregateLifecycle.apply(inventoryQtyUpdatedEvent);
     }

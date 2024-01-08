@@ -78,12 +78,8 @@ public class OrderAggregate {
         if("".equals(completeOrderCommand.getOrderId())) {
             throw new RuntimeException("Order Id is MUST NULL");
         }
-
-        OrderCompletedEvent orderCompletedEvent = OrderCompletedEvent.builder()
-                .orderId(completeOrderCommand.getOrderId())
-                .orderStatus(completeOrderCommand.getOrderStatus())
-                .aggregateIdMap(completeOrderCommand.getAggregateIdMap())
-                .build();
+        OrderCompletedEvent orderCompletedEvent = new OrderCompletedEvent();
+        BeanUtils.copyProperties(completeOrderCommand, orderCompletedEvent);
 
         AggregateLifecycle.apply(orderCompletedEvent);
     }

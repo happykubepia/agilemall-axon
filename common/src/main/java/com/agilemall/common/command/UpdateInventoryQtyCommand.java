@@ -1,14 +1,14 @@
 package com.agilemall.common.command;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
-@Data
+@Value
 @Builder
 public class UpdateInventoryQtyCommand {
     @TargetAggregateIdentifier
-    private String productId;
-    private String adjustType;
-    private int adjustQty;
+    String productId;
+    String adjustType;
+    int adjustQty;
 }

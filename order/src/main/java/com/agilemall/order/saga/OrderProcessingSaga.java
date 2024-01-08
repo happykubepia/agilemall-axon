@@ -63,8 +63,6 @@ public class OrderProcessingSaga {
                compensatingService.cancelOrder(aggregateIdMap);
            }
         });
-
-        //commandGateway.sendAndWait(createPaymentCommand);
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -168,5 +166,6 @@ public class OrderProcessingSaga {
     @EndSaga
     public void handle(OrderCancelledEvent event) {
         log.info("[Saga] OrderCancelledEvent in Saga for Order Id: {}", event.getOrderId());
+
     }
 }

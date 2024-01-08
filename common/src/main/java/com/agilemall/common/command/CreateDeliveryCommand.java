@@ -13,5 +13,5 @@ public class CreateDeliveryCommand {
     String deliveryId;
     String orderId;
     String deliveryStatus;
-    private HashMap<String, String> aggregateIdMap;
+    HashMap<String, String> aggregateIdMap;
 }
