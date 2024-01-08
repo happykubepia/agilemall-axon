@@ -21,7 +21,7 @@ public class PaymentQueryHandler {
     PaymentRepository paymentRepository;
 
     @QueryHandler(queryName = Constants.QUERY_REPORT)
-    public PaymentDTO handle(String orderId) {
+    private PaymentDTO handle(String orderId) {
         log.info("[@QueryHandler] Handle <{}> for Order Id: {}", Constants.QUERY_REPORT,orderId);
 
         Payment payment = paymentRepository.findByOrderId(orderId);

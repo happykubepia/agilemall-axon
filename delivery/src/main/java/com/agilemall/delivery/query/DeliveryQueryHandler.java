@@ -18,7 +18,7 @@ public class DeliveryQueryHandler {
     DeliveryRepository deliveryRepository;
 
     @QueryHandler(queryName = Constants.QUERY_REPORT)
-    public DeliveryDTO handle(String orderId) {
+    private DeliveryDTO handle(String orderId) {
        log.info("[@QueryHandler] Handle <{}> for Order Id: {}", Constants.QUERY_REPORT,orderId);
         Delivery delivery = deliveryRepository.findByOrderId(orderId);
         if(delivery != null) {

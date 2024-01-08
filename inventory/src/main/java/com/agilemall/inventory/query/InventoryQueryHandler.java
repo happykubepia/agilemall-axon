@@ -18,7 +18,7 @@ public class InventoryQueryHandler {
     private InventoryRepository inventoryRepository;
 
     @QueryHandler
-    public InventoryDTO handle(GetInventoryByProductIdQuery query) {
+    private InventoryDTO handle(GetInventoryByProductIdQuery query) {
         log.info("[@QueryHandler] Handle <GetInventoryByProductIdQuery> for Product Id: {}", query.getProductId());
 
         int inventoryQty = 0;

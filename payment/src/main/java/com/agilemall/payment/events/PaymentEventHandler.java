@@ -30,7 +30,7 @@ public class PaymentEventHandler {
     private transient CommandGateway commandGateway;
 
     @EventHandler
-    public void on(PaymentCreatedEvent event) {
+    private void on(PaymentCreatedEvent event) {
         log.info("[@EventHandler] Handle <PaymentProcessedEvent> for Payment Id: {}", event.getPaymentId());
         log.info(event.toString());
 
@@ -66,7 +66,7 @@ public class PaymentEventHandler {
     }
 
     @EventHandler
-    public void on(PaymentCancelledEvent event) {
+    private void on(PaymentCancelledEvent event) {
         log.info("[@EventHandler] Handle <PaymentCancelledEvent> for Payment Id: {}", event.getPaymentId());
         Payment payment = paymentRepository.findById(event.getPaymentId()).get();
         payment.setPaymentStatus(PaymentStatusEnum.CANCELED.value());

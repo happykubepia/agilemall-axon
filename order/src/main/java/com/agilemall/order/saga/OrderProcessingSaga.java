@@ -93,7 +93,7 @@ public class OrderProcessingSaga {
     }
 
     @SagaEventHandler(associationProperty = "orderId")
-    public void handle(DeliveryCreatedEvent event) {
+    private void handle(DeliveryCreatedEvent event) {
         log.info("[Saga] [DeliveryOrderCommand] is finished for Order Id: {}", event.getOrderId());
         log.info("===== [Saga] Transaction #5: <CompleteOrderCommand> =====");
 
@@ -125,7 +125,7 @@ public class OrderProcessingSaga {
 
     @SagaEventHandler(associationProperty = "orderId")
     @EndSaga
-    public void handle(OrderCompletedEvent event) {
+    private void handle(OrderCompletedEvent event) {
         log.info("[Saga] [CompleteOrderCommand] is finished for Order Id: {}", event.getOrderId());
         log.info("===== [Saga] Transaction FINISHED =====");
 
@@ -164,7 +164,7 @@ public class OrderProcessingSaga {
 
     @SagaEventHandler(associationProperty = "orderId")
     @EndSaga
-    public void handle(OrderCancelledEvent event) {
+    private void handle(OrderCancelledEvent event) {
         log.info("[Saga] OrderCancelledEvent in Saga for Order Id: {}", event.getOrderId());
 
     }

@@ -19,7 +19,7 @@ public class ReportEventsHandler {
     ReportRepository reportRepository;
 
     @EventHandler
-    public void on(ReportCreatedEvent event) {
+    private void on(ReportCreatedEvent event) {
         log.info("[@EventHandler] Handle <ReportCreatedEvent>");
         log.info(event.toString());
 

@@ -31,7 +31,7 @@ public class PaymentAggregate {
     }
 
     @CommandHandler
-    public PaymentAggregate(CreatePaymentCommand createPaymentCommand) {
+    private PaymentAggregate(CreatePaymentCommand createPaymentCommand) {
         log.info("[@CommandHandler] Executing PaymentAggregate..");
         log.info(createPaymentCommand.toString());
 
@@ -42,7 +42,7 @@ public class PaymentAggregate {
     }
 
     @EventSourcingHandler
-    public void on(PaymentCreatedEvent event) {
+    private void on(PaymentCreatedEvent event) {
         log.info("[@EventSourcingHandler] Executing on ..");
         this.paymentId = event.getPaymentId();
         this.orderId = event.getOrderId();
@@ -51,7 +51,7 @@ public class PaymentAggregate {
     }
 
     @CommandHandler
-    public void handle(CancelPaymentCommand cancelPaymentCommand) {
+    private void handle(CancelPaymentCommand cancelPaymentCommand) {
         log.info("[@CommandHandler] Executing CancelPaymentCommand for Order Id: {} and Payment Id: {}",
                 cancelPaymentCommand.getOrderId(), cancelPaymentCommand.getPaymentId());
 
@@ -62,7 +62,7 @@ public class PaymentAggregate {
     }
 
     @EventSourcingHandler
-    public void on(PaymentCancelledEvent event) {
+    private void on(PaymentCancelledEvent event) {
         log.info("[@EventSourcingHandler] Executing PaymentCancelledEvent for Order Id: {} and Payment Id: {}",
                 event.getOrderId(), event.getPaymentId());
 

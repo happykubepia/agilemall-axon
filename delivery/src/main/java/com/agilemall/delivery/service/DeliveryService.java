@@ -51,10 +51,47 @@ public class DeliveryService {
     public ResultVO<DeliveryDTO> updateDeliveryStatus(DeliveryDTO deliveryDTO) {
         log.info("[DeliveryService] Executing updateDeliveryStatus for Delivery Id: {}", deliveryDTO.getDeliveryId());
 
-        ResultVO<DeliveryDTO> retVo = new ResultVO<>();
+        ResultVO<DeliveryDTO> retVo;
 
         //-- Devering 상태로 변경 시 Inventory의 재고량을 줄이는 요청을 먼저 수행
         if(DeliveryStatusEnum.DELIVERING.value().equals(deliveryDTO.getDeliveryStatus())) {
+            retVo = updateInventoryQty(deliveryDTO);
+            if(retVo.isReturnCode()) {
+                retVo = update(deliveryDTO);
+            }
+        } else {
+            retVo = update(deliveryDTO);
+        }
+        return retVo;
+    }
+
+    private ResultVO<DeliveryDTO> update(DeliveryDTO deliveryDTO) {
+        log.info("[DeliveryService] Executing <update> for Delivery Id: {}", deliveryDTO.getDeliveryId());
+
+        ResultVO<DeliveryDTO> retVo = new ResultVO<>();
+        try {
+            UpdateDeliveryCommand updateDeliveryCommand = UpdateDeliveryCommand.builder()
+                    .deliveryId(deliveryDTO.getDeliveryId())
+                    .orderId(deliveryDTO.getOrderId())
+                    .deliveryStatus(deliveryDTO.getDeliveryStatus())
+                    .build();
+            commandGateway.sendAndWait(updateDeliveryCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+            retVo.setReturnCode(true);
+            retVo.setReturnMessage("Update delivery status to <"+deliveryDTO.getDeliveryStatus()+"> is success!");
+            retVo.setResult(deliveryDTO);
+        } catch(Exception e) {
+            retVo.setReturnCode(false);
+            retVo.setReturnMessage(e.getMessage());
+        }
+        return retVo;
+    }
+
+    private ResultVO<DeliveryDTO> updateInventoryQty(DeliveryDTO deliveryDTO) {
+        log.info("[DeliveryService] Executing <updateInventoryQty> for Delivery Id: {}", deliveryDTO.getDeliveryId());
+
+        ResultVO<DeliveryDTO> retVo = new ResultVO<>();
+
+        try {
             List<OrderDetailDTO> orderDetails = queryGateway.query(
                     Constants.QUERY_ORDER_DETAIL,
                     deliveryDTO.getOrderId(),
@@ -90,39 +127,19 @@ public class DeliveryService {
                             .adjustType(InventoryQtyAdjustTypeEnum.INCREASE.value())
                             .adjustQty(item.getQty())
                             .build();
-                    commandGateway.sendAndWait(cmd);
+                    commandGateway.sendAndWait(cmd, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
                 }
                 retVo.setReturnCode(false);
                 retVo.setReturnMessage("Fail to update inventory quantity");
             } else {
-                retVo = update(deliveryDTO);
+                retVo.setReturnCode(true);
+                retVo.setReturnMessage("Success to update inventory quantity");
             }
-        } else {
-            retVo = update(deliveryDTO);
-        }
-        return retVo;
-    }
-
-    private ResultVO<DeliveryDTO> update(DeliveryDTO deliveryDTO) {
-        log.info("[DeliveryService] Executing <update> for Delivery Id: {}", deliveryDTO.getDeliveryId());
-
-        ResultVO<DeliveryDTO> retVo = new ResultVO<>();
-        try {
-            UpdateDeliveryCommand updateDeliveryCommand = UpdateDeliveryCommand.builder()
-                    .deliveryId(deliveryDTO.getDeliveryId())
-                    .orderId(deliveryDTO.getOrderId())
-                    .deliveryStatus(deliveryDTO.getDeliveryStatus())
-                    .build();
-            commandGateway.sendAndWait(updateDeliveryCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
-            retVo.setReturnCode(true);
-            retVo.setReturnMessage("Update delivery status to <"+deliveryDTO.getDeliveryStatus()+"> is success!");
-            retVo.setResult(deliveryDTO);
         } catch(Exception e) {
             retVo.setReturnCode(false);
             retVo.setReturnMessage(e.getMessage());
         }
         return retVo;
     }
-
-
 }
+

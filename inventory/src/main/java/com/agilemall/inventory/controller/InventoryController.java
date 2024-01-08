@@ -1,6 +1,7 @@
 package com.agilemall.inventory.controller;
 
 import com.agilemall.common.command.CreateInventoryCommand;
+import com.agilemall.common.vo.ResultVO;
 import com.agilemall.inventory.entity.Inventory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,15 +25,25 @@ public class InventoryController {
 
     @PostMapping("/register")
     @Operation(summary = "신규 제품 등록")
-    public void register(@RequestBody Inventory inventory) {
+    private ResultVO<CreateInventoryCommand> register(@RequestBody Inventory inventory) {
         log.info("[@PostMapping(\"/register\")] Executing register: {}", inventory.toString());
 
-        CreateInventoryCommand createInventoryCommand = CreateInventoryCommand.builder()
-                .productId(inventory.getProductId())
-                .productName(inventory.getProductName())
-                .unitPrice(inventory.getUnitPrice())
-                .inventoryQty(inventory.getInventoryQty())
-                .build();
-        commandGateway.sendAndWait(createInventoryCommand);
+        ResultVO<CreateInventoryCommand> retVo = new ResultVO<>();
+        try {
+            CreateInventoryCommand createInventoryCommand = CreateInventoryCommand.builder()
+                    .productId(inventory.getProductId())
+                    .productName(inventory.getProductName())
+                    .unitPrice(inventory.getUnitPrice())
+                    .inventoryQty(inventory.getInventoryQty())
+                    .build();
+            commandGateway.sendAndWait(createInventoryCommand);
+            retVo.setReturnCode(true);
+            retVo.setReturnMessage("Success to register product");
+            retVo.setResult(createInventoryCommand);
+        } catch(Exception e) {
+            retVo.setReturnCode(false);
+            retVo.setReturnMessage(e.getMessage());
+        }
+        return retVo;
     }
 }

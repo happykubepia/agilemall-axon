@@ -38,7 +38,7 @@ public class OrderAggregate {
     }
 
     @CommandHandler
-    public OrderAggregate(CreateOrderCommand createOrderCommand) {
+    private OrderAggregate(CreateOrderCommand createOrderCommand) {
         log.info("[@CommandHandler] Executing <CreateOrderCommand> for Order Id: {}", createOrderCommand.getOrderId());
 
         OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
@@ -57,7 +57,7 @@ public class OrderAggregate {
     }
 
     @EventSourcingHandler
-    public void on(OrderCreatedEvent orderCreatedEvent) {
+    private void on(OrderCreatedEvent orderCreatedEvent) {
         log.info("[@EventSourcingHandler] Executing <OrderCreatedEvent> for Order Id: {}", orderCreatedEvent.getOrderId());
 
         this.orderId = orderCreatedEvent.getOrderId();
@@ -72,7 +72,7 @@ public class OrderAggregate {
     }
 
     @CommandHandler
-    public void handle(CompleteOrderCommand completeOrderCommand) throws RuntimeException {
+    private void handle(CompleteOrderCommand completeOrderCommand) throws RuntimeException {
         log.info("[@CommandHandler] Executing <CompleteOrderCommand> for Order Id: {}", completeOrderCommand.getOrderId());
 
         if("".equals(completeOrderCommand.getOrderId())) {
@@ -85,14 +85,14 @@ public class OrderAggregate {
     }
 
     @EventSourcingHandler
-    public void on(OrderCompletedEvent event) {
+    private void on(OrderCompletedEvent event) {
         log.info("[@EventSourcingHandler] Executing <OrderCompletedEvent> for Order Id: {}", event.getOrderId());
         //log.info("Order Status is {}", event.getOrderStatus());
         this.orderStatus = event.getOrderStatus();
     }
 
     @CommandHandler
-    public void handle(CancelOrderCommand cancelOrderCommand) {
+    private void handle(CancelOrderCommand cancelOrderCommand) {
         log.info("[@CommandHandler] Executing <CancelOrderCommand> for Order Id: {}", cancelOrderCommand.getOrderId());
 
         OrderCancelledEvent orderCancelledEvent = new OrderCancelledEvent();
@@ -102,7 +102,7 @@ public class OrderAggregate {
     }
 
     @EventSourcingHandler
-    public void on(OrderCancelledEvent event) {
+    private void on(OrderCancelledEvent event) {
         log.info("[@EventSourcingHandler] Executing <OrderCancelledEvent> for Order Id: {}", event.getOrderId());
 
         this.orderStatus = event.getOrderStatus();

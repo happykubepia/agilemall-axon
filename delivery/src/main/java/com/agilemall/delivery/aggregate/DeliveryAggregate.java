@@ -27,7 +27,7 @@ public class DeliveryAggregate {
     }
 
     @CommandHandler
-    public DeliveryAggregate(CreateDeliveryCommand createDeliveryCommand) {
+    private DeliveryAggregate(CreateDeliveryCommand createDeliveryCommand) {
         log.info("[@CommandHandler] Executing <CreateDeliveryCommand> for Order Id: {} and Delivery ID: {}",
                 createDeliveryCommand.getOrderId(), createDeliveryCommand.getDeliveryId());
 
@@ -38,7 +38,7 @@ public class DeliveryAggregate {
     }
 
     @EventSourcingHandler
-    public void on(DeliveryCreatedEvent event) {
+    private void on(DeliveryCreatedEvent event) {
         log.info("[@EventSourcingHandler] Executing <DeliveryCreatedEvent> for Order Id: {} and Delivery Id: {}",
                 event.getOrderId(), event.getDeliveryId());
 
@@ -48,7 +48,7 @@ public class DeliveryAggregate {
     }
 
     @CommandHandler
-    public void handle(CancelDeliveryCommand cancelDeliveryCommand) {
+    private void handle(CancelDeliveryCommand cancelDeliveryCommand) {
         log.info("[@CommandHandler] Executing <CancelDeliveryCommand> for Order Id : {} and Delivery Id: {}",
                 cancelDeliveryCommand.getOrderId(), cancelDeliveryCommand.getDeliveryId());
 
@@ -59,23 +59,27 @@ public class DeliveryAggregate {
     }
 
     @EventSourcingHandler
-    public void on(DeliveryCancelledEvent event) {
+    private void on(DeliveryCancelledEvent event) {
         log.info("[@EventSourcingHandler] Executing <DeliveryCancelledEvent> for Order Id : {} and Delivery Id: {}",
                 event.getOrderId(), event.getDeliveryId());
         this.deliveryStatus = event.getDeliveryStatus();
     }
 
     @CommandHandler
-    public void handle(UpdateDeliveryCommand updateDeliveryCommand) {
-        log.info("Executing DeliveryUpdateCommand for Delivery Id : {}", updateDeliveryCommand.getDeliveryId());
+    private void handle(UpdateDeliveryCommand updateDeliveryCommand) {
+        log.info("[@CommandHandler] Executing <DeliveryUpdateCommand> for Delivery Id : {}", updateDeliveryCommand.getDeliveryId());
 
+        if(updateDeliveryCommand.getDeliveryStatus().equals(this.deliveryStatus)) {
+            log.info("Delivery Status is already same value <{}>. So, This command is ignored", this.deliveryStatus);
+            return;
+        }
         DeliveryUpdatedEvent deliveryUpdatedEvent = new DeliveryUpdatedEvent();
         BeanUtils.copyProperties(updateDeliveryCommand, deliveryUpdatedEvent);
 
         AggregateLifecycle.apply(deliveryUpdatedEvent);
     }
     @EventSourcingHandler
-    public void on(DeliveryUpdatedEvent event) {
+    private void on(DeliveryUpdatedEvent event) {
         log.info("[@EventSourcing] Executing DeliveryUpdateEvent for Delivery Id : {}", event.getDeliveryId());
         this.deliveryStatus = event.getDeliveryStatus();
     }

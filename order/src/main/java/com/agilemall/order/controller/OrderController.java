@@ -23,7 +23,7 @@ public class OrderController {
 
     @PostMapping("/orders")
     @Operation(summary = "신규 상품 주문 API")
-    public ResultVO<CreateOrderCommand> createOrder(@RequestBody OrderReqDTO orderReqDTO) {
+    private ResultVO<CreateOrderCommand> createOrder(@RequestBody OrderReqDTO orderReqDTO) {
         log.info("[@PostMapping '/orders'] Executing createOrder: {}", orderReqDTO.toString());
 
         ResultVO<CreateOrderCommand> retVo = orderService.createOrder(orderReqDTO);

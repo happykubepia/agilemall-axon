@@ -28,7 +28,7 @@ public class DeliveryEventsHandler {
     private transient CommandGateway commandGateway;
 
     @EventHandler
-    public void on(DeliveryCreatedEvent event) {
+    private void on(DeliveryCreatedEvent event) {
         log.info("[@EventHandler] Handle DeliveryCreatedEvent");
         try {
             Delivery delivery = new Delivery();
@@ -48,7 +48,7 @@ public class DeliveryEventsHandler {
     }
 
     @EventHandler
-    public void on(DeliveryCancelledEvent event) {
+    private void on(DeliveryCancelledEvent event) {
         log.info("[@EventHandler] Handle DeliveryCancelledEvent");
 
         Delivery delivery = getEntry(event.getDeliveryId());
@@ -87,7 +87,7 @@ public class DeliveryEventsHandler {
     }
 
     @EventHandler
-    public void handle(DeliveryUpdatedEvent event) {
+    private void handle(DeliveryUpdatedEvent event) {
         log.info("[DeliveryEventsHandler] Handle <DeliveryUpdatedEvent> for Delivery Id: {}", event.getDeliveryId());
 
         Delivery delivery = getEntry(event.getDeliveryId());

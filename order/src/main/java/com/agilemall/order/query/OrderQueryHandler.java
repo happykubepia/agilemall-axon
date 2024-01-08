@@ -22,7 +22,7 @@ public class OrderQueryHandler {
     private OrderRepository orderRepository;
 
     @QueryHandler(queryName = Constants.QUERY_ORDER_DETAIL)
-    public List<OrderDetailDTO> handleOrderDetailQuery(String orderId) {
+    private List<OrderDetailDTO> handleOrderDetailQuery(String orderId) {
         log.info("[@QueryHandler] Handle <{}> for Order Id: {}", Constants.QUERY_ORDER_DETAIL,orderId);
         Optional<Order> optOrder = orderRepository.findById(orderId);
         if(optOrder.isPresent()) {
@@ -37,7 +37,7 @@ public class OrderQueryHandler {
     }
 
     @QueryHandler(queryName = Constants.QUERY_REPORT)
-    public OrderDTO handleReportQuery(String orderId) {
+    private OrderDTO handleReportQuery(String orderId) {
         log.info("[@QueryHandler] Handle <{}> for Order Id: {}", Constants.QUERY_REPORT,orderId);
 
         Optional<Order> optOrder = orderRepository.findById(orderId);

@@ -29,7 +29,7 @@ public class OrderEventsHandler {
     private CompensatingService compensatingService;
 
     @EventHandler
-    public void on(OrderCreatedEvent event) {
+    private void on(OrderCreatedEvent event) {
         log.info("[@EventHandler] Handle <OrderCreatedEvent> for Order Id: {}", event.getOrderId());
 
         List<OrderDetail> newOrderDetails = new ArrayList<>();
@@ -56,7 +56,7 @@ public class OrderEventsHandler {
     }
 
     @EventHandler
-    public void on(OrderCompletedEvent event) {
+    private void on(OrderCompletedEvent event) {
         log.info("[@EventHandler] Executing on <OrderCompletedEvent> for Order Id:{}", event.getOrderId());
 
         try {
@@ -90,7 +90,7 @@ public class OrderEventsHandler {
     }
 
     @EventHandler
-    public void on(OrderCancelledEvent event) {
+    private void on(OrderCancelledEvent event) {
         log.info("[@EventHandler] Executing <OrderCancelledEvent> for Order Id: {}", event.getOrderId());
         Order order = orderRepository.findById(event.getOrderId()).get();
         order.setOrderStatus(event.getOrderStatus());

@@ -30,7 +30,7 @@ public class DeliveryController {
     @Parameters({
         @Parameter(name = "orderId", in= ParameterIn.PATH, description = "주문ID", required = true, allowEmptyValue = false)
     })
-    public ResponseEntity<ResultVO<Delivery>> getDelivery(
+    private ResponseEntity<ResultVO<Delivery>> getDelivery(
             @PathVariable(name = "orderId", required = true) String orderId) {
         log.info("[@GetMapping(\"/delivery/{orderId}\")] Executing <getDelivery>: {}", orderId);
         return new ResponseEntity<>(deliveryService.getDelivery(orderId), HttpStatus.OK);
@@ -38,7 +38,7 @@ public class DeliveryController {
 
     @PutMapping("/delivery")
     @Operation(summary = "배송정보 업데이트", description = "deliveryStatus: 10(Created), 20(Cancelled), 30(Delivering), 40(Completed)")
-    public ResponseEntity<ResultVO<DeliveryDTO>> updateDeliveryStatus(@RequestBody DeliveryDTO deliveryDTO) {
+    private ResponseEntity<ResultVO<DeliveryDTO>> updateDeliveryStatus(@RequestBody DeliveryDTO deliveryDTO) {
         log.info("[@PutMapping '/delivery'] Executing updateDelivery: {}", deliveryDTO.toString());
 
         ResultVO<DeliveryDTO> retVo = deliveryService.updateDeliveryStatus(deliveryDTO);

@@ -20,7 +20,7 @@ public class InventoryEventHandler {
     InventoryRepository inventoryRepository;
 
     @EventHandler
-    public void on(InventoryCreatedEvent event) {
+    private void on(InventoryCreatedEvent event) {
         log.info("[@EventHandler] Handle <InventoryCreatedEvent> for Product: {}", event.getProductName());
 
         Inventory inventory = new Inventory();
@@ -33,7 +33,7 @@ public class InventoryEventHandler {
     }
 
     @EventHandler
-    public void on(InventoryQtyUpdatedEvent event) {
+    private void on(InventoryQtyUpdatedEvent event) {
         log.info("[@EventHandler] Handle <InventoryQtyUpdatedEvent> for Product Id: {}", event.getProductId());
 
         Optional <Inventory> optInventory = inventoryRepository.findById(event.getProductId());
