@@ -1,36 +1,41 @@
 package com.agilemall.order.events;
 
-import com.agilemall.common.dto.OrderStatusEnum;
-import com.agilemall.common.events.OrderCancelledEvent;
-import com.agilemall.common.events.OrderCompletedEvent;
 import com.agilemall.common.dto.OrderDetailDTO;
+import com.agilemall.common.dto.OrderStatusEnum;
+import com.agilemall.common.events.create.CancelledCreateOrderEvent;
+import com.agilemall.common.events.create.CompletedCreateOrderEvent;
+import com.agilemall.common.events.update.CancelledUpdateOrderEvent;
 import com.agilemall.order.entity.Order;
 import com.agilemall.order.entity.OrderDetail;
 import com.agilemall.order.entity.OrderDetailIdentity;
 import com.agilemall.order.repository.OrderRepository;
-import com.agilemall.order.service.CompensatingService;
 import lombok.extern.slf4j.Slf4j;
+import org.axonframework.config.ProcessingGroup;
+import org.axonframework.eventhandling.AllowReplay;
+import org.axonframework.eventhandling.DisallowReplay;
 import org.axonframework.eventhandling.EventHandler;
+import org.axonframework.eventhandling.ResetHandler;
+import org.axonframework.eventhandling.gateway.EventGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
-//@EnableRetry
+@ProcessingGroup("orders")
+@AllowReplay
 public class OrderEventsHandler {
     @Autowired
     private OrderRepository orderRepository;
-
     @Autowired
-    private CompensatingService compensatingService;
+    private transient EventGateway eventGateway;
 
     @EventHandler
-    private void on(OrderCreatedEvent event) {
-        log.info("[@EventHandler] Handle <OrderCreatedEvent> for Order Id: {}", event.getOrderId());
+    private void on(CreatedOrderEvent event) {
+        log.info("[@EventHandler] Handle <CreatedOrderEvent> for Order Id: {}", event.getOrderId());
 
         List<OrderDetail> newOrderDetails = new ArrayList<>();
 
@@ -42,10 +47,9 @@ public class OrderEventsHandler {
         order.setTotalOrderAmt(event.getTotalOrderAmt());
 
         for(OrderDetailDTO orderDetail:event.getOrderDetails()) {
-            OrderDetailIdentity newOrderDetailIdentity = new OrderDetailIdentity(orderDetail.getOrderId(), orderDetail.getOrderSeq());
+            OrderDetailIdentity newOrderDetailIdentity = new OrderDetailIdentity(orderDetail.getOrderId(), orderDetail.getProductId());
             OrderDetail newOrderDetail = new OrderDetail();
             newOrderDetail.setOrderDetailIdentity(newOrderDetailIdentity);
-            newOrderDetail.setProductId(orderDetail.getProductId());
             newOrderDetail.setQty(orderDetail.getQty());
             newOrderDetail.setOrderAmt(orderDetail.getOrderAmt());
 
@@ -56,46 +60,85 @@ public class OrderEventsHandler {
     }
 
     @EventHandler
-    private void on(OrderCompletedEvent event) {
-        log.info("[@EventHandler] Executing on <OrderCompletedEvent> for Order Id:{}", event.getOrderId());
+    private void on(CompletedCreateOrderEvent event) {
+        log.info("[@EventHandler] Executing on <CompletedCreateOrderEvent> for Order Id:{}", event.getOrderId());
 
         try {
             //Get order info
-            Order order = orderRepository.findById(event.getOrderId()).get();
-
-            Order newOrder = new Order();
-            newOrder.setOrderId(event.getOrderId());
-            newOrder.setUserId(order.getUserId());
-            newOrder.setOrderDatetime(order.getOrderDatetime());
-            newOrder.setTotalOrderAmt(order.getTotalOrderAmt());
-            newOrder.setOrderStatus(event.getOrderStatus());
-
-            //throw new Exception();
-            orderRepository.save(newOrder);
-
+            Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+            if(optOrder.isPresent()) {
+                Order order = optOrder.get();
+                order.setOrderStatus(event.getOrderStatus());
+                orderRepository.save(order);
+            } else {
+                log.error("Can't get Order for Order Id: {}", event.getOrderId());
+                eventGateway.publish(new FailedCompleteCreateOrderEvent(event.getOrderId()));
+            }
         } catch(Exception e) {
-            log.error("Error is occur during handle <OrderCompletedEvent>: {}", e.getMessage());
+            log.error("Error is occur during handle <CompletedCreateOrderEvent>: {}", e.getMessage());
 
-            //-- request compensating transactions
-            HashMap<String, String> aggregateIdMap = event.getAggregateIdMap();
-            // compensate Delivery
-            compensatingService.cancelDelivery(aggregateIdMap);
-            // compensate Payment
-            compensatingService.cancelPayment(aggregateIdMap);
-            // compensate Order
-            compensatingService.cancelOrder(aggregateIdMap);
-            //------------------------------
+            eventGateway.publish(new FailedCompleteCreateOrderEvent(event.getOrderId()));
         }
 
     }
 
     @EventHandler
-    private void on(OrderCancelledEvent event) {
-        log.info("[@EventHandler] Executing <OrderCancelledEvent> for Order Id: {}", event.getOrderId());
-        Order order = orderRepository.findById(event.getOrderId()).get();
-        order.setOrderStatus(event.getOrderStatus());
-        orderRepository.save(order);
+    @DisallowReplay
+    private void on(CancelledCreateOrderEvent event) {
+        log.info("[@EventHandler] Executing <CancelledCreateOrderEvent> for Order Id: {}", event.getOrderId());
+
+        Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+        optOrder.ifPresent(order -> orderRepository.delete(order));
     }
 
+    /*
+
+    - 참고: https://blossoming-man.tistory.com/entry/CascadeTypeREMOVE%EC%99%80-orpahnRemovalTrue
+    */
+    @EventHandler
+    private void on(UpdatedOrderEvent event) {
+        log.info("[@EventHandler] Executing <UpdatedOrderEvent> for Order Id: {}", event.getOrderId());
+        if(event.isCompensation()) {
+            log.info("**** This is Compensation transaction");
+        }
+
+        try {
+            Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+            if(optOrder.isEmpty()) return;
+
+            Order order = optOrder.get();
+            List<OrderDetail> orderDetails = order.getOrderDetails().stream().toList();
+            order.getOrderDetails().clear();
+            for(OrderDetail item:orderDetails) {
+                Optional<OrderDetailDTO> optDetail = event.getOrderDetails().stream()
+                        .filter(o -> o.getProductId().equals(item.getOrderDetailIdentity().getProductId()))
+                        .findFirst();
+                if(optDetail.isPresent()) {
+                    item.setQty(optDetail.get().getQty());
+                    item.setOrderAmt(optDetail.get().getOrderAmt());
+                }
+                //log.info(item.getOrderDetailIdentity().getProductId() + "=>" + item.getQty()+", "+ item.getOrderAmt());
+                order.getOrderDetails().add(item);
+            }
+            order.setOrderDetails(order.getOrderDetails());
+            order.setTotalOrderAmt(event.getTotalOrderAmt());
+            order.setOrderStatus(OrderStatusEnum.UPTATED.value());
+            orderRepository.save(order);
+        } catch(Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    @EventHandler
+    private void on(CancelledUpdateOrderEvent event) {
+        log.info("[@EventHandler] Executing <CancelledUpdateOrderEvent> for Order Id: {}", event.getOrderId());
+
+    }
+
+    @ResetHandler
+    private void replayAll() {
+        log.info("[OrderEventHandler] Executing replayAll");
+        orderRepository.deleteAll();
+    }
 }
 

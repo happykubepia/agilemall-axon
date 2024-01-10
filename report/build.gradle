@@ -3,13 +3,6 @@ plugins {
 dependencies {
     // include common application
     implementation project(':common')
-
-    // Swagger
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.3.0'
-
-    //gson
-    implementation 'com.google.code.gson:gson'
-
 }
 
 bootJar {

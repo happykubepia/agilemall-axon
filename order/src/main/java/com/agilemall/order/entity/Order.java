@@ -31,7 +31,7 @@ public final class Order implements Serializable {
     @Column(name="total_order_amt", nullable = false)
     private int totalOrderAmt;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)     //orphanRemoval: Order 삭제 시 연결된 OrderDetail 데이터도 삭제
     @JoinColumn(name="order_id", updatable = false)
     private List<OrderDetail> orderDetails;
 }

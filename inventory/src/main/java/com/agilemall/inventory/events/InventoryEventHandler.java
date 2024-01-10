@@ -1,8 +1,8 @@
 package com.agilemall.inventory.events;
 
 import com.agilemall.common.dto.InventoryQtyAdjustTypeEnum;
-import com.agilemall.common.events.InventoryCreatedEvent;
-import com.agilemall.common.events.InventoryQtyUpdatedEvent;
+import com.agilemall.common.events.create.CreatedInventoryEvent;
+import com.agilemall.common.events.update.UpdatedInventoryQtyEvent;
 import com.agilemall.inventory.entity.Inventory;
 import com.agilemall.inventory.repository.InventoryRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +20,8 @@ public class InventoryEventHandler {
     InventoryRepository inventoryRepository;
 
     @EventHandler
-    private void on(InventoryCreatedEvent event) {
-        log.info("[@EventHandler] Handle <InventoryCreatedEvent> for Product: {}", event.getProductName());
+    private void on(CreatedInventoryEvent event) {
+        log.info("[@EventHandler] Handle <CreatedInventoryEvent> for Product: {}", event.getProductName());
 
         Inventory inventory = new Inventory();
         inventory.setProductId(event.getProductId());
@@ -33,8 +33,8 @@ public class InventoryEventHandler {
     }
 
     @EventHandler
-    private void on(InventoryQtyUpdatedEvent event) {
-        log.info("[@EventHandler] Handle <InventoryQtyUpdatedEvent> for Product Id: {}", event.getProductId());
+    private void on(UpdatedInventoryQtyEvent event) {
+        log.info("[@EventHandler] Handle <UpdatedInventoryQtyEvent> for Product Id: {}", event.getProductId());
 
         Optional <Inventory> optInventory = inventoryRepository.findById(event.getProductId());
         if(optInventory.isPresent()) {

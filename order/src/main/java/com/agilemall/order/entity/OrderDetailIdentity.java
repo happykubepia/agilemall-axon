@@ -23,6 +23,6 @@ public class OrderDetailIdentity implements Serializable {
     @Column(name="order_id", nullable=false, length=15)
     private String orderId;
 
-    @Column(name="order_seq", nullable = false)
-    private int orderSeq;
+    @Column(name="product_id", nullable = false, length=15)
+    private String productId;
 }

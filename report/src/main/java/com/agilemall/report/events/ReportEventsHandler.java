@@ -1,7 +1,8 @@
 package com.agilemall.report.events;
 
-import com.agilemall.common.events.ReportCreatedEvent;
-import com.agilemall.common.events.ReportDeliveryStatusUpdatedEvent;
+import com.agilemall.common.events.create.CreatedReportEvent;
+import com.agilemall.common.events.update.UpdatedReportDeliveryStatusEvent;
+import com.agilemall.common.events.update.UpdatedReportEvent;
 import com.agilemall.report.entity.Report;
 import com.agilemall.report.repository.ReportRepository;
 import com.google.gson.Gson;
@@ -12,6 +13,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Slf4j
 @Component
 public class ReportEventsHandler {
@@ -19,8 +22,8 @@ public class ReportEventsHandler {
     ReportRepository reportRepository;
 
     @EventHandler
-    private void on(ReportCreatedEvent event) {
-        log.info("[@EventHandler] Handle <ReportCreatedEvent>");
+    private void on(CreatedReportEvent event) {
+        log.info("[@EventHandler] Handle <CreatedReportEvent>");
         log.info(event.toString());
 
         Report report = new Report();
@@ -33,16 +36,43 @@ public class ReportEventsHandler {
 
             reportRepository.save(report);
         } catch(Exception e) {
-            log.error("Error is occurred during handle <ReportCreatedEvent>: {}", e.getMessage());
+            log.error("Error is occurred during handle <CreatedReportEvent>: {}", e.getMessage());
+        }
+    }
+    @EventHandler
+    private void on(UpdatedReportEvent event) {
+        log.info("[@EventHandler] Handle <UpdatedReportEvent>");
+        log.info(event.toString());
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Optional<Report> optReport = reportRepository.findById(event.getReportId());
+        if(optReport.isEmpty()) {
+            log.info("Can't find Report info for Report Id:{}", event.getReportId());
+            return;
+        }
+        Report report = optReport.get();
+        try {
+            report.setOrderDatetime(event.getOrderDatetime());
+            report.setTotalOrderAmt(event.getTotalOrderAmt());
+            report.setOrderStatus(event.getOrderStatus());
+            report.setOrderDetails(gson.toJson(event.getOrderDetails()));
+            report.setTotalPaymentAmt(event.getTotalPaymentAmt());
+            report.setPaymentStatus(event.getPaymentStatus());
+            report.setPaymentDetails(gson.toJson(event.getPaymentDetails()));
+
+            reportRepository.save(report);
+        } catch(Exception e) {
+            log.error("Error is occurred during handle <UpdatedReportEvent>: {}", e.getMessage());
         }
     }
 
     @EventHandler
-    private void on(ReportDeliveryStatusUpdatedEvent event) {
-        log.info("[@EventHandler] Handle <ReportDeliveryStatusUpdatedEvent> for Order Id: {}", event.getOrderId());
+    private void on(UpdatedReportDeliveryStatusEvent event) {
+        log.info("[@EventHandler] Handle <UpdatedReportDeliveryStatusEvent> for Order Id: {}", event.getOrderId());
 
-        Report report = reportRepository.findByOrderId(event.getOrderId());
-        if(report != null) {
+        Optional<Report> optReport = reportRepository.findById(event.getReportId());
+        if(optReport.isPresent()) {
+            Report report = optReport.get();
             report.setDeliveryStatus(event.getDeliveryStatus());
             reportRepository.save(report);
         }

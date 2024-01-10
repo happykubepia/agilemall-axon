@@ -43,5 +43,10 @@ subprojects {
         implementation 'com.google.guava:guava:33.0.0-jre'
         //Apache utilities
         implementation 'org.apache.commons:commons-lang3:3.14.0'
+        // Swagger
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+        //gson
+        implementation 'com.google.code.gson:gson:2.10.1'
+
     }
 }

@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class PaymentDetailDTO {
     private String orderId;
     private String paymentId;
-    private String paymentGbcd;
+    private String paymentKind;
     private int paymentAmt;
 }

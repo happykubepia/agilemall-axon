@@ -39,6 +39,10 @@ docker run -d --rm --name axonserver -p 18024:8024 -p 18124:8124 -e axoniq.axons
 ```
   - Web console접근: http://localhost:18024
 
+- IntelliJ 설정
+  - Lombok 사용을 위한 Annotation Processing 활성화: Settings > Build, Execution, Deployment > Compiler > Annotation Processors
+  - 오타 체크 비활성화: Settings > Editor > Inspections 클릭 후 'Typo'로 검색하여 모두 Uncheck
+
 ----
 
 ## 테스트 
@@ -46,7 +50,10 @@ docker run -d --rm --name axonserver -p 18024:8024 -p 18124:8124 -e axoniq.axons
 ㅇ Build jar
 application 최상위 디렉토리에서 수행
 ```
-./gradlew clean :{server name}:buildNeeded [--stacktrace --info] --refresh-dependencies -x test 
+./gradlew [clean] {application name}:build [--stacktrace --info --refresh-dependencies -x test]
+ex1) ./gradlew clean order:build -x test
+ex2) ./gradlew clean order:build --stacktrace --info --refresh-dependencies -x test
+ex3) ./gradlew clean order:build
 ```
 
 ㅇ 테스트: http://localhost:18080/swagger-ui/index.html
@@ -56,27 +63,24 @@ application 최상위 디렉토리에서 수행
   "orderReqDetails": [
     {
       "productId": "PROD_10041",
-      "orderSeq": 1,
       "qty": 10
     },
     {
       "productId": "PROD_10042",
-      "orderSeq": 2,
       "qty": 5
     },
     {
       "productId": "PROD_10043",
-      "orderSeq": 3,
       "qty": 15
     }
   ],
   "paymentReqDetails": [
     {
-      "paymentGbcd": "10",
+      "paymentKind": "10",
       "paymentRate": 0.9
     },
     {
-      "paymentGbcd": "20",
+      "paymentKind": "20",
       "paymentRate": 0.1
     }
   ]
@@ -86,6 +90,12 @@ application 최상위 디렉토리에서 수행
 ----
 
 ## Trouble shooting
+
+> Exception in thread "QueryProcessor-0" com.thoughtworks.xstream.security.ForbiddenClassException
+  - 원인: Axon 4.5.x 부터 적용된 Security 정책 때문임
+  - 해결책: AxonConfig를 만들고 통신을 허용할 패키지를 지정하면 됨 
+  - 참고: https://discuss.axoniq.io/t/getting-xstream-dependency-exception/3634/6
+
 
 > Project build 시 'Task classes not found in root project'라는 에러 발생시 
   - 'File > Invalidated Caches' 수행하여 Cache 삭제 후 재시작 하면 됨 
@@ -133,12 +143,15 @@ io.axoniq.axonserver.exception.MessagingPlatformException: [AXONIQ-2000] Invalid
     - 설명: 각 Aggregate객체는 구별할 수 있는 유일한 id가 있어야 함   
     - 조치: @AggregateIdentifier로 지정한 property는 유일한 값이 저장되도록 정확히 지정 
 
-  - 원인2) CommandGateway 객체가 transient로 생성되지 않은 경우 
-    - 설명: transient 키워드는 해당 객체를 직렬화(저장 또는 전송을 위해 binary형식으로 변환하는 것)하지 않게하는 예약 키워드임. CommandGateway객체로 전송 시 binary형식으로 변환하지 않아야 하기 때문에 반드시 붙여야 함
+  - 원인2) CommandGateway, EventGateway, QueryGateway 객체가 transient로 생성되지 않은 경우 
+    - 설명: transient 키워드는 해당 객체를 직렬화(저장 또는 전송을 위해 binary형식으로 변환하는 것)하지 않게하는 예약 키워드임. 
+     전송 시 binary형식으로 변환하지 않아야 하기 때문에 반드시 붙여야 함
     - 예)
     @Autowired
     private transient CommandGateway commandGateway;
-
+  
+  - 원인3) Saga class에서 @Autowired로 Service class를 생성하는 경우 발생할 수 있음(정상 동작 할 수도 있음)
+    - 조치: Saga class에서 개발한 class를 @Autowired로 생성하는 부분을 빼고 테스트 하고, 문제 발생 안하면 적절히 조치
 
 > 참고
   - MySQL 데이터 디렉토리 찾기 

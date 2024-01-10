@@ -20,7 +20,7 @@ public class PaymentDetailIdentity implements Serializable {
     @Column(name="payment_id", nullable = false, length = 15)
     private String paymentId;
 
-    @Column(name = "payment_gbcd", nullable = false, length = 2)
-    private String paymentGbcd;
+    @Column(name = "payment_kind", nullable = false, length = 2)
+    private String paymentKind;
 
 }

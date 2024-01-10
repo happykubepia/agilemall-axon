@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 public class OrderDetailDTO {
     private String orderId;
     private String productId;
-    private int orderSeq;
     private int qty;
     private int orderAmt;
 }

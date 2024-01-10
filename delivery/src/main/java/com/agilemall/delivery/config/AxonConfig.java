@@ -1,6 +1,12 @@
 package com.agilemall.delivery.config;
 
+import com.agilemall.common.config.Constants;
 import com.thoughtworks.xstream.XStream;
+import org.axonframework.common.caching.Cache;
+import org.axonframework.common.caching.WeakReferenceCache;
+import org.axonframework.eventsourcing.EventCountSnapshotTriggerDefinition;
+import org.axonframework.eventsourcing.SnapshotTriggerDefinition;
+import org.axonframework.eventsourcing.Snapshotter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,5 +20,15 @@ public class AxonConfig {
                 "com.agilemall.**"
         });
         return xStream;
+    }
+
+    @Bean
+    public SnapshotTriggerDefinition snapshotTrigger(Snapshotter snapshotter) {
+        return new EventCountSnapshotTriggerDefinition(snapshotter, Constants.SNAPSHOT_COUNT);
+    }
+
+    @Bean
+    public Cache snapshotCache() {
+        return new WeakReferenceCache();
     }
 }

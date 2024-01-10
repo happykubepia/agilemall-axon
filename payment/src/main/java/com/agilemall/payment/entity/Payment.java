@@ -27,7 +27,7 @@ public class Payment implements Serializable {
     @Column(name = "payment_status", nullable = false, length = 2)
     private String paymentStatus;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "payment_id", updatable = false)
     private List<PaymentDetail> paymentDetails;
 

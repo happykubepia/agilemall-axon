@@ -9,6 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OrderReqDetailDTO {
     private String productId;
-    private int orderSeq;
     private int qty;
 }

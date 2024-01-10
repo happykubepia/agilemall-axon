@@ -1,6 +1,6 @@
 package com.agilemall.inventory.controller;
 
-import com.agilemall.common.command.CreateInventoryCommand;
+import com.agilemall.common.command.create.CreateInventoryCommand;
 import com.agilemall.common.vo.ResultVO;
 import com.agilemall.inventory.entity.Inventory;
 import io.swagger.v3.oas.annotations.Operation;

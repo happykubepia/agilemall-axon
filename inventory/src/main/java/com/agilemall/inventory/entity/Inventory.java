@@ -2,10 +2,12 @@ package com.agilemall.inventory.entity;
 /*
 State Stored Aggregator
  */
-import com.agilemall.common.command.CreateInventoryCommand;
-import com.agilemall.common.command.UpdateInventoryQtyCommand;
-import com.agilemall.common.events.InventoryCreatedEvent;
-import com.agilemall.common.events.InventoryQtyUpdatedEvent;
+
+import com.agilemall.common.command.create.CreateInventoryCommand;
+import com.agilemall.common.command.update.UpdateInventoryQtyCommand;
+import com.agilemall.common.dto.InventoryQtyAdjustTypeEnum;
+import com.agilemall.common.events.create.CreatedInventoryEvent;
+import com.agilemall.common.events.update.UpdatedInventoryQtyEvent;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -13,9 +15,9 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
-import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
+import org.axonframework.modelling.command.AggregateMember;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.beans.BeanUtils;
 
@@ -36,12 +38,15 @@ public class Inventory implements Serializable {
     @Column(name = "product_id", nullable = false, length = 10)
     private String productId;
 
+    @AggregateMember
     @Column(name = "product_name", nullable = false, length = 100)
     private String productName;
 
+    @AggregateMember
     @Column(name = "unit_price", nullable = false)
     private int unitPrice;
 
+    @AggregateMember
     @Column(name = "inventory_qty", nullable = false)
     private int inventoryQty;
 
@@ -51,18 +56,16 @@ public class Inventory implements Serializable {
     private Inventory(CreateInventoryCommand createInventoryCommand) {
         log.info("[@CommandHandler] Executing <CreateInventoryCommand> for Product Id:{}", createInventoryCommand.getProductId());
 
-        InventoryCreatedEvent inventoryCreatedEvent = new InventoryCreatedEvent();
-        BeanUtils.copyProperties(createInventoryCommand, inventoryCreatedEvent);
-        AggregateLifecycle.apply(inventoryCreatedEvent);
-    }
+        //--State Stored Aggregator 는 자신의 상태 업데이트를 CommandHandler 에서 수행
+        this.productId = createInventoryCommand.getProductId();
+        this.productName = createInventoryCommand.getProductName();
+        this.unitPrice = createInventoryCommand.getUnitPrice();
+        this.inventoryQty = createInventoryCommand.getInventoryQty();
 
-    //--Aggregator 생성 Command에 대한 EventSourcingHandler는 반드시 있어야 함
-    @EventSourcingHandler
-    private void on(InventoryCreatedEvent event) {
-        this.productId = event.getProductId();
-        this.productName = event.getProductName();
-        this.unitPrice = event.getUnitPrice();
-        this.inventoryQty = event.getInventoryQty();
+        //-- Event 생성
+        CreatedInventoryEvent createdInventoryEvent = new CreatedInventoryEvent();
+        BeanUtils.copyProperties(createInventoryCommand, createdInventoryEvent);
+        AggregateLifecycle.apply(createdInventoryEvent);
     }
 
     //보상 트랜잭션
@@ -70,9 +73,18 @@ public class Inventory implements Serializable {
     private void handle(UpdateInventoryQtyCommand updateInventoryQtyCommand) {
         log.info("[@CommandHandler] Executing <updateInventoryQtyCommand> for productId:{}", updateInventoryQtyCommand.getProductId());
 
-        InventoryQtyUpdatedEvent inventoryQtyUpdatedEvent = new InventoryQtyUpdatedEvent();
-        BeanUtils.copyProperties(updateInventoryQtyCommand, inventoryQtyUpdatedEvent);
+        //--State Stored Aggregator 는 자신의 상태 업데이트를 CommandHandler 에서 수행
+        if(InventoryQtyAdjustTypeEnum.INCREASE.value().equals(updateInventoryQtyCommand.getAdjustType())) {
+            this.inventoryQty += updateInventoryQtyCommand.getAdjustQty();
+        } else if(InventoryQtyAdjustTypeEnum.DECREASE.value().equals(updateInventoryQtyCommand.getAdjustType())) {
+            this.inventoryQty -= updateInventoryQtyCommand.getAdjustQty();
+            if(this.inventoryQty < 0) this.inventoryQty = 0;
+        }
 
-        AggregateLifecycle.apply(inventoryQtyUpdatedEvent);
+        //-- Event 발생
+        UpdatedInventoryQtyEvent updatedInventoryQtyEvent = new UpdatedInventoryQtyEvent();
+        BeanUtils.copyProperties(updateInventoryQtyCommand, updatedInventoryQtyEvent);
+
+        AggregateLifecycle.apply(updatedInventoryQtyEvent);
     }
 }

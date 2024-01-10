@@ -1,13 +1,13 @@
 package com.agilemall.delivery.service;
 
-import com.agilemall.common.command.UpdateInventoryQtyCommand;
+import com.agilemall.common.command.update.UpdateInventoryQtyCommand;
 import com.agilemall.common.config.Constants;
+import com.agilemall.common.dto.DeliveryDTO;
 import com.agilemall.common.dto.DeliveryStatusEnum;
 import com.agilemall.common.dto.InventoryQtyAdjustTypeEnum;
 import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.common.vo.ResultVO;
 import com.agilemall.delivery.command.UpdateDeliveryCommand;
-import com.agilemall.common.dto.DeliveryDTO;
 import com.agilemall.delivery.entity.Delivery;
 import com.agilemall.delivery.repository.DeliveryRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -26,18 +27,17 @@ import java.util.concurrent.TimeUnit;
 public class DeliveryService {
     @Autowired
     private transient CommandGateway commandGateway;
-
     @Autowired
     private transient QueryGateway queryGateway;
-
     @Autowired
     private DeliveryRepository deliveryRepository;
 
     public ResultVO<Delivery> getDelivery(String orderId) {
         log.info("[DeliveryService] Executing <getDelivery> for Order Id: {}", orderId);
         ResultVO<Delivery> retVo = new ResultVO<>();
-        Delivery delivery = deliveryRepository.findByOrderId(orderId);
-        if(delivery != null) {
+        Optional<Delivery> optDelivery = deliveryRepository.findByOrderId(orderId);
+        if(optDelivery.isPresent()) {
+            Delivery delivery = optDelivery.get();
             retVo.setReturnCode(true);
             retVo.setReturnMessage("Find");
             retVo.setResult(delivery);
