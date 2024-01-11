@@ -2,6 +2,7 @@ package com.agilemall.payment.aggregate;
 
 import com.agilemall.common.command.create.CancelCreatePaymentCommand;
 import com.agilemall.common.command.create.CreatePaymentCommand;
+import com.agilemall.common.command.delete.CancelDeletePaymentCommand;
 import com.agilemall.common.command.delete.DeletePaymentCommand;
 import com.agilemall.common.command.update.CancelUpdatePaymentCommand;
 import com.agilemall.common.command.update.UpdatePaymentCommand;
@@ -10,6 +11,7 @@ import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.common.dto.PaymentStatusEnum;
 import com.agilemall.common.events.create.CancelledCreatePaymentEvent;
 import com.agilemall.common.events.create.CreatedPaymentEvent;
+import com.agilemall.common.events.delete.CancelledDeletePaymentEvent;
 import com.agilemall.common.events.delete.DeletedPaymentEvent;
 import com.agilemall.common.events.update.CancelledUpdatePaymentEvent;
 import com.agilemall.common.events.update.UpdatedPaymentEvent;
@@ -46,7 +48,7 @@ public class PaymentAggregate {
     @AggregateMember
     private List<PaymentDetail> paymentDetails;
 
-    private List<PaymentDTO> aggregateHistory = new ArrayList<>();
+    private final List<PaymentDTO> aggregateHistory = new ArrayList<>();
 
     @Autowired
     private transient CommandGateway commandGateway;
@@ -139,7 +141,7 @@ public class PaymentAggregate {
         AggregateLifecycle.apply(cancelledUpdatePaymentEvent);
 
         //-- send UpdateOrderCommand to compensate
-        if(this.aggregateHistory.size() == 0) return;
+        if(this.aggregateHistory.isEmpty()) return;
         PaymentDTO payment = this.aggregateHistory.get(this.aggregateHistory.size()-1);
         UpdatePaymentCommand cmd = UpdatePaymentCommand.builder()
                 .paymentId(payment.getPaymentId())
@@ -170,6 +172,33 @@ public class PaymentAggregate {
         log.info("[@EventSourcingHandler] Executing DeletedPaymentEvent for Order Id: {} and Payment Id: {}",
                 event.getOrderId(), event.getPaymentId());
         this.paymentStatus = PaymentStatusEnum.ORDER_CANCLLED.value();
+    }
+
+    @CommandHandler
+    private void handle(CancelDeletePaymentCommand cancelDeletePaymentCommand) {
+        log.info("[@EventSourcingHandler] Executing CancelDeletePaymentCommand for Order Id: {} and Payment Id: {}",
+                cancelDeletePaymentCommand.getOrderId(), cancelDeletePaymentCommand.getPaymentId());
+        AggregateLifecycle.apply(new CancelledDeletePaymentEvent(
+                cancelDeletePaymentCommand.getPaymentId(),
+                cancelDeletePaymentCommand.getOrderId(), true));
+
+        //-- send CreateOrderCommand to compensate
+        if(this.aggregateHistory.isEmpty()) return;
+        PaymentDTO payment = this.aggregateHistory.get(this.aggregateHistory.size()-1);
+        CreatePaymentCommand cmd = CreatePaymentCommand.builder()
+                .paymentId(payment.getPaymentId())
+                .orderId(payment.getOrderId())
+                .totalPaymentAmt(payment.getTotalPaymentAmt())
+                .paymentDetails(payment.getPaymentDetails())
+                .isCompensation(true)
+                .build();
+        commandGateway.send(cmd);
+    }
+    @EventSourcingHandler
+    private void on(CancelledDeletePaymentEvent event) {
+        log.info("[@EventSourcingHandler] Executing CancelledDeletePaymentEvent for Order Id: {} and Payment Id: {}",
+                event.getOrderId(), event.getPaymentId());
+
     }
 
     private PaymentDTO cloneAggregate(PaymentAggregate paymentAggregate) {

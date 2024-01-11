@@ -56,6 +56,13 @@ public class OrderCreatingSaga {
             compensatingService.cancelCreateOrder(aggregateIdMap);
         }
     }
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedCreateOrderEvent event) {
+        log.info("[Saga] <FailedCreateOrderEvent> is received for Order Id: {}", event.getOrderId());
+
+        log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
+        compensatingService.cancelCreateOrder(this.aggregateIdMap);
+    }
 
     @SagaEventHandler(associationProperty = "orderId")
     private void on(CreatedPaymentEvent event) {
@@ -79,6 +86,13 @@ public class OrderCreatingSaga {
             log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
             compensatingService.cancelCreateOrder(aggregateIdMap);
         }
+    }
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedCreatePaymentEvent event) {
+        log.info("[Saga] <FailedCreatePaymentEvent> is received for Order Id: {}", event.getOrderId());
+
+        log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
+        compensatingService.cancelCreateOrder(this.aggregateIdMap);
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -105,23 +119,6 @@ public class OrderCreatingSaga {
             compensatingService.cancelCreateOrder(aggregateIdMap);
         }
     }
-
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(FailedCreateOrderEvent event) {
-        log.info("[Saga] <FailedCreateOrderEvent> is received for Order Id: {}", event.getOrderId());
-
-        log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
-        compensatingService.cancelCreateOrder(this.aggregateIdMap);
-    }
-
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(FailedCreatePaymentEvent event) {
-        log.info("[Saga] <FailedCreatePaymentEvent> is received for Order Id: {}", event.getOrderId());
-
-        log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
-        compensatingService.cancelCreateOrder(this.aggregateIdMap);
-    }
-
     @SagaEventHandler(associationProperty = "orderId")
     private void on(FailedCreateDeliveryEvent event) {
         log.info("[Saga] Handle <FailedCreateDeliveryEvent> for Order Id: {}", event.getOrderId());
@@ -132,6 +129,15 @@ public class OrderCreatingSaga {
         compensatingService.cancelCreateOrder(this.aggregateIdMap);
     }
 
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(CompletedCreateOrderEvent event) {
+        log.info("[Saga] [CompletedCreateOrderEvent] is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Create Order] Transaction is FINISHED =====");
+
+        //-- Report service에 레포트 생성 요청
+        compensatingService.updateReport(event.getOrderId(), true);
+    }
     @SagaEventHandler(associationProperty = "orderId")
     private void on(FailedCompleteCreateOrderEvent event) {
         log.info("[Saga] Handle <FailedCompleteCreateOrderEvent> for Order Id: {}", event.getOrderId());
@@ -143,16 +149,6 @@ public class OrderCreatingSaga {
         log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
         compensatingService.cancelCreateOrder(this.aggregateIdMap);
 
-    }
-
-    @EndSaga
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(CompletedCreateOrderEvent event) {
-        log.info("[Saga] [CompletedCreateOrderEvent] is received for Order Id: {}", event.getOrderId());
-        log.info("===== [Create Order] Transaction is FINISHED =====");
-
-        //-- Report service에 레포트 생성 요청
-        compensatingService.updateReport(event.getOrderId(), true);
     }
 
     @EndSaga

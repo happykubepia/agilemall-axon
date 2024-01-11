@@ -238,6 +238,17 @@ public class OrderAggregate {
 
     }
 
+    @CommandHandler
+    private void handle(CancelDeleteOrderCommand cancelDeleteOrderCommand) {
+        log.info("[@EventSourcingHandler] Executing <CancelDeleteOrderCommand> for Order Id: {}", cancelDeleteOrderCommand.getOrderId());
+        AggregateLifecycle.apply(new CancelledDeleteOrderEvent(cancelDeleteOrderCommand.getOrderId()));
+    }
+    @EventSourcingHandler
+    private void on(CancelledDeleteOrderEvent event) {
+        log.info("[@EventSourcingHandler] Executing <CancelledDeleteOrderEvent> for Order Id: {}", event.getOrderId());
+        this.orderStatus = OrderStatusEnum.COMPLETED.value();
+    }
+
     private OrderDTO cloneAggregate(OrderAggregate orderAggregate) {
         OrderDTO order = new OrderDTO();
         order.setOrderId(orderAggregate.orderId);

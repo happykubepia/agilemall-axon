@@ -22,4 +22,5 @@ public class CreatedReportEvent {
     private List<PaymentDetailDTO> paymentDetails;
     private String deliveryId;
     private String deliveryStatus;
+    private boolean isCompensation;
 }

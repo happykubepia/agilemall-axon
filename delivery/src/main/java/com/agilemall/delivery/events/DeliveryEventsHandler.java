@@ -48,8 +48,9 @@ public class DeliveryEventsHandler {
             deliveryRepository.save(delivery);
         } catch(Exception e) {
             log.error("Error is occurred during handle CreatedDeliveryEvent: {}", e.getMessage());
-
-            eventGateway.publish(new FailedCreateDeliveryEvent(event.getDeliveryId(), event.getOrderId()));
+            if(!event.isCompensation()) {   //보상처리가 아닌 경우만 수행
+                eventGateway.publish(new FailedCreateDeliveryEvent(event.getDeliveryId(), event.getOrderId()));
+            }
         }
     }
 

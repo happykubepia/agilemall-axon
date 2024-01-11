@@ -27,4 +27,5 @@ public class CreateReportCommand {
     List<PaymentDetailDTO> paymentDetails;
     String deliveryId;
     String deliveryStatus;
+    boolean isCompensation;
 }

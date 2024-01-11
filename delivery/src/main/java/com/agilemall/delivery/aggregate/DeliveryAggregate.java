@@ -2,21 +2,29 @@ package com.agilemall.delivery.aggregate;
 
 import com.agilemall.common.command.create.CancelCreateDeliveryCommand;
 import com.agilemall.common.command.create.CreateDeliveryCommand;
+import com.agilemall.common.command.delete.CancelDeleteDeliveryCommand;
 import com.agilemall.common.command.delete.DeleteDeliveryCommand;
+import com.agilemall.common.dto.DeliveryDTO;
 import com.agilemall.common.dto.DeliveryStatusEnum;
 import com.agilemall.common.events.create.CancelledCreateDeliveryEvent;
 import com.agilemall.common.events.create.CreatedDeliveryEvent;
+import com.agilemall.common.events.delete.CancelledDeleteDeliveryEvent;
 import com.agilemall.common.events.delete.DeletedDeliveryEvent;
 import com.agilemall.delivery.command.UpdateDeliveryCommand;
 import com.agilemall.delivery.events.UpdatedDeliveryEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
+import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.modelling.command.AggregateMember;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Aggregate(snapshotTriggerDefinition = "snapshotTrigger", cache = "snapshotCache")
@@ -28,6 +36,10 @@ public class DeliveryAggregate {
     private String orderId;
     @AggregateMember
     private String deliveryStatus;
+
+    private final List<DeliveryDTO> aggregateHistory = new ArrayList<>();
+    @Autowired
+    private transient CommandGateway commandGateway;
 
     public DeliveryAggregate() {
 
@@ -52,6 +64,8 @@ public class DeliveryAggregate {
         this.orderId = event.getOrderId();
         this.deliveryId = event.getDeliveryId();
         this.deliveryStatus = event.getDeliveryStatus();
+
+        this.aggregateHistory.add(cloneAggregate(this));
     }
 
     @CommandHandler
@@ -76,7 +90,7 @@ public class DeliveryAggregate {
     private void handle(UpdateDeliveryCommand updateDeliveryCommand) {
         log.info("[@CommandHandler] Executing <DeliveryUpdateCommand> for Delivery Id : {}", updateDeliveryCommand.getDeliveryId());
 
-        if(updateDeliveryCommand.getDeliveryStatus().equals(this.deliveryStatus)) {
+        if (updateDeliveryCommand.getDeliveryStatus().equals(this.deliveryStatus)) {
             log.info("Delivery Status is already same value <{}>. So, This command is ignored", this.deliveryStatus);
             return;
         }
@@ -90,6 +104,8 @@ public class DeliveryAggregate {
     private void on(UpdatedDeliveryEvent event) {
         log.info("[@EventSourcingHandler] Executing DeliveryUpdateEvent for Delivery Id : {}", event.getDeliveryId());
         this.deliveryStatus = event.getDeliveryStatus();
+
+        this.aggregateHistory.add(cloneAggregate(this));
     }
 
     @CommandHandler
@@ -98,10 +114,44 @@ public class DeliveryAggregate {
 
         AggregateLifecycle.apply(new DeletedDeliveryEvent(deleteDeliveryCommand.getDeliveryId(), deleteDeliveryCommand.getOrderId()));
     }
+
     @EventSourcingHandler
     private void on(DeletedDeliveryEvent event) {
         log.info("[@EventSourcingHandler] Executing DeletedPaymentEvent for Delivery Id : {}", event.getDeliveryId());
         this.deliveryStatus = DeliveryStatusEnum.ORDER_CANCLLED.value();
     }
 
+    @CommandHandler
+    private void handle(CancelDeleteDeliveryCommand cancelDeleteDeliveryCommand) {
+        log.info("[@EventSourcingHandler] Executing CancelDeleteDeliveryCommand for Delivery Id : {}", cancelDeleteDeliveryCommand.getOrderId());
+
+        AggregateLifecycle.apply(new CancelledDeleteDeliveryEvent(
+                cancelDeleteDeliveryCommand.getDeleveryId(),
+                cancelDeleteDeliveryCommand.getOrderId(), true));
+
+        //-- send CreateDeliveryCommand to compensate
+        if (this.aggregateHistory.isEmpty()) return;
+        DeliveryDTO delivery = this.aggregateHistory.get(this.aggregateHistory.size() - 1);
+        CreateDeliveryCommand cmd = CreateDeliveryCommand.builder()
+                .deliveryId(delivery.getDeliveryId())
+                .orderId(delivery.getOrderId())
+                .deliveryStatus(delivery.getDeliveryStatus())
+                .isCompensation(true)
+                .build();
+        commandGateway.send(cmd);
+    }
+
+    @EventSourcingHandler
+    private void on(CancelledDeleteDeliveryEvent event) {
+        log.info("[@EventSourcingHandler] Executing CancelledDeleteDeliveryEvent for Delivery Id : {}", event.getDeliveryId());
+
+    }
+
+    private DeliveryDTO cloneAggregate(DeliveryAggregate deliveryAggregate) {
+        DeliveryDTO delivery = new DeliveryDTO();
+        delivery.setDeliveryId(deliveryAggregate.deliveryId);
+        delivery.setOrderId(deliveryAggregate.orderId);
+        delivery.setDeliveryStatus(deliveryAggregate.deliveryStatus);
+        return delivery;
+    }
 }

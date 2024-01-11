@@ -64,7 +64,9 @@ public class PaymentEventHandler {
             paymentRepository.save(payment);
         } catch(Exception e) {
             log.error("Error is occurred during handle <PaymentProcessedEvent>: {}", e.getMessage());
-            eventGateway.publish(new FailedCreatePaymentEvent(event.getPaymentId(), event.getOrderId()));
+            if(!event.isCompensation()) {   //보상처리가 아닌 경우만 수행
+                eventGateway.publish(new FailedCreatePaymentEvent(event.getPaymentId(), event.getOrderId()));
+            }
         }
     }
 

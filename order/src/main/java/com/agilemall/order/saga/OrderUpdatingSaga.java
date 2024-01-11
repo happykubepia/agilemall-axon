@@ -5,13 +5,10 @@ import com.agilemall.common.config.Constants;
 import com.agilemall.common.dto.OrderStatusEnum;
 import com.agilemall.common.dto.PaymentStatusEnum;
 import com.agilemall.common.dto.ServiceNameEnum;
-import com.agilemall.order.events.CancelledUpdateOrderEvent;
-import com.agilemall.order.events.CompletedUpdateOrderEvent;
 import com.agilemall.common.events.update.FailedUpdatePaymentEvent;
 import com.agilemall.common.events.update.UpdatedPaymentEvent;
 import com.agilemall.order.command.CompleteUpdateOrderCommand;
-import com.agilemall.order.events.FailedCompleteUpdateOrderEvent;
-import com.agilemall.order.events.UpdatedOrderEvent;
+import com.agilemall.order.events.*;
 import com.agilemall.order.service.CompensatingService;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -65,6 +62,12 @@ public class OrderUpdatingSaga {
             compensatingService.cancelUpdateOrder(aggregateIdMap);
         }
     }
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedUpdateOrderEvent event) {
+        log.info("[Saga] FailedUpdateOrderEvent is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
+        compensatingService.cancelUpdateOrder(aggregateIdMap);
+    }
 
     @SagaEventHandler(associationProperty = "orderId")
     private void on(UpdatedPaymentEvent event) {
@@ -84,20 +87,9 @@ public class OrderUpdatingSaga {
             compensatingService.cancelUpdateOrder(aggregateIdMap);
         }
     }
-
     @SagaEventHandler(associationProperty = "orderId")
     private void on(FailedUpdatePaymentEvent event) {
         log.info("[Saga] FailedUpdatePaymentEvent is received for Order Id: {}", event.getOrderId());
-        log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
-        compensatingService.cancelUpdateOrder(aggregateIdMap);
-    }
-
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(FailedCompleteUpdateOrderEvent event) {
-        log.info("[Saga] FailedCompleteUpdateOrderEvent is received for Order Id: {}", event.getOrderId());
-
-        log.info("===== [Update Order] Compensation <CancelUpdatePaymentCommand> ==== ");
-        compensatingService.cancelUpdatePayment(aggregateIdMap);
         log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
         compensatingService.cancelUpdateOrder(aggregateIdMap);
     }
@@ -110,6 +102,15 @@ public class OrderUpdatingSaga {
 
         //-- Report service에 레포트 업데이트
         compensatingService.updateReport(event.getOrderId(), false);
+    }
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedCompleteUpdateOrderEvent event) {
+        log.info("[Saga] FailedCompleteUpdateOrderEvent is received for Order Id: {}", event.getOrderId());
+
+        log.info("===== [Update Order] Compensation <CancelUpdatePaymentCommand> ==== ");
+        compensatingService.cancelUpdatePayment(aggregateIdMap);
+        log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
+        compensatingService.cancelUpdateOrder(aggregateIdMap);
     }
 
     @EndSaga

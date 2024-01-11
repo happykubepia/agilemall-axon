@@ -6,12 +6,12 @@ import com.agilemall.common.command.delete.DeleteReportCommand;
 import com.agilemall.common.config.Constants;
 import com.agilemall.common.dto.ReportDTO;
 import com.agilemall.common.dto.ServiceNameEnum;
-import com.agilemall.common.events.delete.DeletedDeliveryEvent;
-import com.agilemall.common.events.delete.DeletedPaymentEvent;
-import com.agilemall.common.events.delete.DeletedReportEvent;
+import com.agilemall.common.events.delete.*;
 import com.agilemall.order.command.CompleteDeleteOrderCommand;
+import com.agilemall.order.events.CancelledDeleteOrderEvent;
 import com.agilemall.order.events.CompletedDeleteOrderEvent;
 import com.agilemall.order.events.DeletedOrderEvent;
+import com.agilemall.order.events.FailedCompleteDeleteOrderEvent;
 import com.agilemall.order.service.CompensatingService;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -66,7 +66,8 @@ public class OrderDeletingSaga {
             //throw new Exception("Error is occurred during handle <DeletedOrderEvent>");
         } catch(Exception e) {
             log.info(e.getMessage());
-            //compensatingService.cancelUpdateOrder(aggregateIdMap);
+            log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+            compensatingService.cancelDeleteOrder(aggregateIdMap);
         }
     }
 
@@ -86,6 +87,13 @@ public class OrderDeletingSaga {
             log.info(e.getMessage());
         }
     }
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedDeletePaymentEvent event) {
+        log.info("[Saga] <FailedDeletePaymentEvent> is received for Order Id: {}", event.getOrderId());
+
+        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+        compensatingService.cancelDeleteOrder(aggregateIdMap);
+    }
 
     @SagaEventHandler(associationProperty = "orderId")
     private void on(DeletedDeliveryEvent event) {
@@ -101,7 +109,19 @@ public class OrderDeletingSaga {
             commandGateway.sendAndWait(deleteReportCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
             log.error(e.getMessage());
+            log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+            compensatingService.cancelDeletePayment(aggregateIdMap);
+            log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+            compensatingService.cancelDeleteOrder(aggregateIdMap);
         }
+    }
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedDeleteDeliveryEvent event) {
+        log.info("[Saga] <FailedDeleteDeliveryEvent> is received for Order Id: "+ event.getOrderId());
+        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+        compensatingService.cancelDeletePayment(aggregateIdMap);
+        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+        compensatingService.cancelDeleteOrder(aggregateIdMap);
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -116,15 +136,55 @@ public class OrderDeletingSaga {
             commandGateway.sendAndWait(completeDeleteOrderCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
             log.error(e.getMessage());
+            log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
+            compensatingService.cancelDeleteDelivery(aggregateIdMap);
+            log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+            compensatingService.cancelDeletePayment(aggregateIdMap);
+            log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+            compensatingService.cancelDeleteOrder(aggregateIdMap);
+            log.info("===== [Delete Order] Compensation <CancelDeleteReportCommand> =====");
+            compensatingService.cancelDeleteReport(aggregateIdMap);
+
         }
+    }
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedDeleteReportEvent event) {
+        log.info("[Saga] <FailedDeleteReportEvent> is received for Order Id: {}", event.getOrderId());
+
+        log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
+        compensatingService.cancelDeleteDelivery(aggregateIdMap);
+        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+        compensatingService.cancelDeletePayment(aggregateIdMap);
+        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+        compensatingService.cancelDeleteOrder(aggregateIdMap);
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(CompletedDeleteOrderEvent event) {
+        log.info("[Saga] [CompletedDeleteOrderEvent] is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Delete Order] Transaction is Finished =====");
+    }
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedCompleteDeleteOrderEvent event) {
+        log.info("[Saga] [FailedCompleteDeleteOrderEvent] is received for Order Id: {}", event.getOrderId());
+
+        log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
+        compensatingService.cancelDeleteDelivery(aggregateIdMap);
+        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+        compensatingService.cancelDeletePayment(aggregateIdMap);
+        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+        compensatingService.cancelDeleteOrder(aggregateIdMap);
+        log.info("===== [Delete Order] Compensation <CancelDeleteReportCommand> =====");
+        compensatingService.cancelDeleteReport(aggregateIdMap);
     }
 
 
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
-    private void on(CompletedDeleteOrderEvent event) {
-        log.info("[Saga] [CompletedDeleteOrderEvent] is finished for Order Id: {}", event.getOrderId());
-        log.info("===== [Delete Order] Transaction is Finished =====");
-    }
+    private void on(CancelledDeleteOrderEvent event) {
+        log.info("[Saga] <CancelledDeleteOrderEvent> is received for Order Id: {}", event.getOrderId());
 
+        log.info("===== [Delete Order] Transaction is Abortd =====");
+    }
 }

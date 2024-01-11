@@ -36,24 +36,29 @@ public class OrderEventsHandler {
 
         List<OrderDetail> newOrderDetails = new ArrayList<>();
 
-        Order order = new Order();
-        order.setOrderId(event.getOrderId());
-        order.setUserId(event.getUserId());
-        order.setOrderDatetime(event.getOrderDatetime());
-        order.setOrderStatus(OrderStatusEnum.CREATED.value());
-        order.setTotalOrderAmt(event.getTotalOrderAmt());
+        try {
+            Order order = new Order();
+            order.setOrderId(event.getOrderId());
+            order.setUserId(event.getUserId());
+            order.setOrderDatetime(event.getOrderDatetime());
+            order.setOrderStatus(OrderStatusEnum.CREATED.value());
+            order.setTotalOrderAmt(event.getTotalOrderAmt());
 
-        for(OrderDetailDTO orderDetail:event.getOrderDetails()) {
-            OrderDetailIdentity newOrderDetailIdentity = new OrderDetailIdentity(orderDetail.getOrderId(), orderDetail.getProductId());
-            OrderDetail newOrderDetail = new OrderDetail();
-            newOrderDetail.setOrderDetailIdentity(newOrderDetailIdentity);
-            newOrderDetail.setQty(orderDetail.getQty());
-            newOrderDetail.setOrderAmt(orderDetail.getOrderAmt());
+            for(OrderDetailDTO orderDetail:event.getOrderDetails()) {
+                OrderDetailIdentity newOrderDetailIdentity = new OrderDetailIdentity(orderDetail.getOrderId(), orderDetail.getProductId());
+                OrderDetail newOrderDetail = new OrderDetail();
+                newOrderDetail.setOrderDetailIdentity(newOrderDetailIdentity);
+                newOrderDetail.setQty(orderDetail.getQty());
+                newOrderDetail.setOrderAmt(orderDetail.getOrderAmt());
 
-            newOrderDetails.add(newOrderDetail);
+                newOrderDetails.add(newOrderDetail);
+            }
+            order.setOrderDetails(newOrderDetails);
+            orderRepository.save(order);
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            eventGateway.publish(new FailedCreateOrderEvent(event.getOrderId()));
         }
-        order.setOrderDetails(newOrderDetails);
-        orderRepository.save(order);
     }
 
     @EventHandler
@@ -123,6 +128,7 @@ public class OrderEventsHandler {
             orderRepository.save(order);
         } catch(Exception e) {
             log.error(e.getMessage());
+            eventGateway.publish(new FailedUpdateOrderEvent(event.getOrderId()));
         }
     }
 
@@ -158,6 +164,22 @@ public class OrderEventsHandler {
         } catch(Exception e) {
             log.error(e.getMessage());
             eventGateway.publish(new FailedCompleteDeleteOrderEvent(event.getOrderId()));
+        }
+    }
+
+    @EventHandler
+    private void on(CancelledDeleteOrderEvent event) {
+        log.info("[@EventHandler] Executing <CancelledDeleteOrderEvent> for Order Id: {}", event.getOrderId());
+
+        Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+        if(optOrder.isEmpty()) return;
+
+        try {
+            Order order = optOrder.get();
+            order.setOrderStatus(OrderStatusEnum.COMPLETED.value());
+            orderRepository.save(order);
+        } catch(Exception e) {
+            log.error(e.getMessage());
         }
     }
 

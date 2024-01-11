@@ -4,6 +4,8 @@ import com.agilemall.common.command.create.CancelCreateDeliveryCommand;
 import com.agilemall.common.command.create.CancelCreateOrderCommand;
 import com.agilemall.common.command.create.CancelCreatePaymentCommand;
 import com.agilemall.common.command.create.CreateReportCommand;
+import com.agilemall.common.command.delete.CancelDeleteDeliveryCommand;
+import com.agilemall.common.command.delete.CancelDeletePaymentCommand;
 import com.agilemall.common.command.update.CancelUpdatePaymentCommand;
 import com.agilemall.common.command.update.UpdateReportCommand;
 import com.agilemall.common.config.Constants;
@@ -12,6 +14,7 @@ import com.agilemall.common.dto.OrderDTO;
 import com.agilemall.common.dto.PaymentDTO;
 import com.agilemall.common.dto.ServiceNameEnum;
 import com.agilemall.common.queries.GetReportId;
+import com.agilemall.order.command.CancelDeleteOrderCommand;
 import com.agilemall.order.command.CancelUpdateOrderCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -98,6 +101,53 @@ public class CompensatingService {
         } catch(Exception e) {
             log.error("Error is occurred during <cancelUpdatePayment>: {}", e.getMessage());
         }
+    }
+
+    public void cancelDeleteOrder(HashMap<String, String> aggregateIdMap) {
+        log.info("[CompensatingService] Executing <cancelDeleteOrder> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+
+        try {
+            commandGateway.sendAndWait(CancelDeleteOrderCommand.builder()
+                    .orderId(aggregateIdMap.get(ServiceNameEnum.ORDER.value()))
+                    .isCompensation(true).build(),
+                    Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+
+        } catch(Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void cancelDeletePayment(HashMap<String, String> aggregateIdMap) {
+        log.info("[CompensatingService] Executing <cancelDeletePayment> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+
+        try {
+            commandGateway.sendAndWait(CancelDeletePaymentCommand.builder()
+                    .paymentId(aggregateIdMap.get(ServiceNameEnum.PAYMENT.value()))
+                    .isCompensation(true)
+                    .build(), Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+        } catch(Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void cancelDeleteDelivery(HashMap<String, String> aggregateIdMap) {
+        log.info("[CompensatingService] Executing <cancelDeleteDelivery> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+
+        try {
+            commandGateway.sendAndWait(CancelDeleteDeliveryCommand.builder()
+                    .deleveryId(aggregateIdMap.get(ServiceNameEnum.DELIVERY.value()))
+                    .isCompensation(true)
+                    .build(), Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+
+        } catch(Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public void cancelDeleteReport(HashMap<String, String> aggregateIdMap) {
+        log.info("[CompensatingService] Executing <cancelDeleteReport> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+
+        updateReport(aggregateIdMap.get(ServiceNameEnum.ORDER.value()), true);
     }
 
     public void updateReport(String orderId, boolean isCreate) {
