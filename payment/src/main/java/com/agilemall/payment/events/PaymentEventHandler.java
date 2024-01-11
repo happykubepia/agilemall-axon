@@ -5,6 +5,8 @@ import com.agilemall.common.dto.PaymentStatusEnum;
 import com.agilemall.common.events.create.CancelledCreatePaymentEvent;
 import com.agilemall.common.events.create.CreatedPaymentEvent;
 import com.agilemall.common.events.create.FailedCreatePaymentEvent;
+import com.agilemall.common.events.delete.DeletedPaymentEvent;
+import com.agilemall.common.events.delete.FailedDeletePaymentEvent;
 import com.agilemall.common.events.update.FailedUpdatePaymentEvent;
 import com.agilemall.common.events.update.UpdatedPaymentEvent;
 import com.agilemall.payment.entity.Payment;
@@ -69,24 +71,22 @@ public class PaymentEventHandler {
     @EventHandler
     private void on(CancelledCreatePaymentEvent event) {
         log.info("[@EventHandler] Handle <CancelledCreatePaymentEvent> for Payment Id: {}", event.getPaymentId());
-        Optional<Payment> optPay = paymentRepository.findById(event.getPaymentId());
-        if(optPay.isPresent()) {
-            Payment payment = optPay.get();
+        Payment payment = getEntity(event.getPaymentId());
+        if(payment != null) {
             paymentRepository.delete(payment);
         }
     }
 
     @EventHandler
     private void on(UpdatedPaymentEvent event) {
-        Optional<Payment> optPayment = paymentRepository.findById(event.getPaymentId());
-        if(!optPayment.isPresent()) {
-            log.info("Can't find Payment info for Payment Id: {}", event.getPaymentId());
+        log.info("[@EventHandler] Handle <UpdatedPaymentEvent> for Payment Id: {}", event.getPaymentId());
+        Payment payment = getEntity(event.getPaymentId());
+        if(payment == null) {
             eventGateway.publish(new FailedUpdatePaymentEvent(event.getPaymentId(), event.getOrderId()));
             return;
         }
 
         try {
-            Payment payment = optPayment.get();
             payment.setTotalPaymentAmt(event.getTotalPaymentAmt());
             payment.setPaymentStatus(PaymentStatusEnum.COMPLETED.value());
             payment.getPaymentDetails().clear();
@@ -100,6 +100,34 @@ public class PaymentEventHandler {
         } catch(Exception e) {
             log.error(e.getMessage());
             eventGateway.publish(new FailedUpdatePaymentEvent(event.getPaymentId(), event.getOrderId()));
+        }
+    }
+
+    @EventHandler
+    private void on(DeletedPaymentEvent event) {
+        log.info("[@EventHandler] Handle <DeletedPaymentEvent> for Payment Id: {}", event.getPaymentId());
+        Payment payment = getEntity(event.getPaymentId());
+        if(payment == null) {
+            eventGateway.publish(new FailedDeletePaymentEvent(event.getPaymentId(), event.getOrderId()));
+            return;
+        }
+        if(payment != null) {
+            try {
+                paymentRepository.delete(payment);
+            } catch(Exception e) {
+                log.error(e.getMessage());
+                eventGateway.publish(new FailedDeletePaymentEvent(event.getPaymentId(), event.getOrderId()));
+            }
+        }
+    }
+
+    private Payment getEntity(String paymentId) {
+        Optional<Payment> optPayment = paymentRepository.findById(paymentId);
+        if(optPayment.isPresent()) {
+            return optPayment.get();
+        } else {
+            log.info("Can't find Payment info for Payment Id: {}", paymentId);
+            return null;
         }
     }
 

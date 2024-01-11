@@ -47,7 +47,7 @@ docker run -d --rm --name axonserver -p 18024:8024 -p 18124:8124 -e axoniq.axons
 
 ## 테스트 
 
-ㅇ Build jar
+- Build jar
 application 최상위 디렉토리에서 수행
 ```
 ./gradlew [clean] {application name}:build [--stacktrace --info --refresh-dependencies -x test]
@@ -56,36 +56,62 @@ ex2) ./gradlew clean order:build --stacktrace --info --refresh-dependencies -x t
 ex3) ./gradlew clean order:build
 ```
 
-ㅇ 테스트: http://localhost:18080/swagger-ui/index.html
-```
-{
-  "userId": "hiondal",
+- 테스트: http://localhost:18080/swagger-ui/index.html
+  - 주문생성
+
+  ```
+  {
+    "userId": "hiondal",
+    "orderReqDetails": [
+      {
+        "productId": "PROD_10041",
+        "qty": 10
+      },
+      {
+        "productId": "PROD_10042",
+        "qty": 5
+      },
+      {
+        "productId": "PROD_10043",
+        "qty": 15
+      }
+    ],
+    "paymentReqDetails": [
+      {
+        "paymentKind": "10",
+        "paymentRate": 0.9
+      },
+      {
+        "paymentKind": "20",
+        "paymentRate": 0.1
+      }
+    ]
+  }
+  ```
+
+  - 주문수정 
+  위 주문수정 결과에서 주문ID를 복사하여 orderId값을 변경 후 수행. 
+  ```
+  {
+  "orderId": "ORDER_469309120",
   "orderReqDetails": [
     {
       "productId": "PROD_10041",
-      "qty": 10
-    },
-    {
-      "productId": "PROD_10042",
-      "qty": 5
-    },
-    {
-      "productId": "PROD_10043",
-      "qty": 15
+      "qty": 1
     }
   ],
   "paymentReqDetails": [
     {
       "paymentKind": "10",
-      "paymentRate": 0.9
-    },
-    {
-      "paymentKind": "20",
-      "paymentRate": 0.1
+      "paymentRate": 1
     }
   ]
-}
-```
+  }
+  ```
+  
+  - 주문삭제 
+  위 주문수정 결과에서 주문ID를 복사하여 orderId값을 변경 후 수행. 
+  
 
 ----
 
@@ -154,7 +180,7 @@ io.axoniq.axonserver.exception.MessagingPlatformException: [AXONIQ-2000] Invalid
     - 조치: Saga class에서 개발한 class를 @Autowired로 생성하는 부분을 빼고 테스트 하고, 문제 발생 안하면 적절히 조치
 
 > 참고
-  - MySQL 데이터 디렉토리 찾기 
+- MySQL 데이터 디렉토리 찾기 
 ```
 mysql> show variables like 'datadir';
 +---------------+-----------------+
@@ -165,6 +191,21 @@ mysql> show variables like 'datadir';
 ```
   - JPA 참고: https://exhibitlove.tistory.com/262
   
-
+- 로그 패턴 조정하기  
+application.properties에 아래 예제와 같이 추가함
+```
+# Logging
+logging.level.com.agilemall=info
+logging.level.org.axonframework=info
+logging.pattern.console=%clr(%d{MM/dd HH:mm:ss}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}){magenta} %clr(---){faint} %clr(%-40.40logger{39}){cyan} %clr(%m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}){faint}   
+```
+기본 log pattern은 아래와 같음. 
+```
+"%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} "
++ "%clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} "
++ "%clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} "
++ "%clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}";
+출처: https://wonwoo.me/98 [개발블로그:티스토리]
+```
 
 

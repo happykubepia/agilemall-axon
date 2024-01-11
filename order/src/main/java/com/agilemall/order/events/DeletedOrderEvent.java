@@ -7,5 +7,4 @@ import lombok.Data;
 @AllArgsConstructor
 public class DeletedOrderEvent {
     private String orderId;
-    private boolean isCompensation;
 }

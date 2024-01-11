@@ -112,7 +112,6 @@ public class OrderDeletingSaga {
         CompleteDeleteOrderCommand completeDeleteOrderCommand = CompleteDeleteOrderCommand.builder()
                 .orderId(event.getOrderId())
                 .build();
-
         try {
             commandGateway.sendAndWait(completeDeleteOrderCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
@@ -126,7 +125,6 @@ public class OrderDeletingSaga {
     private void on(CompletedDeleteOrderEvent event) {
         log.info("[Saga] [CompletedDeleteOrderEvent] is finished for Order Id: {}", event.getOrderId());
         log.info("===== [Delete Order] Transaction is Finished =====");
-
     }
 
 }

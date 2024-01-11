@@ -2,12 +2,15 @@ package com.agilemall.payment.aggregate;
 
 import com.agilemall.common.command.create.CancelCreatePaymentCommand;
 import com.agilemall.common.command.create.CreatePaymentCommand;
+import com.agilemall.common.command.delete.DeletePaymentCommand;
 import com.agilemall.common.command.update.CancelUpdatePaymentCommand;
 import com.agilemall.common.command.update.UpdatePaymentCommand;
 import com.agilemall.common.dto.PaymentDTO;
 import com.agilemall.common.dto.PaymentDetailDTO;
+import com.agilemall.common.dto.PaymentStatusEnum;
 import com.agilemall.common.events.create.CancelledCreatePaymentEvent;
 import com.agilemall.common.events.create.CreatedPaymentEvent;
+import com.agilemall.common.events.delete.DeletedPaymentEvent;
 import com.agilemall.common.events.update.CancelledUpdatePaymentEvent;
 import com.agilemall.common.events.update.UpdatedPaymentEvent;
 import com.agilemall.payment.entity.PaymentDetail;
@@ -28,8 +31,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Aggregate
-//@Aggregate(snapshotTriggerDefinition = "snapshotTrigger", cache = "snapshotCache")
+//@Aggregate
+@Aggregate(snapshotTriggerDefinition = "snapshotTrigger", cache = "snapshotCache")
 public class PaymentAggregate {
     @AggregateIdentifier
     private String paymentId;
@@ -153,6 +156,20 @@ public class PaymentAggregate {
     private void on(CancelledUpdatePaymentEvent event) {
         log.info("[@EventSourcingHandler] Executing <CancelledUpdatePaymentEvent> for Order Id: {}", event.getOrderId());
 
+    }
+
+    @CommandHandler
+    private void handle(DeletePaymentCommand deletePaymentCommand) {
+        log.info("[@CommandHandler] Executing DeletedPaymentEvent for Order Id: {} and Payment Id: {}",
+                deletePaymentCommand.getOrderId(), deletePaymentCommand.getPaymentId());
+
+        AggregateLifecycle.apply(new DeletedPaymentEvent(deletePaymentCommand.getPaymentId(), deletePaymentCommand.getOrderId()));
+    }
+    @EventSourcingHandler
+    private void on(DeletedPaymentEvent event) {
+        log.info("[@EventSourcingHandler] Executing DeletedPaymentEvent for Order Id: {} and Payment Id: {}",
+                event.getOrderId(), event.getPaymentId());
+        this.paymentStatus = PaymentStatusEnum.ORDER_CANCLLED.value();
     }
 
     private PaymentDTO cloneAggregate(PaymentAggregate paymentAggregate) {

@@ -230,6 +230,7 @@ public class OrderService {
 
         try {
             commandGateway.sendAndWait(updateOrderCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+            //commandGateway.send(updateOrderCommand);
             retVo.setReturnCode(true);
             retVo.setReturnMessage("Success to request <UpdateOrderCommand>");
             retVo.setResult(updateOrderCommand);

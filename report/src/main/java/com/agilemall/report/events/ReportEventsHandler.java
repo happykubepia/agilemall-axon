@@ -1,6 +1,8 @@
 package com.agilemall.report.events;
 
 import com.agilemall.common.events.create.CreatedReportEvent;
+import com.agilemall.common.events.delete.DeletedReportEvent;
+import com.agilemall.common.events.delete.FailedDeleteReportEvent;
 import com.agilemall.common.events.update.UpdatedReportDeliveryStatusEvent;
 import com.agilemall.common.events.update.UpdatedReportEvent;
 import com.agilemall.report.entity.Report;
@@ -9,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.eventhandling.EventHandler;
+import org.axonframework.eventhandling.gateway.EventGateway;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,11 +22,13 @@ import java.util.Optional;
 @Component
 public class ReportEventsHandler {
     @Autowired
-    ReportRepository reportRepository;
+    private EventGateway eventGateway;
+    @Autowired
+    private ReportRepository reportRepository;
 
     @EventHandler
     private void on(CreatedReportEvent event) {
-        log.info("[@EventHandler] Handle <CreatedReportEvent>");
+        log.info("[@EventHandler] Handle <CreatedReportEvent> for Order Id:{}", event.getOrderId());
         log.info(event.toString());
 
         Report report = new Report();
@@ -39,9 +44,10 @@ public class ReportEventsHandler {
             log.error("Error is occurred during handle <CreatedReportEvent>: {}", e.getMessage());
         }
     }
+
     @EventHandler
     private void on(UpdatedReportEvent event) {
-        log.info("[@EventHandler] Handle <UpdatedReportEvent>");
+        log.info("[@EventHandler] Handle <UpdatedReportEvent> for Order Id: {}", event.getOrderId());
         log.info(event.toString());
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -75,6 +81,25 @@ public class ReportEventsHandler {
             Report report = optReport.get();
             report.setDeliveryStatus(event.getDeliveryStatus());
             reportRepository.save(report);
+        }
+    }
+
+    @EventHandler
+    private void on(DeletedReportEvent event) {
+        log.info("[@EventHandler] Handle <DeletedReportEvent> for Order Id: {}", event.getOrderId());
+
+        Optional<Report> optReport = reportRepository.findById(event.getReportId());
+        if(optReport.isEmpty()) {
+            log.info("Can't find Report info for Order Id: {}", event.getOrderId());
+            eventGateway.publish(new FailedDeleteReportEvent(event.getReportId(), event.getOrderId()));
+            return;
+        }
+
+        try {
+            reportRepository.delete(optReport.get());
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            eventGateway.publish(new FailedDeleteReportEvent(event.getReportId(), event.getOrderId()));
         }
     }
 }

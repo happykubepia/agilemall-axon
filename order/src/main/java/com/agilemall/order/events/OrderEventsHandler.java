@@ -137,9 +137,27 @@ public class OrderEventsHandler {
         log.info("[@EventHandler] Executing <DeletedOrderEvent> for Order Id: {}", event.getOrderId());
         Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
         if(optOrder.isPresent()) {
-            orderRepository.delete(optOrder.get());
+            //orderRepository.delete(optOrder.get());
+            optOrder.get().setOrderStatus(OrderStatusEnum.ORDER_CANCLLED.value());
+            orderRepository.save(optOrder.get());
         } else {
             log.info("Can't find Order for Order Id:{}", event.getOrderId());
+        }
+    }
+
+    @EventHandler
+    private void on(CompletedDeleteOrderEvent event) {
+        log.info("[@EventHandler] Executing <CompletedDeleteOrderEvent> for Order Id: {}", event.getOrderId());
+
+        Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+        if(optOrder.isEmpty()) return;
+
+        try {
+           orderRepository.delete(optOrder.get());
+
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            eventGateway.publish(new FailedCompleteDeleteOrderEvent(event.getOrderId()));
         }
     }
 

@@ -4,6 +4,8 @@ import com.agilemall.common.command.update.UpdateReportDeliveryStatusCommand;
 import com.agilemall.common.events.create.CancelledCreateDeliveryEvent;
 import com.agilemall.common.events.create.CreatedDeliveryEvent;
 import com.agilemall.common.events.create.FailedCreateDeliveryEvent;
+import com.agilemall.common.events.delete.DeletedDeliveryEvent;
+import com.agilemall.common.events.delete.FailedDeleteDeliveryEvent;
 import com.agilemall.common.events.update.CancelledUpdatePaymentEvent;
 import com.agilemall.common.queries.GetReportId;
 import com.agilemall.delivery.entity.Delivery;
@@ -55,7 +57,7 @@ public class DeliveryEventsHandler {
     private void on(CancelledCreateDeliveryEvent event) {
         log.info("[@EventHandler] Handle CancelledCreateDeliveryEvent");
 
-        Delivery delivery = getEntry(event.getDeliveryId());
+        Delivery delivery = getEntity(event.getDeliveryId());
         if(delivery != null) {
             deliveryRepository.delete(delivery);
         }
@@ -65,7 +67,7 @@ public class DeliveryEventsHandler {
     private void on(UpdatedDeliveryEvent event) {
         log.info("[DeliveryEventsHandler] Handle <UpdatedDeliveryEvent> for Delivery Id: {}", event.getDeliveryId());
 
-        Delivery delivery = getEntry(event.getDeliveryId());
+        Delivery delivery = getEntity(event.getDeliveryId());
         if(delivery != null) {
             delivery.setDeliveryStatus(event.getDeliveryStatus());
             deliveryRepository.save(delivery);
@@ -93,7 +95,25 @@ public class DeliveryEventsHandler {
 
     }
 
-    private Delivery getEntry(String deliveryId) {
+    @EventHandler
+    private void on(DeletedDeliveryEvent event) {
+        log.info("[DeliveryEventsHandler] Handle <DeletedDeliveryEvent> for Delivery Id: {}", event.getDeliveryId());
+
+        Delivery delivery = getEntity(event.getDeliveryId());
+        if(delivery == null) {
+            eventGateway.publish(new FailedDeleteDeliveryEvent(event.getDeliveryId(), event.getOrderId()));
+            return;
+        }
+
+        try {
+            deliveryRepository.delete(delivery);
+        } catch(Exception e) {
+            deliveryRepository.delete(delivery);
+            eventGateway.publish(new FailedDeleteDeliveryEvent(event.getDeliveryId(), event.getOrderId()));
+        }
+    }
+
+    private Delivery getEntity(String deliveryId) {
         Delivery delivery = null;
         Optional<Delivery> optDelivery = deliveryRepository.findById(deliveryId);
         if(optDelivery.isPresent()) {

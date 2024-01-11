@@ -1,11 +1,13 @@
 package com.agilemall.report.entity;
 
 import com.agilemall.common.command.create.CreateReportCommand;
+import com.agilemall.common.command.delete.DeleteReportCommand;
 import com.agilemall.common.command.update.UpdateReportCommand;
 import com.agilemall.common.command.update.UpdateReportDeliveryStatusCommand;
 import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.common.dto.PaymentDetailDTO;
 import com.agilemall.common.events.create.CreatedReportEvent;
+import com.agilemall.common.events.delete.DeletedReportEvent;
 import com.agilemall.common.events.update.UpdatedReportDeliveryStatusEvent;
 import com.agilemall.common.events.update.UpdatedReportEvent;
 import com.google.gson.Gson;
@@ -28,8 +30,6 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.axonframework.modelling.command.AggregateLifecycle.apply;
 
 @Slf4j
 @Aggregate
@@ -169,8 +169,18 @@ public class Report implements Serializable {
     @CommandHandler
     private void handle(UpdateReportDeliveryStatusCommand cmd) {
         log.info("[@CommandHandler] Handle <UpdateReportDeliveryStatusCommand> for Order Id: {}", cmd.getOrderId());
+
+        this.deliveryStatus = cmd.getDeliveryStatus();
+
         UpdatedReportDeliveryStatusEvent event = new UpdatedReportDeliveryStatusEvent();
         BeanUtils.copyProperties(cmd, event);
-        apply(event);
+        AggregateLifecycle.apply(event);
+    }
+
+    @CommandHandler
+    private void handle(DeleteReportCommand deleteReportCommand) {
+        log.info("[@CommandHandler] Handle <DeleteReportCommand> for Order Id: {}", deleteReportCommand.getOrderId());
+
+        AggregateLifecycle.apply(new DeletedReportEvent(deleteReportCommand.getReportId(), deleteReportCommand.getOrderId()));
     }
 }

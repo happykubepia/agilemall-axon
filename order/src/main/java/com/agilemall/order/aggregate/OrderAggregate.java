@@ -35,8 +35,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
-//@Aggregate(snapshotTriggerDefinition = "snapshotTrigger", cache="snapshotCache")
-@Aggregate
+@Aggregate(snapshotTriggerDefinition = "snapshotTrigger", cache="snapshotCache")
+//@Aggregate
 public class OrderAggregate {
     @AggregateIdentifier
     private String orderId;
@@ -51,7 +51,7 @@ public class OrderAggregate {
     @AggregateMember
     private List<OrderDetail> orderDetails;
 
-    private List<OrderDTO> aggregateHistory = new ArrayList<>();
+    private final List<OrderDTO> aggregateHistory = new ArrayList<>();
 
     @Autowired
     private transient CommandGateway commandGateway;
@@ -219,12 +219,23 @@ public class OrderAggregate {
     @CommandHandler
     private void handle(DeleteOrderCommand deleteOrderCommand) {
         log.info("[@EventSourcingHandler] Executing <DeleteOrderCommand> for Order Id: {}", deleteOrderCommand.getOrderId());
-        //AggregateLifecycle.apply(new DeletedOrderEvent(deleteOrderCommand.getOrderId()));
+        AggregateLifecycle.apply(new DeletedOrderEvent(deleteOrderCommand.getOrderId()));
     }
     @EventSourcingHandler
     private void on(DeletedDeliveryEvent event) {
         log.info("[@EventSourcingHandler] Executing <DeletedDeliveryEvent> for Order Id: {}", event.getOrderId());
         this.orderStatus = OrderStatusEnum.ORDER_CANCLLED.value();
+    }
+
+    @CommandHandler
+    private void handle(CompleteDeleteOrderCommand completeDeleteOrderCommand) {
+        log.info("[@EventSourcingHandler] Executing <CompleteDeleteOrderCommand> for Order Id: {}", completeDeleteOrderCommand.getOrderId());
+        AggregateLifecycle.apply(new CompletedDeleteOrderEvent(completeDeleteOrderCommand.getOrderId()));
+    }
+    @EventSourcingHandler
+    private void on(CompletedDeleteOrderEvent event) {
+        log.info("[@EventSourcingHandler] Executing <CompletedDeleteOrderEvent> for Order Id: {}", event.getOrderId());
+
     }
 
     private OrderDTO cloneAggregate(OrderAggregate orderAggregate) {

@@ -43,7 +43,7 @@ public class OrderController {
         return retVo;
     }
 
-    @GetMapping("/orders/{orderId}")
+    @DeleteMapping("/orders/{orderId}")
     @Operation(summary = "주문 취소 API")
     @Parameters({
             @Parameter(name = "orderId", in= ParameterIn.PATH, description = "주문ID", required = true, allowEmptyValue = false)
@@ -53,6 +53,5 @@ public class OrderController {
         ResultVO<String> retVo = orderService.deleteOrder(orderId);
         return retVo;
     }
-
 
 }

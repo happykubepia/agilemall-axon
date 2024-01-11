@@ -2,8 +2,11 @@ package com.agilemall.delivery.aggregate;
 
 import com.agilemall.common.command.create.CancelCreateDeliveryCommand;
 import com.agilemall.common.command.create.CreateDeliveryCommand;
+import com.agilemall.common.command.delete.DeleteDeliveryCommand;
+import com.agilemall.common.dto.DeliveryStatusEnum;
 import com.agilemall.common.events.create.CancelledCreateDeliveryEvent;
 import com.agilemall.common.events.create.CreatedDeliveryEvent;
+import com.agilemall.common.events.delete.DeletedDeliveryEvent;
 import com.agilemall.delivery.command.UpdateDeliveryCommand;
 import com.agilemall.delivery.events.UpdatedDeliveryEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +19,8 @@ import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.beans.BeanUtils;
 
 @Slf4j
-//@Aggregate(snapshotTriggerDefinition = "snapshotTrigger", cache = "snapshotCache")
-@Aggregate
+@Aggregate(snapshotTriggerDefinition = "snapshotTrigger", cache = "snapshotCache")
+//@Aggregate
 public class DeliveryAggregate {
     @AggregateIdentifier
     private String deliveryId;
@@ -82,9 +85,23 @@ public class DeliveryAggregate {
 
         AggregateLifecycle.apply(updatedDeliveryEvent);
     }
+
     @EventSourcingHandler
     private void on(UpdatedDeliveryEvent event) {
         log.info("[@EventSourcingHandler] Executing DeliveryUpdateEvent for Delivery Id : {}", event.getDeliveryId());
         this.deliveryStatus = event.getDeliveryStatus();
     }
+
+    @CommandHandler
+    private void handle(DeleteDeliveryCommand deleteDeliveryCommand) {
+        log.info("[@EventSourcingHandler] Executing DeleteDeliveryCommand for Delivery Id : {}", deleteDeliveryCommand.getDeliveryId());
+
+        AggregateLifecycle.apply(new DeletedDeliveryEvent(deleteDeliveryCommand.getDeliveryId(), deleteDeliveryCommand.getOrderId()));
+    }
+    @EventSourcingHandler
+    private void on(DeletedDeliveryEvent event) {
+        log.info("[@EventSourcingHandler] Executing DeletedPaymentEvent for Delivery Id : {}", event.getDeliveryId());
+        this.deliveryStatus = DeliveryStatusEnum.ORDER_CANCLLED.value();
+    }
+
 }
