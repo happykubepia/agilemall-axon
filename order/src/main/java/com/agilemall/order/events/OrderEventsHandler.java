@@ -2,9 +2,6 @@ package com.agilemall.order.events;
 
 import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.common.dto.OrderStatusEnum;
-import com.agilemall.common.events.create.CancelledCreateOrderEvent;
-import com.agilemall.common.events.create.CompletedCreateOrderEvent;
-import com.agilemall.common.events.update.CancelledUpdateOrderEvent;
 import com.agilemall.order.entity.Order;
 import com.agilemall.order.entity.OrderDetail;
 import com.agilemall.order.entity.OrderDetailIdentity;
@@ -133,6 +130,17 @@ public class OrderEventsHandler {
     private void on(CancelledUpdateOrderEvent event) {
         log.info("[@EventHandler] Executing <CancelledUpdateOrderEvent> for Order Id: {}", event.getOrderId());
 
+    }
+
+    @EventHandler
+    private void on(DeletedOrderEvent event) {
+        log.info("[@EventHandler] Executing <DeletedOrderEvent> for Order Id: {}", event.getOrderId());
+        Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+        if(optOrder.isPresent()) {
+            orderRepository.delete(optOrder.get());
+        } else {
+            log.info("Can't find Order for Order Id:{}", event.getOrderId());
+        }
     }
 
     @ResetHandler

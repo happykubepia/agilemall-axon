@@ -7,10 +7,8 @@ import com.agilemall.common.dto.DeliveryStatusEnum;
 import com.agilemall.common.dto.OrderStatusEnum;
 import com.agilemall.common.dto.ServiceNameEnum;
 import com.agilemall.common.events.create.*;
-import com.agilemall.order.command.CompleteOrderCommand;
-import com.agilemall.order.events.CreatedOrderEvent;
-import com.agilemall.order.events.FailedCompleteCreateOrderEvent;
-import com.agilemall.order.events.FailedCreateOrderEvent;
+import com.agilemall.order.command.CompleteOrderCreateCommand;
+import com.agilemall.order.events.*;
 import com.agilemall.order.service.CompensatingService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -37,8 +35,8 @@ public class OrderCreatingSaga {
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void on(CreatedOrderEvent event) {
-        log.info("[Saga] CreatedOrderEvent is received for Order Id: {}", event.getOrderId());
-        log.info("===== [Saga] Creating Order Transaction #3: <CreatePaymentCommand> =====");
+        log.info("[Saga] <CreatedOrderEvent> is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Create Order] #3: <CreatePaymentCommand> =====");
 
         aggregateIdMap.put(ServiceNameEnum.ORDER.value(), event.getOrderId());
 
@@ -53,15 +51,16 @@ public class OrderCreatingSaga {
         try {
             commandGateway.sendAndWait(createPaymentCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
-            log.info("Error is occurred during handle <createPaymentCommand>: {}", e.getMessage());
+            log.error("Error is occurred during handle <CreatePaymentCommand>: {}", e.getMessage());
+            log.info("===== [Create Order] Compensate <CancelCreateOrderCommand>");
             compensatingService.cancelCreateOrder(aggregateIdMap);
         }
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     private void on(CreatedPaymentEvent event) {
-        log.info("[Saga] [CreatePaymentCommand] is finished for Order Id: {}", event.getOrderId());
-        log.info("===== [Saga] Creating Order Transaction #4: <DeliveryOrderCommand> =====");
+        log.info("[Saga] <CreatedPaymentEvent> is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Create Order] #4: <CreateDeliveryCommand> =====");
 
         aggregateIdMap.put(ServiceNameEnum.PAYMENT.value(), event.getPaymentId());
 
@@ -74,59 +73,52 @@ public class OrderCreatingSaga {
         try {
             commandGateway.sendAndWait(createDeliveryCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
-            log.info("Error is occurred during handle <deliveryOrderCommand>: {}", e.getMessage());
+            log.info("Error is occurred during handle <CreateDeliveryCommand>: {}", e.getMessage());
+            log.info("===== [Create Order] Compensate <CancelCreatePaymentCommand> ====");
             compensatingService.cancelCreatePayment(aggregateIdMap);
-            //do compensating transaction: Order
+            log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
             compensatingService.cancelCreateOrder(aggregateIdMap);
         }
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     private void on(CreatedDeliveryEvent event) {
-        log.info("[Saga] [DeliveryOrderCommand] is finished for Order Id: {}", event.getOrderId());
-        log.info("===== [Saga] Creating Order Transaction #5: <CompleteOrderCommand> =====");
+        log.info("[Saga] <CreatedDeliveryEvent> is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Create Order] #5: <CompleteOrderCreateCommand> =====");
 
         aggregateIdMap.put(ServiceNameEnum.DELIVERY.value(), event.getDeliveryId());
-        CompleteOrderCommand completeOrderCommand = CompleteOrderCommand.builder()
+        CompleteOrderCreateCommand completeOrderCreateCommand = CompleteOrderCreateCommand.builder()
                 .orderId(event.getOrderId())
                 .orderStatus(OrderStatusEnum.COMPLETED.value())
                 .build();
 
         try {
-            commandGateway.sendAndWait(completeOrderCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+            commandGateway.sendAndWait(completeOrderCreateCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
-            log.info("Error is occurred during handle <CompletedOrderCommand>: {}", e.getMessage());
+            log.info("Error is occurred during handle <CompleteOrderCreateCommand>: {}", e.getMessage());
 
-            //-- request compensating transaction
+            log.info("===== [Create Order] Compensate <CancelCreateDeliveryCommand> ====");
             compensatingService.cancelCreateDelivery(aggregateIdMap);
-            //do compensating transaction: Payment
+            log.info("===== [Create Order] Compensate <CancelCreatePaymentCommand> ====");
             compensatingService.cancelCreatePayment(aggregateIdMap);
-            //do compensating transaction: Order
+            log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
             compensatingService.cancelCreateOrder(aggregateIdMap);
         }
     }
 
     @SagaEventHandler(associationProperty = "orderId")
-    @EndSaga
-    private void on(CompletedCreateOrderEvent event) {
-        log.info("[Saga] [CompleteOrderCommand] is finished for Order Id: {}", event.getOrderId());
-        log.info("===== [Saga] Creating Order Transaction FINISHED =====");
-
-        //-- Report service에 신규 레포트 record 생성
-        compensatingService.updateReport(event.getOrderId(), true);
-    }
-
-    @SagaEventHandler(associationProperty = "orderId")
     private void on(FailedCreateOrderEvent event) {
-        log.info("[Saga] Handle <FailedCreateOrderEvent> for Order Id: {}", event.getOrderId());
+        log.info("[Saga] <FailedCreateOrderEvent> is received for Order Id: {}", event.getOrderId());
 
+        log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
         compensatingService.cancelCreateOrder(this.aggregateIdMap);
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     private void on(FailedCreatePaymentEvent event) {
-        log.info("[Saga] Handle <FailedCreatePaymentEvent> for Order Id: {}", event.getOrderId());
+        log.info("[Saga] <FailedCreatePaymentEvent> is received for Order Id: {}", event.getOrderId());
 
+        log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
         compensatingService.cancelCreateOrder(this.aggregateIdMap);
     }
 
@@ -134,7 +126,9 @@ public class OrderCreatingSaga {
     private void on(FailedCreateDeliveryEvent event) {
         log.info("[Saga] Handle <FailedCreateDeliveryEvent> for Order Id: {}", event.getOrderId());
 
+        log.info("===== [Create Order] Compensate <CancelCreatePaymentCommand> ====");
         compensatingService.cancelCreatePayment(this.aggregateIdMap);
+        log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
         compensatingService.cancelCreateOrder(this.aggregateIdMap);
     }
 
@@ -142,17 +136,29 @@ public class OrderCreatingSaga {
     private void on(FailedCompleteCreateOrderEvent event) {
         log.info("[Saga] Handle <FailedCompleteCreateOrderEvent> for Order Id: {}", event.getOrderId());
 
-        compensatingService.cancelCreatePayment(this.aggregateIdMap);
-        compensatingService.cancelCreateOrder(this.aggregateIdMap);
+        log.info("===== [Create Order] Compensate <CancelCreateDeliveryCommand> ====");
         compensatingService.cancelCreateDelivery(this.aggregateIdMap);
+        log.info("===== [Create Order] Compensate <CancelCreatePaymentCommand> ====");
+        compensatingService.cancelCreatePayment(this.aggregateIdMap);
+        log.info("===== [Create Order] Compensate <CancelCreateOrderCommand> ====");
+        compensatingService.cancelCreateOrder(this.aggregateIdMap);
+
     }
 
-    @SagaEventHandler(associationProperty = "orderId")
     @EndSaga
-    private void on(CancelledCreateOrderEvent event) {
-        log.info("[Saga] CancelledCreateOrderEvent in Saga for Order Id: {}", event.getOrderId());
-        log.info("===== [Saga] Creating Order Transaction Aborted =====");
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(CompletedCreateOrderEvent event) {
+        log.info("[Saga] [CompletedCreateOrderEvent] is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Create Order] Transaction is FINISHED =====");
 
+        //-- Report service에 레포트 생성 요청
+        compensatingService.updateReport(event.getOrderId(), true);
     }
 
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(CancelledCreateOrderEvent event) {
+        log.info("[Saga] CancelledCreateOrderEvent is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Create Order] Transaction is Aborted =====");
+    }
 }

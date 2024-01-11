@@ -7,7 +7,8 @@ public enum DeliveryStatusEnum {
     CREATED("10", "준비중"),
     CANCELED("20", "배송취소"),
     DELIVERING("30", "배송중"),
-    COMPLETED("40", "배송완료");
+    COMPLETED("40", "배송완료"),
+    ORDER_CANCLLED("50", "주문취소");
 
     private final String value;
     private final String desc;

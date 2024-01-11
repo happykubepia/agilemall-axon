@@ -10,5 +10,5 @@ import org.axonframework.modelling.command.TargetAggregateIdentifier;
 public class CancelCreateOrderCommand {
     @TargetAggregateIdentifier
     String orderId;
-    String orderStatus = OrderStatusEnum.CANCELED.value();
+    String orderStatus = OrderStatusEnum.FAILED.value();
 }

@@ -1,9 +1,9 @@
-package com.agilemall.common.events.create;
+package com.agilemall.order.events;
 
 import lombok.Data;
 
 @Data
-public class CancelledCreateOrderEvent {
+public class CompletedUpdateOrderEvent {
     private String orderId;
     private String orderStatus;
 }

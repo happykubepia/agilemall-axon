@@ -9,19 +9,14 @@ package com.agilemall.order.aggregate;
 */
 
 import com.agilemall.common.command.create.CancelCreateOrderCommand;
-import com.agilemall.common.events.create.CancelledCreateOrderEvent;
-import com.agilemall.common.events.create.CompletedCreateOrderEvent;
-import com.agilemall.common.events.update.CancelledUpdateOrderEvent;
-import com.agilemall.common.events.update.CompletedUpdateOrderEvent;
-import com.agilemall.order.command.*;
-import com.agilemall.order.command.CompleteUpdateOrderCommand;
 import com.agilemall.common.dto.OrderDTO;
 import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.common.dto.OrderStatusEnum;
+import com.agilemall.common.events.delete.DeletedDeliveryEvent;
+import com.agilemall.order.command.*;
 import com.agilemall.order.entity.OrderDetail;
 import com.agilemall.order.entity.OrderDetailIdentity;
-import com.agilemall.order.events.CreatedOrderEvent;
-import com.agilemall.order.events.UpdatedOrderEvent;
+import com.agilemall.order.events.*;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -103,14 +98,14 @@ public class OrderAggregate {
     }
 
     @CommandHandler
-    private void handle(CompleteOrderCommand completeOrderCommand) throws RuntimeException {
-        log.info("[@CommandHandler] Executing <CompleteOrderCommand> for Order Id: {}", completeOrderCommand.getOrderId());
+    private void handle(CompleteOrderCreateCommand completeOrderCreateCommand) throws RuntimeException {
+        log.info("[@CommandHandler] Executing <CompleteOrderCreateCommand> for Order Id: {}", completeOrderCreateCommand.getOrderId());
 
-        if("".equals(completeOrderCommand.getOrderId())) {
+        if("".equals(completeOrderCreateCommand.getOrderId())) {
             throw new RuntimeException("Order Id is MUST NULL");
         }
         CompletedCreateOrderEvent completedCreateOrderEvent = new CompletedCreateOrderEvent();
-        BeanUtils.copyProperties(completeOrderCommand, completedCreateOrderEvent);
+        BeanUtils.copyProperties(completeOrderCreateCommand, completedCreateOrderEvent);
 
         AggregateLifecycle.apply(completedCreateOrderEvent);
     }
@@ -219,6 +214,17 @@ public class OrderAggregate {
     private void on(CancelledUpdateOrderEvent event) {
         log.info("[@EventSourcingHandler] Executing <CancelledUpdateOrderEvent> for Order Id: {}", event.getOrderId());
 
+    }
+
+    @CommandHandler
+    private void handle(DeleteOrderCommand deleteOrderCommand) {
+        log.info("[@EventSourcingHandler] Executing <DeleteOrderCommand> for Order Id: {}", deleteOrderCommand.getOrderId());
+        //AggregateLifecycle.apply(new DeletedOrderEvent(deleteOrderCommand.getOrderId()));
+    }
+    @EventSourcingHandler
+    private void on(DeletedDeliveryEvent event) {
+        log.info("[@EventSourcingHandler] Executing <DeletedDeliveryEvent> for Order Id: {}", event.getOrderId());
+        this.orderStatus = OrderStatusEnum.ORDER_CANCLLED.value();
     }
 
     private OrderDTO cloneAggregate(OrderAggregate orderAggregate) {

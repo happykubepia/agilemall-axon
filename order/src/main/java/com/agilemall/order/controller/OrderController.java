@@ -7,6 +7,9 @@ import com.agilemall.order.dto.OrderReqCreateDTO;
 import com.agilemall.order.dto.OrderReqUpdateDTO;
 import com.agilemall.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,4 +42,17 @@ public class OrderController {
 
         return retVo;
     }
+
+    @GetMapping("/orders/{orderId}")
+    @Operation(summary = "주문 취소 API")
+    @Parameters({
+            @Parameter(name = "orderId", in= ParameterIn.PATH, description = "주문ID", required = true, allowEmptyValue = false)
+    })
+    private ResultVO<String> deleteOrder(@PathVariable(name = "orderId", required = true) String orderId) {
+        log.info("[@GetMapping '/orders/{userId}'] Executing deleteOrder: {}", orderId);
+        ResultVO<String> retVo = orderService.deleteOrder(orderId);
+        return retVo;
+    }
+
+
 }

@@ -6,7 +6,8 @@ import java.util.Optional;
 public enum PaymentStatusEnum {
     CREATED("10", "결제중"),
     CANCELED("20", "결제취소"),
-    COMPLETED("30", "결제완료");
+    COMPLETED("30", "결제완료"),
+    ORDER_CANCLLED("50", "주문취소");
 
     private final String value;
     private final String desc;

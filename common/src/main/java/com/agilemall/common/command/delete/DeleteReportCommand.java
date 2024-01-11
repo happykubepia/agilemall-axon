@@ -1,16 +1,13 @@
-package com.agilemall.order.command;
+package com.agilemall.common.command.delete;
 
 import lombok.Builder;
 import lombok.Value;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
-import java.util.HashMap;
-
 @Value
 @Builder
-public class CompleteOrderCommand {
+public class DeleteReportCommand {
     @TargetAggregateIdentifier
+    String reportId;
     String orderId;
-    String orderStatus;
-    HashMap<String, String> aggregateIdMap;
 }

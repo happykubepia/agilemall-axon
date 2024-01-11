@@ -1,4 +1,4 @@
-package com.agilemall.common.events.update;
+package com.agilemall.order.events;
 
 import lombok.Data;
 
