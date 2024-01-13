@@ -18,11 +18,11 @@ import java.io.Serializable;
 @Entity
 @Table(name="order_detail")
 public class OrderDetail implements Serializable {
-    @Serial
+    @Serial     //Entity 'Order' 참조
     private static final long serialVersionUID = 3618758486649780850L;
 
-    @EmbeddedId
-    @EntityId
+    @EmbeddedId //Primay key가 복수 필드인 경우 @Id 대신 @EmbeddedId 어노테이션 사용
+    @EntityId   //OrderAggregate의 @AggregateMember로 지정된 필드 중 복수값 필드의 Unique key임을 나타냄
     private OrderDetailIdentity orderDetailIdentity;
 
     @Column(name="qty", nullable = false)

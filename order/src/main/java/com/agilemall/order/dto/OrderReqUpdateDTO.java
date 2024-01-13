@@ -6,9 +6,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Data   //@Getter @Setter @RequiredArgsConstructor @ToString @EqualsAndHashCode 포함
+@AllArgsConstructor //모든 프라퍼티를 인자로 가지는 생성자 자동 생성
+@NoArgsConstructor  //인자가 없는 생성자 자동 생성
 public class OrderReqUpdateDTO {
     private String orderId;
     private List<OrderReqDetailDTO> orderReqDetails;

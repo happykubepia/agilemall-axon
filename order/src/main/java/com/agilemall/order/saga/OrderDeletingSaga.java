@@ -1,5 +1,14 @@
 package com.agilemall.order.saga;
-
+/*
+- 목적: 주문 취소를 위한 Saga Process 처리
+- 설명
+    - 정상 처리: DeletedOrderEvent -> DeletedPaymentEvent -> DeletedDeliveryEvent -> DeletedReportEvent -> CompletedDeleteOrderEvent
+    - 실패 처리: 보상처리(Compensating tranaction) 수행
+      - FailedDeletePaymentEvent: compensatingService.cancelDeleteOrder
+      - FailedDeleteDeliveryEvent: compensatingService.cancelDeletePayment -> compensatingService.cancelDeleteOrder
+      - FailedDeleteReportEvent: compensatingService.cancelDeleteDelivery -> compensatingService.cancelDeletePayment -> compensatingService.cancelDeleteOrder
+      - FailedCompleteDeleteOrderEvent: compensatingService.cancelDeleteReport -> compensatingService.cancelDeleteDelivery -> compensatingService.cancelDeletePayment -> compensatingService.cancelDeleteOrder
+*/
 import com.agilemall.common.command.delete.DeleteDeliveryCommand;
 import com.agilemall.common.command.delete.DeletePaymentCommand;
 import com.agilemall.common.command.delete.DeleteReportCommand;
