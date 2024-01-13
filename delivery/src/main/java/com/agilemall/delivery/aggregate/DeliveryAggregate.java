@@ -45,6 +45,8 @@ public class DeliveryAggregate {
 
     }
 
+    //================= 배송 정보 생성 요청 Command 처리 ==================
+
     @CommandHandler
     private DeliveryAggregate(CreateDeliveryCommand createDeliveryCommand) {
         log.info("[@CommandHandler] Executing <CreateDeliveryCommand> for Order Id: {} and Delivery ID: {}",
@@ -86,6 +88,8 @@ public class DeliveryAggregate {
         this.deliveryStatus = event.getDeliveryStatus();
     }
 
+    //================= 배송 정보 수정 요청 Command 처리 ==========================
+
     @CommandHandler
     private void handle(UpdateDeliveryCommand updateDeliveryCommand) {
         log.info("[@CommandHandler] Executing <DeliveryUpdateCommand> for Delivery Id : {}", updateDeliveryCommand.getDeliveryId());
@@ -110,6 +114,9 @@ public class DeliveryAggregate {
         this.aggregateHistory.add(cloneAggregate(this));
     }
 
+
+    //================== 배송 정보 삭제 요청 Command 처리 =====================
+
     @CommandHandler
     private void handle(DeleteDeliveryCommand deleteDeliveryCommand) {
         log.info("[@EventSourcingHandler] Executing DeleteDeliveryCommand for Delivery Id : {}", deleteDeliveryCommand.getDeliveryId());
@@ -131,7 +138,7 @@ public class DeliveryAggregate {
                 cancelDeleteDeliveryCommand.getDeleveryId(),
                 cancelDeleteDeliveryCommand.getOrderId(), true));
 
-        //-- send CreateDeliveryCommand to compensate
+        //-- 삭제 취소시 rollback은 이전 배송정보를 생성하는 것이므로 이전 배송정보를 읽어 생성 요청 Command를 보냄
         if (this.aggregateHistory.isEmpty()) return;
         DeliveryDTO delivery = this.aggregateHistory.get(this.aggregateHistory.size() - 1);
         CreateDeliveryCommand cmd = CreateDeliveryCommand.builder()
@@ -148,6 +155,7 @@ public class DeliveryAggregate {
         log.info("[@EventSourcingHandler] Executing CancelledDeleteDeliveryEvent for Delivery Id : {}", event.getDeliveryId());
     }
 
+    //========= Aggregate 객체 복사
     private DeliveryDTO cloneAggregate(DeliveryAggregate deliveryAggregate) {
         DeliveryDTO delivery = new DeliveryDTO();
         delivery.setDeliveryId(deliveryAggregate.deliveryId);

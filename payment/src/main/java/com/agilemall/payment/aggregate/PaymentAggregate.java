@@ -147,7 +147,7 @@ public class PaymentAggregate {
 
         AggregateLifecycle.apply(cancelledUpdatePaymentEvent);
 
-        //-- send UpdateOrderCommand to compensate
+        //-- 이전 결제정보를 담은 결제 정보 수정 Command를 발송함
         if(this.aggregateHistory.isEmpty()) return;
         PaymentDTO payment = this.aggregateHistory.get(this.aggregateHistory.size()-1);
         UpdatePaymentCommand cmd = UpdatePaymentCommand.builder()
@@ -189,7 +189,7 @@ public class PaymentAggregate {
                 cancelDeletePaymentCommand.getPaymentId(),
                 cancelDeletePaymentCommand.getOrderId(), true));
 
-        //-- send CreateOrderCommand to compensate
+        //-- 이전 결제 정보를 담은 Command객체를 담아 생성 요청을 보냄
         if(this.aggregateHistory.isEmpty()) return;
         PaymentDTO payment = this.aggregateHistory.get(this.aggregateHistory.size()-1);
         CreatePaymentCommand cmd = CreatePaymentCommand.builder()

@@ -85,6 +85,7 @@ public class OrderAggregate {
     - 설명:
       - 사전처리는 OrderService(*.service > OrderService)에서 이미 수행
       - 신규 주문 처리 요청 Event를 생성함
+    - 중요: Aggregate객체를 생성하는 Command는 class 생성자에서 처리해야 함. 나머지 Command는 handle 메소드에서 처리
     */
     @CommandHandler
     private OrderAggregate(CreateOrderCommand createOrderCommand) {

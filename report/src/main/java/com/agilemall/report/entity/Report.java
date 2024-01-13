@@ -1,5 +1,10 @@
 package com.agilemall.report.entity;
-
+/*
+- 목적: Table과 매핑되는 Entity와 Command Handler인 Aggregate 정의
+- 설명
+    - Event replay로 최종 상태를 계산하는 일반 Aggregate가 아닌 DB에 최종 상태를 저장하는 State stored Aggregate를 정의
+    - Report는 Order, Payment, Delivery의 데이터를 사용하여 데이터를 재생성할 수 있으모로 Event sourcing 패턴 미적용
+*/
 import com.agilemall.common.command.create.CreateReportCommand;
 import com.agilemall.common.command.delete.DeleteReportCommand;
 import com.agilemall.common.command.update.UpdateReportCommand;
@@ -32,7 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Aggregate
+@Aggregate  //State Stored Aggregate(최종상태를 Event Replay가 아닌 DB를 이용하는 Aggregate)는 Entity에 정의
 @Data
 @Entity
 @Table(name = "report")
