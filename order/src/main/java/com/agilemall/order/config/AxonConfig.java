@@ -41,7 +41,7 @@ public class AxonConfig {
         //참고: https://cla9.tistory.com/17
         //-- 한번에 처리하는 Event 갯수(1개 -> 100개)와 동시 수행 Thread 수를 지정함
         configurer.registerTrackingEventProcessor(
-                "accounts",
+                "orders",
                 org.axonframework.config.Configuration::eventStore,
                 c -> TrackingEventProcessorConfiguration.forParallelProcessing(3)
                         .andBatchSize(100)
@@ -52,3 +52,4 @@ public class AxonConfig {
                 configuration -> SequentialPerAggregatePolicy.instance());
     }
 }
+

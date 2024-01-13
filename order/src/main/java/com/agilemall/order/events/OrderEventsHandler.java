@@ -1,5 +1,7 @@
 package com.agilemall.order.events;
-
+/*
+- 목적: OrderAggregate에서 생성된 Event 처리를 수행
+*/
 import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.common.dto.OrderStatusEnum;
 import com.agilemall.order.entity.Order;
@@ -22,14 +24,15 @@ import java.util.Optional;
 
 @Slf4j
 @Component
-@ProcessingGroup("orders")
-@AllowReplay
+@ProcessingGroup("orders")      //전체 Event Replay시 대상 class를 구별하기 위해 부여
+@AllowReplay                    //Event Replay를 활성화 함. 비활성화할 EventHandler에는 @DisallowReplay를 지정
 public class OrderEventsHandler {
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
     private transient EventGateway eventGateway;
 
+    //==================== 신규 주문 관련 이벤트 처리 ======================
     @EventHandler
     private void on(CreatedOrderEvent event) {
         log.info("[@EventHandler] Handle <CreatedOrderEvent> for Order Id: {}", event.getOrderId());
@@ -93,6 +96,7 @@ public class OrderEventsHandler {
         optOrder.ifPresent(order -> orderRepository.delete(order));
     }
 
+    //==================== 주문 수정 관련 이벤트 처리 ======================
     /*
 
     - 참고: https://blossoming-man.tistory.com/entry/CascadeTypeREMOVE%EC%99%80-orpahnRemovalTrue
@@ -138,6 +142,7 @@ public class OrderEventsHandler {
 
     }
 
+    //==================== 주문 삭제 관련 이벤트 처리 ======================
     @EventHandler
     private void on(DeletedOrderEvent event) {
         log.info("[@EventHandler] Executing <DeletedOrderEvent> for Order Id: {}", event.getOrderId());
@@ -183,6 +188,7 @@ public class OrderEventsHandler {
         }
     }
 
+    //===================== 전체 이벤트 Replay하여 DB에 최종 상태 저장 ===========
     @ResetHandler
     private void replayAll() {
         log.info("[OrderEventHandler] Executing replayAll");

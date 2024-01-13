@@ -1,5 +1,12 @@
 package com.agilemall.order.queries;
-
+/*
+- 목적: Quary요청에 대한 수행 및 응답
+- 설명
+    - Query요청은 1st 인자로 Query명, 2nd 인자로 Query조건, 3rd인자로 응답class형식으로 구성됨
+    ReportDTO report = queryGateway.query(Constants.QUERY_REPORT, event.getOrderId(),
+                ResponseTypes.instanceOf(ReportDTO.class)).join();
+    - @QueryHandler 어노테이션의 queryName과 매칭되는 QueryHandler가 수행됨
+*/
 import com.agilemall.common.config.Constants;
 import com.agilemall.common.dto.OrderDTO;
 import com.agilemall.common.dto.OrderDetailDTO;
@@ -21,6 +28,7 @@ public class OrderQueryHandler {
     @Autowired
     private OrderRepository orderRepository;
 
+    //-- 주문ID에 해당하는 주문 상세정보를 리턴
     @QueryHandler(queryName = Constants.QUERY_ORDER_DETAIL)
     private List<OrderDetailDTO> handleOrderDetailQuery(String orderId) {
         log.info("[@QueryHandler] Handle <{}> for Order Id: {}", Constants.QUERY_ORDER_DETAIL,orderId);
@@ -36,6 +44,7 @@ public class OrderQueryHandler {
         }
     }
 
+    //-- 주문ID에 해당하는 주문 정보 전체를 리턴
     @QueryHandler(queryName = Constants.QUERY_REPORT)
     private OrderDTO handleReportQuery(String orderId) {
         log.info("[@QueryHandler] Handle <{}> for Order Id: {}", Constants.QUERY_REPORT,orderId);

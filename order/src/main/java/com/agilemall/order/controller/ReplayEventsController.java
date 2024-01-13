@@ -1,5 +1,7 @@
 package com.agilemall.order.controller;
-
+/*
+- 목적: Event를 replay하여 최종 상태를 DB에 저장함
+*/
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -28,6 +30,7 @@ class ReplayEventsController {
         this.configuration = configuration;
     }
 
+    //-- 특정 EventHandler class에 대해 특정 날짜 이후의 Event Replay하여 최종 상태 저장
     @GetMapping("/replay/{processingGroup}/{startDateTime}")
     @Operation(summary = "지정한 Processing Group의 Event Handler를 지정한 시간 이후 Event만 Replay하면서 수행함")
     @Parameters({
@@ -50,7 +53,8 @@ class ReplayEventsController {
 
         configuration.eventProcessingConfiguration()
                 .eventProcessorByProcessingGroup(processingGroupName, StreamingEventProcessor.class)
-                .ifPresentOrElse(streamingEventProcessor -> {
+                .ifPresentOrElse(streamingEventProcessor ->
+                {
                     if(streamingEventProcessor.supportsReset()) {
                         streamingEventProcessor.shutDown();
                         //streamingEventProcessor.resetTokens();    //모든 Event replay 시
@@ -65,6 +69,7 @@ class ReplayEventsController {
         return "Replay Events is processed";
     }
 
+    //-- Event Replay를 허용하는 모든 Event Handler에 대해 전체 Event를 Replay하여 최종 상태 저장
     @GetMapping("/replayAll")
     @Operation(summary = "Replay가 가능한 모든 Event Handler를 찾아 Event를 처음부터 Replay하도록 함")
     String replayEventsAll() {
@@ -86,5 +91,4 @@ class ReplayEventsController {
 
         return "Replay Events All is Processed";
     }
-
 }

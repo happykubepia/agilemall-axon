@@ -180,32 +180,35 @@ io.axoniq.axonserver.exception.MessagingPlatformException: [AXONIQ-2000] Invalid
     - 조치: Saga class에서 개발한 class를 @Autowired로 생성하는 부분을 빼고 테스트 하고, 문제 발생 안하면 적절히 조치
 
 > 참고
-- MySQL 데이터 디렉토리 찾기 
-```
-mysql> show variables like 'datadir';
-+---------------+-----------------+
-| Variable_name | Value           |
-+---------------+-----------------+
-| datadir       | /var/lib/mysql/ |
-+---------------+---------------
-```
-  - JPA 참고: https://exhibitlove.tistory.com/262
-  
-- 로그 패턴 조정하기  
-application.properties에 아래 예제와 같이 추가함
-```
-# Logging
-logging.level.com.agilemall=info
-logging.level.org.axonframework=info
-logging.pattern.console=%clr(%d{MM/dd HH:mm:ss}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}){magenta} %clr(---){faint} %clr(%-40.40logger{39}){cyan} %clr(%m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}){faint}   
-```
-기본 log pattern은 아래와 같음. 
-```
-"%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} "
-+ "%clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} "
-+ "%clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} "
-+ "%clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}";
-출처: https://wonwoo.me/98 [개발블로그:티스토리]
-```
+  - MySQL 데이터 디렉토리 찾기 
+  ```
+  mysql> show variables like 'datadir';
+  +---------------+-----------------+
+  | Variable_name | Value           |
+  +---------------+-----------------+
+  | datadir       | /var/lib/mysql/ |
+  +---------------+---------------
+  ```
+    - JPA 참고: https://exhibitlove.tistory.com/262
+    
+  - 로그 패턴 조정하기  
+  application.properties에 아래 예제와 같이 추가함
+  ```
+  # Logging
+  logging.level.com.agilemall=info
+  logging.level.org.axonframework=info
+  logging.pattern.console=%clr(%d{MM/dd HH:mm:ss}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}){magenta} %clr(---){faint} %clr(%-40.40logger{39}){cyan} %clr(%m%n${LOG_EXCEPTION_CONVERSION_WORD:%wEx}){faint}   
+  ```
+  기본 log pattern은 아래와 같음. 
+  ```
+  "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} "
+  + "%clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} "
+  + "%clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} "
+  + "%clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}";
+  출처: https://wonwoo.me/98 [개발블로그:티스토리]
+  ```
+
+  - Retry, Exception handling 관련 예제  
+  https://github.com/smcvb/gamerental/tree/9a379265bfaa3394d2401db2357483ec21b965ff
 
 

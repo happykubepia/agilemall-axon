@@ -1,5 +1,11 @@
 package com.agilemall.order.controller;
-
+/*
+- 목적: 서비스 외부에 노출하는 API 정의
+- 설명
+  - createOder: 신규 주문 API
+  - updateOrder: 주문 수정 API
+  - deleteOrder: 주문 취소 API
+*/
 import com.agilemall.common.vo.ResultVO;
 import com.agilemall.order.command.CreateOrderCommand;
 import com.agilemall.order.command.UpdateOrderCommand;
@@ -23,6 +29,7 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    //-- 신규 주문 API
     @PostMapping("/orders")
     @Operation(summary = "신규 상품 주문 API")
     private ResultVO<CreateOrderCommand> createOrder(@RequestBody OrderReqCreateDTO orderReqCreateDTO) {
@@ -34,6 +41,7 @@ public class OrderController {
         return retVo;
     }
 
+    //-- 주문 수정 API
     @PutMapping("/orders")
     @Operation(summary = "주문 수정 API")
     private ResultVO<UpdateOrderCommand> updateOrder(@RequestBody OrderReqUpdateDTO orderReqUpdateDTO) {
@@ -43,6 +51,7 @@ public class OrderController {
         return retVo;
     }
 
+    //-- 주문 취소 API
     @DeleteMapping("/orders/{orderId}")
     @Operation(summary = "주문 취소 API")
     @Parameters({

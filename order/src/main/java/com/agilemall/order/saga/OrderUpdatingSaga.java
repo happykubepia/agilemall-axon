@@ -1,5 +1,14 @@
 package com.agilemall.order.saga;
-
+/*
+- 목적: 주문 수정 Saga 프로세스 처리
+- 설명
+    - 정상 처리: UpdatedOrderEvent -> UpdatedPaymentEvent -> CompletedUpdateOrderEvent
+    - 실패 처리: 보상처리(Compensating tranaction) 수행
+      - FailedUpdateOrderEvent: compensatingService.cancelUpdateOrder
+      - FailedUpdatePaymentEvent: compensatingService.cancelUpdateOrder
+      - FailedCompleteUpdateOrderEvent: compensatingService.cancelUpdatePayment -> compensatingService.cancelUpdateOrder
+    - compensatingService.updateReportReport 호출하여 Report service의 조회용 데이터 갱신
+*/
 import com.agilemall.common.command.update.UpdatePaymentCommand;
 import com.agilemall.common.config.Constants;
 import com.agilemall.common.dto.OrderStatusEnum;
@@ -32,6 +41,9 @@ public class OrderUpdatingSaga {
 
     private final HashMap<String, String> aggregateIdMap = new HashMap<>();
 
+    //================== 정상 처리 ========================
+
+    //-- 결제 정보 수정 처리 요청
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void on(UpdatedOrderEvent event) {
@@ -59,16 +71,11 @@ public class OrderUpdatingSaga {
                 return;
             }
             log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
-            compensatingService.cancelUpdateOrder(aggregateIdMap);
+            compensatingService.cancelUpdateOrder(aggregateIdMap);  //이전 주문 정보로 rollback 처리
         }
     }
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(FailedUpdateOrderEvent event) {
-        log.info("[Saga] FailedUpdateOrderEvent is received for Order Id: {}", event.getOrderId());
-        log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
-        compensatingService.cancelUpdateOrder(aggregateIdMap);
-    }
 
+    //-- 배송 정보 수정 처리 요청
     @SagaEventHandler(associationProperty = "orderId")
     private void on(UpdatedPaymentEvent event) {
         log.info("[Saga] UpdatedPaymentEvent is received for Order Id: {}", event.getOrderId());
@@ -84,42 +91,58 @@ public class OrderUpdatingSaga {
         } catch(Exception e) {
             log.error(e.getMessage());
             log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
-            compensatingService.cancelUpdateOrder(aggregateIdMap);
+            compensatingService.cancelUpdateOrder(aggregateIdMap);  //이전 주문 정보로 rollback 처리
         }
     }
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(FailedUpdatePaymentEvent event) {
-        log.info("[Saga] FailedUpdatePaymentEvent is received for Order Id: {}", event.getOrderId());
-        log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
-        compensatingService.cancelUpdateOrder(aggregateIdMap);
-    }
 
+    //-- 주문 수정 최종 완료 시
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void on(CompletedUpdateOrderEvent event) {
         log.info("[Saga] [CompletedUpdateOrderEvent] is finished for Order Id: {}", event.getOrderId());
         log.info("===== [Updating Order] Transaction is Finished =====");
 
-        //-- Report service에 레포트 업데이트
+        //-- Report service에 주문, 결제, 배송 정보 업데이트
         compensatingService.updateReport(event.getOrderId(), false);
     }
+
+    //================= 보상 처리 =========================
+
+    //-- 주문 정보 수정 실패 시 보상 처리 요청
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedUpdateOrderEvent event) {
+        log.info("[Saga] FailedUpdateOrderEvent is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
+        compensatingService.cancelUpdateOrder(aggregateIdMap);  //이전 주문 정보로 rollback 처리
+    }
+
+    //-- 결제 정보 수정 실패 시 보상 처리 요청
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedUpdatePaymentEvent event) {
+        log.info("[Saga] FailedUpdatePaymentEvent is received for Order Id: {}", event.getOrderId());
+        log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
+        compensatingService.cancelUpdateOrder(aggregateIdMap);  //이전 주문 정보로 rollback 처리
+    }
+
+    //-- 주문 수정 최정 처리 실패 시 보상 처리 요청
     @SagaEventHandler(associationProperty = "orderId")
     private void on(FailedCompleteUpdateOrderEvent event) {
         log.info("[Saga] FailedCompleteUpdateOrderEvent is received for Order Id: {}", event.getOrderId());
 
         log.info("===== [Update Order] Compensation <CancelUpdatePaymentCommand> ==== ");
-        compensatingService.cancelUpdatePayment(aggregateIdMap);
+        compensatingService.cancelUpdatePayment(aggregateIdMap);      //이전 결제 정보로 rollback처리 요청
         log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
-        compensatingService.cancelUpdateOrder(aggregateIdMap);
+        compensatingService.cancelUpdateOrder(aggregateIdMap);        // 이전 주문 정보로 rollback처리 요청
     }
 
+    //-- 주문 수정 취소 완료 시
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void on(CancelledUpdateOrderEvent event) {
         log.info("[Saga] <CancelledUpdateOrderEvent> is finished for Order Id: {}", event.getOrderId());
         log.info("===== [Update Order] Transaction is Aborted =====");
 
-        //-- Report service에 레포트 업데이트
+        //-- Report service에 주문, 결제, 배송 정보 업데이트
         compensatingService.updateReport(event.getOrderId(), false);
     }
 }

@@ -105,6 +105,8 @@ public class DeliveryAggregate {
         log.info("[@EventSourcingHandler] Executing DeliveryUpdateEvent for Delivery Id : {}", event.getDeliveryId());
         this.deliveryStatus = event.getDeliveryStatus();
 
+        //-- 수정 또는 삭제 실패 시 이전 정보로 rollback시에만 사용되므로 바로 이전 정보만 담고 있으면 됨
+        this.aggregateHistory.clear();
         this.aggregateHistory.add(cloneAggregate(this));
     }
 
@@ -144,7 +146,6 @@ public class DeliveryAggregate {
     @EventSourcingHandler
     private void on(CancelledDeleteDeliveryEvent event) {
         log.info("[@EventSourcingHandler] Executing CancelledDeleteDeliveryEvent for Delivery Id : {}", event.getDeliveryId());
-
     }
 
     private DeliveryDTO cloneAggregate(DeliveryAggregate deliveryAggregate) {

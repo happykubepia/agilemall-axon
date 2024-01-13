@@ -38,6 +38,9 @@ public class OrderDeletingSaga {
 
     private final HashMap<String, String> aggregateIdMap = new HashMap<>();
 
+    //======================== 정상 처리 =============================
+
+    //-- 결제 정보 삭제 요청
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void on(DeletedOrderEvent event) {
@@ -56,130 +59,159 @@ public class OrderDeletingSaga {
         aggregateIdMap.put(ServiceNameEnum.DELIVERY.value(), report.getDeliveryId());
         aggregateIdMap.put(ServiceNameEnum.REPORT.value(), report.getReportId());
 
+        //-- 결제 정보 삭제 요청 Command 객체 생성
         DeletePaymentCommand deletePaymentCommand = DeletePaymentCommand.builder()
                 .paymentId(aggregateIdMap.get(ServiceNameEnum.PAYMENT.value()))
                 .orderId(event.getOrderId())
                 .build();
 
+        //-- 결제 정보 삭제 요청 발송. Axon서버에 의해 Payment서비스의 PaymentAggregate로 요청됨
         try {
             commandGateway.sendAndWait(deletePaymentCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
             //throw new Exception("Error is occurred during handle <DeletedOrderEvent>");
         } catch(Exception e) {
             log.info(e.getMessage());
             log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
-            compensatingService.cancelDeleteOrder(aggregateIdMap);
+            compensatingService.cancelDeleteOrder(aggregateIdMap);  //이전 주문 정보로 rollback 요청
         }
     }
 
+    //-- 배송 정보 삭제 요청
     @SagaEventHandler(associationProperty = "orderId")
     private void on(DeletedPaymentEvent event) {
         log.info("[Saga] <DeletedPaymentEvent> is received for Order Id: {}", event.getOrderId());
         log.info("===== [Delete Order] #3: <DeleteDeliveryCommand> =====");
 
+        //-- 배송 정보 삭제 요청 Command객체 생성
         DeleteDeliveryCommand deleteDeliveryCommand = DeleteDeliveryCommand.builder()
                 .deliveryId(aggregateIdMap.get(ServiceNameEnum.DELIVERY.value()))
                 .orderId(event.getOrderId())
                 .build();
 
+        //-- 배송 정보 삭제 요청 발송
         try {
             commandGateway.sendAndWait(deleteDeliveryCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
             log.info(e.getMessage());
+            log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+            compensatingService.cancelDeletePayment(aggregateIdMap);    //이전 결제 정보로 rollback 요청
+            log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+            compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
         }
     }
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(FailedDeletePaymentEvent event) {
-        log.info("[Saga] <FailedDeletePaymentEvent> is received for Order Id: {}", event.getOrderId());
 
-        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
-        compensatingService.cancelDeleteOrder(aggregateIdMap);
-    }
-
+    //-- 레포트 정보 삭제 요청
     @SagaEventHandler(associationProperty = "orderId")
     private void on(DeletedDeliveryEvent event) {
         log.info("[Saga] <DeletedDeliveryEvent> is received for Order Id: "+ event.getOrderId());
         log.info("===== [Delete Order] #4: <DeleteReportCommand> =====");
 
+        //-- 레포트 정보 삭제 요청 Command 객체 생성
         DeleteReportCommand deleteReportCommand = DeleteReportCommand.builder()
                 .reportId(aggregateIdMap.get(ServiceNameEnum.REPORT.value()))
                 .orderId(event.getOrderId())
                 .build();
 
+        //-- 레포트 정보 삭제 요청 발송
         try {
             commandGateway.sendAndWait(deleteReportCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
             log.error(e.getMessage());
+
+            log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
+            compensatingService.cancelDeleteDelivery(aggregateIdMap);   //이전 배송 정보로 rollback 요청
             log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
-            compensatingService.cancelDeletePayment(aggregateIdMap);
+            compensatingService.cancelDeletePayment(aggregateIdMap);    //이전 결제 정보로 rollback 요청
             log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
-            compensatingService.cancelDeleteOrder(aggregateIdMap);
+            compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
         }
     }
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(FailedDeleteDeliveryEvent event) {
-        log.info("[Saga] <FailedDeleteDeliveryEvent> is received for Order Id: "+ event.getOrderId());
-        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
-        compensatingService.cancelDeletePayment(aggregateIdMap);
-        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
-        compensatingService.cancelDeleteOrder(aggregateIdMap);
-    }
 
+    //-- 주문 삭제 최종 처리 요청
     @SagaEventHandler(associationProperty = "orderId")
     private void on(DeletedReportEvent event) {
         log.info("[Saga] <DeletedReportEvent> is received for Order Id: {}", event.getOrderId());
         log.info("===== [Delete Order] #5: <CompleteDeleteOrderCommand> =====");
 
+        //주문 삭제 최종 처리 요청 Command객체 생성
         CompleteDeleteOrderCommand completeDeleteOrderCommand = CompleteDeleteOrderCommand.builder()
                 .orderId(event.getOrderId())
                 .build();
+
+        //주문 삭제 최종 처리 요청
         try {
             commandGateway.sendAndWait(completeDeleteOrderCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
             log.error(e.getMessage());
-            log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
-            compensatingService.cancelDeleteDelivery(aggregateIdMap);
-            log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
-            compensatingService.cancelDeletePayment(aggregateIdMap);
-            log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
-            compensatingService.cancelDeleteOrder(aggregateIdMap);
             log.info("===== [Delete Order] Compensation <CancelDeleteReportCommand> =====");
-            compensatingService.cancelDeleteReport(aggregateIdMap);
-
+            compensatingService.cancelDeleteReport(aggregateIdMap);     //이전 레포트 정보로 rollback 요청
+            log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
+            compensatingService.cancelDeleteDelivery(aggregateIdMap);   //이전 배송 정보로 rollback 요청
+            log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+            compensatingService.cancelDeletePayment(aggregateIdMap);    //이전 결제 정보로 rollback 요청
+            log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+            compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
         }
     }
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(FailedDeleteReportEvent event) {
-        log.info("[Saga] <FailedDeleteReportEvent> is received for Order Id: {}", event.getOrderId());
 
-        log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
-        compensatingService.cancelDeleteDelivery(aggregateIdMap);
-        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
-        compensatingService.cancelDeletePayment(aggregateIdMap);
-        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
-        compensatingService.cancelDeleteOrder(aggregateIdMap);
-    }
-
+    //-- 주문 삭제 최종 완료 시 처리
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void on(CompletedDeleteOrderEvent event) {
         log.info("[Saga] [CompletedDeleteOrderEvent] is received for Order Id: {}", event.getOrderId());
         log.info("===== [Delete Order] Transaction is Finished =====");
     }
+
+    //========================= 보상 처리 ============================
+
+    //-- 결제 정보 삭제 실패 시 보상 처리 요청
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedDeletePaymentEvent event) {
+        log.info("[Saga] <FailedDeletePaymentEvent> is received for Order Id: {}", event.getOrderId());
+
+        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+        compensatingService.cancelDeleteOrder(aggregateIdMap);  //이전 주문 정보로 rollback 요청
+    }
+
+    //-- 배송 정보 삭제 실패 시 보상 처리 요청
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedDeleteDeliveryEvent event) {
+        log.info("[Saga] <FailedDeleteDeliveryEvent> is received for Order Id: "+ event.getOrderId());
+        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+        compensatingService.cancelDeletePayment(aggregateIdMap);    //이전 결제 정보로 rollback 요청
+        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+        compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
+    }
+
+    //-- 레포트 정보 삭제 실패 시 보상 처리 요청
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedDeleteReportEvent event) {
+        log.info("[Saga] <FailedDeleteReportEvent> is received for Order Id: {}", event.getOrderId());
+
+        log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
+        compensatingService.cancelDeleteDelivery(aggregateIdMap);   //이전 배송 정보로 rollback 요청
+        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+        compensatingService.cancelDeletePayment(aggregateIdMap);    //이전 결제 정보로 rollback 요청
+        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+        compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
+    }
+
+    //-- 주문 삭제 최종 처리 실패 시 처리 요청
     @SagaEventHandler(associationProperty = "orderId")
     private void on(FailedCompleteDeleteOrderEvent event) {
         log.info("[Saga] [FailedCompleteDeleteOrderEvent] is received for Order Id: {}", event.getOrderId());
 
-        log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
-        compensatingService.cancelDeleteDelivery(aggregateIdMap);
-        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
-        compensatingService.cancelDeletePayment(aggregateIdMap);
-        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
-        compensatingService.cancelDeleteOrder(aggregateIdMap);
         log.info("===== [Delete Order] Compensation <CancelDeleteReportCommand> =====");
-        compensatingService.cancelDeleteReport(aggregateIdMap);
+        compensatingService.cancelDeleteReport(aggregateIdMap);     //이전 레포트 정보로 rollback 요청
+        log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
+        compensatingService.cancelDeleteDelivery(aggregateIdMap);   //이전 배송 정보로 rollback 요청
+        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
+        compensatingService.cancelDeletePayment(aggregateIdMap);    //이전 결제 정보로 rollback 요청
+        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
+        compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
     }
 
-
+    //-- 주문 삭제 실패에 대한 보상 처리 완료 시
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void on(CancelledDeleteOrderEvent event) {

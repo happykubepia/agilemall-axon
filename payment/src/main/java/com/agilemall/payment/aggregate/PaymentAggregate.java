@@ -65,7 +65,12 @@ public class PaymentAggregate {
         CreatedPaymentEvent createdPaymentEvent = new CreatedPaymentEvent();
         BeanUtils.copyProperties(createPaymentCommand, createdPaymentEvent);
 
-        AggregateLifecycle.apply(createdPaymentEvent);
+        try {
+            AggregateLifecycle.apply(createdPaymentEvent);
+            //throw new Exception("Payment service is not working temporary");
+        } catch(Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
     @EventSourcingHandler
@@ -119,6 +124,8 @@ public class PaymentAggregate {
         log.info("[@EventSourcingHandler] Executing UpdatedPaymentEvent for Order Id: {} and Payment Id: {}",
                 event.getOrderId(), event.getPaymentId());
 
+        //-- 수정 또는 삭제 실패 시 이전 정보로 rollback시에만 사용되므로 바로 이전 정보만 담고 있으면 됨
+        this.aggregateHistory.clear();
         this.aggregateHistory.add(cloneAggregate(this));
 
         this.totalPaymentAmt = event.getTotalPaymentAmt();

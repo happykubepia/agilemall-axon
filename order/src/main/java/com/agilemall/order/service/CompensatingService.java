@@ -1,5 +1,10 @@
 package com.agilemall.order.service;
-
+/*
+- 목적: 주문 신규/수정/삭제 처리 실패 시 보상 처리
+- 설명:
+    - 보상 처리를 요청하는 Command객체를 생성하여 발송함
+    - Command Handler가 있는 서비스의 Aggregate에서 요청을 처리함
+*/
 import com.agilemall.common.command.create.CancelCreateDeliveryCommand;
 import com.agilemall.common.command.create.CancelCreateOrderCommand;
 import com.agilemall.common.command.create.CancelCreatePaymentCommand;
@@ -35,6 +40,7 @@ public class CompensatingService {
     @Autowired
     private transient QueryGateway queryGateway;
 
+    //==================== 주문 생성 보상 처리 ====================
     public void cancelCreateOrder(HashMap<String, String> aggregateIdMap) {
         log.info("[CompensatingService] Executing <cancelCreateOrder> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
 
@@ -77,6 +83,7 @@ public class CompensatingService {
         }
     }
 
+    //==================== 주문 수정 보상 처리 ====================
     public void cancelUpdateOrder(HashMap<String, String> aggregateIdMap) {
         log.info("[CompensatingService] Executing <cancelUpdateOrder> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
         try {
@@ -103,6 +110,7 @@ public class CompensatingService {
         }
     }
 
+    //==================== 주문 삭제 보상 처리 ====================
     public void cancelDeleteOrder(HashMap<String, String> aggregateIdMap) {
         log.info("[CompensatingService] Executing <cancelDeleteOrder> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
 
@@ -150,6 +158,7 @@ public class CompensatingService {
         updateReport(aggregateIdMap.get(ServiceNameEnum.ORDER.value()), true);
     }
 
+    //==================== 주문, 결제, 배송 레포트 생성/수정 ===========
     public void updateReport(String orderId, boolean isCreate) {
         log.info("===== START Updating Report =====");
 
@@ -177,7 +186,8 @@ public class CompensatingService {
                         .deliveryId(delivery.getDeliveryId())
                         .deliveryStatus(delivery.getDeliveryStatus())
                         .build();
-                commandGateway.sendAndWait(cmd, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+                //commandGateway.sendAndWait(cmd, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+                commandGateway.send(cmd);
             } else {
                 String reportId = queryGateway.query(new GetReportId(orderId),
                         ResponseTypes.instanceOf(String.class)).join();
@@ -208,4 +218,5 @@ public class CompensatingService {
             log.info(e.getMessage());
         }
     }
+
 }
