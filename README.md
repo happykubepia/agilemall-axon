@@ -4,6 +4,8 @@ source code를 보시려면  [여기](https://github.com/happykubepia/agilemall-
 
 ## 사전준비
 - IntelliJ 설치: multi module and gradle project를 만들기 위해서 IntelliJ 필요
+  - 무료버전인 IntelliJ CE설치: https://www.jetbrains.com/idea/download
+
 - Docker설치
   - Mac:
     - brew install docker
@@ -40,77 +42,101 @@ docker run -d --rm --name axonserver -p 18024:8024 -p 18124:8124 -e axoniq.axons
   - Web console접근: http://localhost:18024
 
 - IntelliJ 설정
-  - Lombok 사용을 위한 Annotation Processing 활성화: Settings > Build, Execution, Deployment > Compiler > Annotation Processors
+  - Lombok 사용
+    - Annotation Processing 활성화: Settings > Build, Execution, Deployment > Compiler > Annotation Processors
+    - Plugin 설치: Settings > Plugin 선택 후 'Market place'에서 'Lombok'검색하여 설치
   - 오타 체크 비활성화: Settings > Editor > Inspections 클릭 후 'Typo'로 검색하여 모두 Uncheck
 
 ----
 
-## 테스트 
-
-- Build jar
-application 최상위 디렉토리에서 수행
-```
-./gradlew [clean] {application name}:build [--stacktrace --info --refresh-dependencies -x test]
-ex1) ./gradlew clean order:build -x test
-ex2) ./gradlew clean order:build --stacktrace --info --refresh-dependencies -x test
-ex3) ./gradlew clean order:build
-```
-
-- 테스트: http://localhost:18080/swagger-ui/index.html
-  - 주문생성
-
+## 어플리케이션 import 및 테스트 
+- Import application 
+  - 작업 디렉토리 생성: 홈 디렉토리 밑에 적절한 작업 디렉토리 생성
+  - 소스 다운로드
   ```
-  {
-    "userId": "hiondal",
-    "orderReqDetails": [
+  > git clone https://github.com/happykubepia/agilemall-axon.git
+  > cd agilemall-axon
+  ```
+  - IntelliJ 시작 후 'File > Open...'실행하여 import
+
+- Run/Debug Configurations
+  - 메인 메뉴 'Run > Run/Debug Configurations' 실행
+  - 좌측 상단 '+'버튼 클릭 후 'Gradle'선택
+  - 아래 그림과 같이 셋팅하여 5개 서비스 추가
+  ![run config](./doc/images/run_config.png)
+
+- 실행
+  - 좌측 하단의 '서비스' 아이콘 클릭 후 아래 그림 처럼 Gradle 서비스 나타나게 함
+  ![service lsit](./doc/images/service.png)
+  - 각 서비스를 모두 실행 시킴
+ 
+- 테스트
+  - 제품 정보 등록
+    - 브라우저에서 swagger page 오픈: http://localhost:18081/swagger-ui/index.html 
+    - 제품 등록: 아래 예제 처럼 적절하게 제품 정보를 등록함
+        ```
+        {
+          "productId": "PROD_10041",
+          "productName": "Apple",
+          "unitPrice": 1000,
+          "inventoryQty": 100000
+        }
+        ```
+    - 주문 생성/수정/삭제 테스트 페이지 접근: http://localhost:18081/swagger-ui/index.html 
+    - 주문 생성 테스트: 등록한 제품코드를 일치 시키고 나머지는 적절히 변경하여 테스트  
+      
+        ```
+        {
+          "userId": "hiondal",
+          "orderReqDetails": [
+            {
+              "productId": "PROD_10041",
+              "qty": 10
+            },
+            {
+              "productId": "PROD_10042",
+              "qty": 5
+            },
+            {
+              "productId": "PROD_10043",
+              "qty": 15
+            }
+          ],
+          "paymentReqDetails": [
+            {
+              "paymentKind": "10",
+              "paymentRate": 0.9
+            },
+            {
+              "paymentKind": "20",
+              "paymentRate": 0.1
+            }
+          ]
+        }
+        ```
+
+    - 주문수정 테스트 
+    위 주문수정 결과에서 주문ID를 복사하여 orderId값을 변경 후 수행. 
+      ```
       {
-        "productId": "PROD_10041",
-        "qty": 10
-      },
-      {
-        "productId": "PROD_10042",
-        "qty": 5
-      },
-      {
-        "productId": "PROD_10043",
-        "qty": 15
+      "orderId": "ORDER_469309120",
+      "orderReqDetails": [
+        {
+          "productId": "PROD_10041",
+          "qty": 1
+        }
+      ],
+      "paymentReqDetails": [
+        {
+          "paymentKind": "10",
+          "paymentRate": 1
+        }
+      ]
       }
-    ],
-    "paymentReqDetails": [
-      {
-        "paymentKind": "10",
-        "paymentRate": 0.9
-      },
-      {
-        "paymentKind": "20",
-        "paymentRate": 0.1
-      }
-    ]
-  }
-  ```
-
-  - 주문수정 
-  위 주문수정 결과에서 주문ID를 복사하여 orderId값을 변경 후 수행. 
-  ```
-  {
-  "orderId": "ORDER_469309120",
-  "orderReqDetails": [
-    {
-      "productId": "PROD_10041",
-      "qty": 1
-    }
-  ],
-  "paymentReqDetails": [
-    {
-      "paymentKind": "10",
-      "paymentRate": 1
-    }
-  ]
-  }
-  ```
+      ```
   
-  - 주문삭제 
-  위 주문수정 결과에서 주문ID를 복사하여 orderId값을 변경 후 수행. 
+    - 주문삭제 
+    위 주문수정 결과에서 주문ID를 복사하여 orderId값을 변경 후 수행. 
   
 
 ----
@@ -127,13 +153,16 @@ ex3) ./gradlew clean order:build
   - 'File > Invalidated Caches' 수행하여 Cache 삭제 후 재시작 하면 됨 
   - 참고) https://dlrudtn108.tistory.com/39
 
-
 > 에러 발생 후 Order의 EventHandler가 실행 안될 때 
   원인: Order와 다른 서비스의 token index값이 일치 하지 않기 때문임 
   - orders, order_detail의 모든 record 삭제 
   ```
-  delete  from orderDB.order_detail;
-  delete from orderDB.orders;
+    delete  from orderDB.order_detail;
+    delete from orderDB.orders;
+    delete  from paymentDB.payment_detail;
+    delete  from paymentDB.payment;
+    delete  from deliveryDB.shipping;
+    delete from reportDB.report;
   ```
   - Token Global index 초기화 
     - Axon server UI에서 [Reset Event Store] 클릭하여 token 초기화
@@ -180,6 +209,15 @@ io.axoniq.axonserver.exception.MessagingPlatformException: [AXONIQ-2000] Invalid
     - 조치: Saga class에서 개발한 class를 @Autowired로 생성하는 부분을 빼고 테스트 하고, 문제 발생 안하면 적절히 조치
 
 > 참고
+  - Build jar
+    application 최상위 디렉토리에서 수행
+  ```
+  ./gradlew [clean] {application name}:build [--stacktrace --info --refresh-dependencies -x test]
+  ex1) ./gradlew clean order:build -x test
+  ex2) ./gradlew clean order:build --stacktrace --info --refresh-dependencies -x test
+  ex3) ./gradlew clean order:build
+  ```
+
   - MySQL 데이터 디렉토리 찾기 
   ```
   mysql> show variables like 'datadir';
@@ -189,7 +227,8 @@ io.axoniq.axonserver.exception.MessagingPlatformException: [AXONIQ-2000] Invalid
   | datadir       | /var/lib/mysql/ |
   +---------------+---------------
   ```
-    - JPA 참고: https://exhibitlove.tistory.com/262
+
+  - JPA 참고: https://exhibitlove.tistory.com/262
     
   - 로그 패턴 조정하기  
   application.properties에 아래 예제와 같이 추가함
@@ -207,8 +246,5 @@ io.axoniq.axonserver.exception.MessagingPlatformException: [AXONIQ-2000] Invalid
   + "%clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}";
   출처: https://wonwoo.me/98 [개발블로그:티스토리]
   ```
-
-  - Retry, Exception handling 관련 예제  
-  https://github.com/smcvb/gamerental/tree/9a379265bfaa3394d2401db2357483ec21b965ff
 
 
