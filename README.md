@@ -17,21 +17,7 @@ source code를 보시려면  [여기](https://github.com/happykubepia/agilemall-
   ```
   % docker run -d --rm --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=P@ssw0rd$ -v ~/data/mysql:/var/lib/mysql mysql
   ```
-  - DB생성
-  https://happycloud-lee.tistory.com/229 : 4.보안설정부터 참고
-  ```
-    % docker exec -it mysql sh
-    # mysql -u root -p 
-    Enter password: 
-    mysql> create database orderDB;
-    mysql> create database paymentDB;
-    mysql> create database deliveryDB;
-    mysql> create database inventoryDB;
-    mysql> create database reportDB;
-    mysql> show databases;
-    mysql> exit
-    # exit
-  ```
+  
   - DBeaver에서 연결: 'Driver properties'탭에서 'allowPublicKeyRetrieval'을 'true'로 변경해야 함
 
 - Axon Server 설치

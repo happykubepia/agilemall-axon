@@ -23,7 +23,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: SERVER_PORT
-              value: "18080"
+              value: "18081"
           envFrom:
             - configMapRef:
                 name: inventory
@@ -78,7 +78,7 @@ spec:
   ports:
     - name: inventory
       port: 8080
-      targetPort: 18080
+      targetPort: 18081
 
 ---
 

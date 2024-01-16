@@ -34,12 +34,12 @@ import java.util.concurrent.TimeUnit;
 @Saga
 @Slf4j
 public class OrderUpdatingSaga {
+    private final HashMap<String, String> aggregateIdMap = new HashMap<>();
+
     @Autowired
     private transient CommandGateway commandGateway;
     @Autowired
     private CompensatingService compensatingService;
-
-    private final HashMap<String, String> aggregateIdMap = new HashMap<>();
 
     //================== 정상 처리 ========================
 
@@ -75,7 +75,7 @@ public class OrderUpdatingSaga {
         }
     }
 
-    //-- 배송 정보 수정 처리 요청
+    //-- 주문 수정 완료 처리 요청
     @SagaEventHandler(associationProperty = "orderId")
     private void on(UpdatedPaymentEvent event) {
         log.info("[Saga] UpdatedPaymentEvent is received for Order Id: {}", event.getOrderId());
@@ -124,7 +124,7 @@ public class OrderUpdatingSaga {
         compensatingService.cancelUpdateOrder(aggregateIdMap);  //이전 주문 정보로 rollback 처리
     }
 
-    //-- 주문 수정 최정 처리 실패 시 보상 처리 요청
+    //-- 주문 수정 완료 처리 실패 시 보상 처리 요청
     @SagaEventHandler(associationProperty = "orderId")
     private void on(FailedCompleteUpdateOrderEvent event) {
         log.info("[Saga] FailedCompleteUpdateOrderEvent is received for Order Id: {}", event.getOrderId());

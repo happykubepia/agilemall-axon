@@ -39,13 +39,13 @@ import java.util.concurrent.TimeUnit;
 @Saga
 @Slf4j
 public class OrderCreatingSaga {
+    //-- 주문ID, 결제ID, 배송ID값을 담은 변수
+    private final HashMap<String, String> aggregateIdMap = new HashMap<>();
+
     @Autowired
     private transient CommandGateway commandGateway;
     @Autowired
     private CompensatingService compensatingService;
-
-    //-- 주문ID, 결제ID, 배송ID값을 담은 변수
-    private final HashMap<String, String> aggregateIdMap = new HashMap<>();
 
     //================== 정상 처리 프로세스 ====================
 

@@ -26,7 +26,6 @@ import com.agilemall.order.command.*;
 import com.agilemall.order.entity.OrderDetail;
 import com.agilemall.order.entity.OrderDetailIdentity;
 import com.agilemall.order.events.*;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;

@@ -1,0 +1,48 @@
+/'
+Order Service Context Map
+'/
+@startuml
+title Order Service Context Map
+
+component Services {
+  component Order {
+    entity order
+    database orderDB
+  }
+  component Payment {
+    entity payment
+    database paymentDB
+  }
+  component Delivery {
+    entity delivery
+    database deliveryDB
+  }
+  component Inventory {
+    entity inventory
+    database inventoryDB
+  }
+  component Report {
+    entity report
+    database reportDB
+  }
+}
+component Shared {
+  entity common
+}
+component AxonServer {
+  database EventStore
+  queue Queue
+}
+
+Services --> EventStore: Event 저장
+Services <--> Queue: Message
+Services --> Shared: Common, Event, DTO 참조 
+
+Order --> Payment: 결제요청 
+Order --> Delivery: 배송요청
+Order --> Report: 조회레포트 생성/수정 
+Order --> Inventory: 상품정보 참조 
+Delivery --> Inventory: 재공증감 요청 
+
+@enduml
+

@@ -38,14 +38,14 @@ import java.util.concurrent.TimeUnit;
 @Saga
 @Slf4j
 public class OrderDeletingSaga {
+    private final HashMap<String, String> aggregateIdMap = new HashMap<>();
+
     @Autowired
     private transient CommandGateway commandGateway;
     @Autowired
     private transient QueryGateway queryGateway;
     @Autowired
     private CompensatingService compensatingService;
-
-    private final HashMap<String, String> aggregateIdMap = new HashMap<>();
 
     //======================== 정상 처리 =============================
 
