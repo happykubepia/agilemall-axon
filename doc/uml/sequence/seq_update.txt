@@ -1,0 +1,80 @@
+/'
+주문수정 Sequence Diagram
+'/
+@startuml
+
+title Sequence Diagram: 주문수정 정상처리
+
+control OrderController
+participant OrderService
+participant OrderAggregate
+control OrderUpdatingSaga
+participant OrderEventHandler
+database OrderRepository
+queue AxonServer
+database EventStore
+
+autonumber
+'-- 주문데이터 수정
+group 주문수정
+OrderController -> OrderService ++: 주문 수정 요청
+OrderService <-> OrderRepository: 주문정보 
+OrderService -> OrderService: 제품 일치 검사  
+create entity Delivery 
+OrderService -> Delivery: 배송정보 Query 
+OrderService <-- Delivery: 배송정보
+OrderService -> OrderService: 배송상태로 수정가능 여부 검사  
+create entity Inventory
+OrderService -> Inventory: 주문 제품 정보 Query 
+OrderService <-- Inventory: 주문 제품 정보 리턴
+OrderService -> OrderService: 재고 Validation 검사
+OrderService -> AxonServer --++: 수정요청 Command발송 
+OrderController <-- OrderService: 수정요청 완료 리턴 
+OrderService --
+AxonServer -> OrderAggregate --++: Push 수정요청 Command 
+OrderAggregate -> AxonServer --++: 수정완료 Event 생성 
+AxonServer -> EventStore: 수정완료 Event 저장
+AxonServer -> OrderEventHandler: Push 수정완료 Event
+OrderEventHandler -> OrderRepository: 주문데이터 수정 
+end
+
+'-- 결제데이터 수정
+group 주문수정 Saga
+group 결제데이터 수정 
+AxonServer -> OrderUpdatingSaga --++: Push 주문수정 완료 Event 
+OrderUpdatingSaga -> AxonServer ++: 결제수정 요청 Command 발송 
+create participant PaymentAggregate
+AxonServer -> PaymentAggregate --: Push 결제수정 요청 Command 
+PaymentAggregate -> AxonServer ++: 결제수정완료 Event 생성
+AxonServer -> EventStore: 결제수정 완료 Event 등록 
+create participant PaymentEventHandler
+AxonServer -> PaymentEventHandler: push 결제수정 완료 Event
+create database PaymentRepository
+PaymentEventHandler -> PaymentRepository: 결제데이터 수정 
+AxonServer -> OrderUpdatingSaga --: Push 결제수정 완료 Event 
+end
+
+'-- 주문수정 완료: 주문상태 변경 
+group 주문수정 완료 
+OrderUpdatingSaga->AxonServer ++: 주문수정 완료 요청 Command 발송 
+AxonServer -> OrderAggregate --++: Push 주문수정 완료 요청 Command 
+OrderAggregate -> AxonServer --++: 주문수정 완료 Event 생성 
+AxonServer -> EventStore: 주문수정 완료 Event 저장
+AxonServer -> OrderEventHandler: Push 주문수정 완료 Event 
+OrderEventHandler -> OrderRepository: 주문상태 변경 
+AxonServer -> OrderUpdatingSaga --: Push 주문수정 완료 Event 
+AxonServer --
+OrderUpdatingSaga --
+end 
+
+'-- Report 수정 요청
+group 레포트 수정
+OrderUpdatingSaga -> AxonServer: Report 수정 요청 Command 발송  
+note right of OrderUpdatingSaga: CompenSatingService 통해 Command 발송  
+note right of AxonServer: 상세 프로세스는 'Report생성/수정' 참조   
+end
+
+end
+@enduml
+
+

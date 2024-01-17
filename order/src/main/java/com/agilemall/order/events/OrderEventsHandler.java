@@ -134,6 +134,23 @@ public class OrderEventsHandler {
     }
 
     @EventHandler
+    private void on(CompletedUpdateOrderEvent event) {
+        log.info("[@EventHandler] Executing <CompletedUpdateOrderEvent> for Order Id: {}", event.getOrderId());
+
+        try {
+            Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+            if(optOrder.isEmpty()) return;
+
+            Order order = optOrder.get();
+            order.setOrderStatus(OrderStatusEnum.COMPLETED.value());
+            orderRepository.save(order);
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            eventGateway.publish(new FailedCompleteUpdateOrderEvent(event.getOrderId()));
+        }
+    }
+
+    @EventHandler
     private void on(CancelledUpdateOrderEvent event) {
         log.info("[@EventHandler] Executing <CancelledUpdateOrderEvent> for Order Id: {}", event.getOrderId());
 
@@ -188,7 +205,7 @@ public class OrderEventsHandler {
     //===================== 전체 이벤트 Replay하여 DB에 최종 상태 저장 ===========
     @ResetHandler
     private void replayAll() {
-        log.info("[OrderEventHandler] Executing replayAll");
+        log.info("[@ResetHandler] Executing replayAll");
         orderRepository.deleteAll();
     }
 }

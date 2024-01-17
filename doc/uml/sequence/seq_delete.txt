@@ -1,0 +1,90 @@
+/'
+주문삭제 Sequence Diagram
+'/
+@startuml
+
+title Sequence Diagram: 주문삭제 정상처리
+
+control OrderController
+participant OrderService
+participant OrderAggregate
+control OrderDeletingSaga
+participant OrderEventHandler
+database OrderRepository
+queue AxonServer
+database EventStore
+
+autonumber
+'-- 주문데이터 삭제
+group 주문데이터 삭제
+OrderController -> OrderService ++: 주문 삭제 요청
+OrderService -> Delivery: 배송정보 Query 
+OrderService <-- Delivery: 배송정보
+OrderService -> OrderService: 배송상태로 삭제가능 여부 검사  
+OrderService -> AxonServer --++: 주문삭제 요청 Command발송 
+OrderController <-- OrderService: 주문삭제 요청 완료 리턴 
+OrderService --
+AxonServer -> OrderAggregate --++: Push 주문삭제 요청 Command 
+OrderAggregate -> AxonServer --++: 주문삭제 완료 Event 생성 
+AxonServer -> EventStore: 주문삭제 Event 저장(주문상태 변경)
+AxonServer -> OrderEventHandler: Push 주문삭제 완료 Event
+OrderEventHandler -> OrderRepository: 주문상태 변경 
+end
+
+'-- 결제데이터 삭제
+group 주문삭제 Saga
+group 결제데이터 삭제 
+AxonServer -> OrderDeletingSaga --++: Push 주문삭제 완료 Event 
+OrderDeletingSaga -> AxonServer ++: 결제삭제 요청 Command 발송 
+create participant PaymentAggregate
+AxonServer -> PaymentAggregate --: Push 결제삭제 요청 Command 
+PaymentAggregate -> AxonServer ++: 결제삭제 완료 Event 생성
+create participant PaymentEventHandler
+AxonServer -> PaymentEventHandler: push 결제삭제 완료 Event
+create database PaymentRepository
+PaymentEventHandler -> PaymentRepository: 결제데이터 삭제 
+AxonServer -> OrderDeletingSaga --: Push 결제삭제 완료 Event 
+end
+
+'-- 배송데이터 삭제 
+group 배송데이터 삭제 
+OrderDeletingSaga -> AxonServer ++: 배송삭제 요청 Command 발송 
+create participant DeliveryAggregate
+AxonServer -> DeliveryAggregate --: Push 배송삭제 요청 Command 
+DeliveryAggregate -> AxonServer ++: 배송삭제 완료 Event 생성
+create participant DeliveryEventHandler
+AxonServer -> DeliveryEventHandler: push 배송삭제 완료 Event
+create database DeliveryRepository
+DeliveryEventHandler -> DeliveryRepository: 배송데이터 삭제 
+AxonServer -> OrderDeletingSaga --: Push 배송삭제 완료 Event 
+end 
+
+'-- 레포트데이터 삭제 
+group 레포트데이터 삭제 
+OrderDeletingSaga -> AxonServer ++: 레포트삭제 요청 Command 발송 
+create participant ReportAggregate
+AxonServer -> ReportAggregate --: Push 레포트삭제 요청 Command 
+ReportAggregate -> AxonServer ++: 레포트삭제 완료 Event 생성
+create participant ReportEventHandler
+AxonServer -> ReportEventHandler: push 레포트삭제 완료 Event
+create database ReportRepository
+ReportEventHandler -> ReportRepository: 레포트데이터 삭제 
+AxonServer -> OrderDeletingSaga --: Push 레포트삭제 완료 Event 
+end 
+
+'-- 주문삭제 완료 
+group 주문삭제 완료 
+OrderDeletingSaga->AxonServer ++: 주문삭제 최종완료 요청 Command 발송 
+AxonServer -> OrderAggregate --++: Push 주문삭제 최종완료 요청 Command 
+OrderAggregate -> AxonServer --++: 주문삭제 최종완료 Event 생성 
+AxonServer -> OrderEventHandler: Push 주문삭제 최종완료 Event 
+OrderEventHandler -> OrderRepository: 주문데이터 삭제 
+AxonServer -> OrderDeletingSaga --: Push 주문삭제 최종완료 Event 
+AxonServer --
+OrderDeletingSaga --
+end 
+
+end
+@enduml
+
+
