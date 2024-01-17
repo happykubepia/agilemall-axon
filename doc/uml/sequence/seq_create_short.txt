@@ -1,0 +1,32 @@
+/'
+신규주문 Sequence Diagram
+'/
+@startuml
+
+title Sequence Diagram: 신규주문 정상처리
+
+'-- 주문데이터 생성
+group 주문생성
+end
+
+'-- 결제데이터 생성
+group 주문생성 Saga
+group 결제데이터 생성 
+end
+
+'-- 배송데이터 생성 
+group 배송데이터 생성 
+end 
+
+'-- 주문완료: 주문상태 변경 
+group 주문완료 
+end 
+
+'-- Report 생성 요청
+group 레포트 생성
+end
+
+end
+@enduml
+
+
