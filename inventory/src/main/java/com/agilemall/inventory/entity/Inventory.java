@@ -65,11 +65,8 @@ public class Inventory implements Serializable {
         this.unitPrice = createInventoryCommand.getUnitPrice();
         this.inventoryQty = createInventoryCommand.getInventoryQty();
 
-        //-- Event 생성
-        CreatedInventoryEvent createdInventoryEvent = new CreatedInventoryEvent();
-        BeanUtils.copyProperties(createInventoryCommand, createdInventoryEvent);
-        AggregateLifecycle.apply(createdInventoryEvent);
     }
+
 
     //보상 트랜잭션
     @CommandHandler
@@ -84,10 +81,5 @@ public class Inventory implements Serializable {
             if(this.inventoryQty < 0) this.inventoryQty = 0;
         }
 
-        //-- Event 발생
-        UpdatedInventoryQtyEvent updatedInventoryQtyEvent = new UpdatedInventoryQtyEvent();
-        BeanUtils.copyProperties(updateInventoryQtyCommand, updatedInventoryQtyEvent);
-
-        AggregateLifecycle.apply(updatedInventoryQtyEvent);
     }
 }

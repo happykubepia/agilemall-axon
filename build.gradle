@@ -1,26 +1,23 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.1'
+    id 'org.springframework.boot' version '3.2.1'   //2024.1월 현재 axon은 3.2.1까지만 지원
     id 'io.spring.dependency-management' version '1.1.4'
 }
 
-allprojects {
-    group = "com.agilemall"
-    version = "0.0.1-SNAPSHOT"
-    repositories {
-        mavenCentral()
-    }
-    sourceCompatibility = '17'
-
-    test {
-        useJUnitPlatform()
-    }
-}
 subprojects {
+    //==== Add for Multi module
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
+    //===========================
+
+    group = 'com.agilemall'
+    version = '0.0.1-SNAPSHOT'
+
+    java {
+        sourceCompatibility = '17'
+    }
 
     configurations {
         compileOnly {
@@ -28,29 +25,31 @@ subprojects {
         }
     }
 
+    repositories {
+        mavenCentral()
+    }
+
     dependencies {
-        compileOnly 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok'
-        implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        compileOnly 'org.projectlombok:lombok'
+        runtimeOnly 'com.mysql:mysql-connector-j'
+        annotationProcessor 'org.projectlombok:lombok'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-        //mySQL
-        runtimeOnly 'com.mysql:mysql-connector-j'
         //axon framework
         implementation 'org.axonframework:axon-spring-boot-starter:4.9.1'
         //Google core utilities
         implementation 'com.google.guava:guava:33.0.0-jre'
         //Apache utilities
         implementation 'org.apache.commons:commons-lang3:3.14.0'
-        //Retryable
-        implementation 'org.springframework.retry:spring-retry'
-        //AOP
-        implementation 'org.springframework:spring-aspects'
         // Swagger
         implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
         //gson
         implementation 'com.google.code.gson:gson:2.10.1'
+    }
 
+    tasks.named('test') {
+        useJUnitPlatform()
     }
 }
