@@ -5,16 +5,12 @@ package com.agilemall.report.entity;
     - Event replay로 최종 상태를 계산하는 일반 Aggregate가 아닌 DB에 최종 상태를 저장하는 State stored Aggregate를 정의
     - Report는 Order, Payment, Delivery의 데이터를 사용하여 데이터를 재생성할 수 있으모로 Event sourcing 패턴 미적용
 */
+
 import com.agilemall.common.command.create.CreateReportCommand;
 import com.agilemall.common.command.delete.DeleteReportCommand;
 import com.agilemall.common.command.update.UpdateReportCommand;
 import com.agilemall.common.command.update.UpdateReportDeliveryStatusCommand;
-import com.agilemall.common.dto.OrderDetailDTO;
-import com.agilemall.common.dto.PaymentDetailDTO;
-import com.agilemall.common.events.create.CreatedReportEvent;
 import com.agilemall.common.events.delete.DeletedReportEvent;
-import com.agilemall.common.events.update.UpdatedReportDeliveryStatusEvent;
-import com.agilemall.common.events.update.UpdatedReportEvent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import jakarta.persistence.Column;
@@ -28,13 +24,10 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.modelling.command.AggregateMember;
 import org.axonframework.spring.stereotype.Aggregate;
-import org.springframework.beans.BeanUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Aggregate  //State Stored Aggregate(최종상태를 Event Replay가 아닌 DB를 이용하는 Aggregate)는 Entity에 정의
@@ -71,7 +64,7 @@ public class Report implements Serializable {
     private String orderStatus;
 
     @AggregateMember
-    @Column(name = "order_details", nullable = true, length = 3000)
+    @Column(name = "order_details", length = 3000)
     private String orderDetails;
 
     @AggregateMember
@@ -87,7 +80,7 @@ public class Report implements Serializable {
     private String paymentStatus;
 
     @AggregateMember
-    @Column(name = "payment_details", nullable = true, length = 3000)
+    @Column(name = "payment_details", length = 3000)
     private String paymentDetails;
 
     @AggregateMember
@@ -121,21 +114,8 @@ public class Report implements Serializable {
         this.paymentDetails = gson.toJson(createReportCommand.getPaymentDetails());
         this.deliveryId = createReportCommand.getDeliveryId();
         this.deliveryStatus = createReportCommand.getDeliveryStatus();
-
-        //-- Event 발행
-        CreatedReportEvent createdReportEvent = new CreatedReportEvent();
-        BeanUtils.copyProperties(createReportCommand, createdReportEvent);
-        List<OrderDetailDTO> newOrderDetails = createReportCommand.getOrderDetails().stream()
-                .map(o -> new OrderDetailDTO(o.getOrderId(), o.getProductId(), o.getQty(), o.getOrderAmt()))
-                .collect(Collectors.toList());
-        createdReportEvent.setOrderDetails(newOrderDetails);
-        List<PaymentDetailDTO> newDetails = createReportCommand.getPaymentDetails().stream()
-                .map(o -> new PaymentDetailDTO(o.getOrderId(), o.getPaymentId(), o.getPaymentKind(), o.getPaymentAmt()))
-                .collect(Collectors.toList());
-        createdReportEvent.setPaymentDetails(newDetails);
-
-        AggregateLifecycle.apply(createdReportEvent);
     }
+
 
     @CommandHandler
     private void handle(UpdateReportCommand updateReportCommand) {
@@ -155,20 +135,6 @@ public class Report implements Serializable {
         this.deliveryId = updateReportCommand.getDeliveryId();
         this.deliveryStatus = updateReportCommand.getDeliveryStatus();
 
-        //-- Event 발행
-        UpdatedReportEvent updatedReportEvent = new UpdatedReportEvent();
-        BeanUtils.copyProperties(updateReportCommand, updatedReportEvent);
-
-        List<OrderDetailDTO> newOrderDetails = updateReportCommand.getOrderDetails().stream()
-                .map(o -> new OrderDetailDTO(o.getOrderId(), o.getProductId(), o.getQty(), o.getOrderAmt()))
-                .collect(Collectors.toList());
-        updatedReportEvent.setOrderDetails(newOrderDetails);
-        List<PaymentDetailDTO> newDetails = updateReportCommand.getPaymentDetails().stream()
-                .map(o -> new PaymentDetailDTO(o.getOrderId(), o.getPaymentId(), o.getPaymentKind(), o.getPaymentAmt()))
-                .collect(Collectors.toList());
-        updatedReportEvent.setPaymentDetails(newDetails);
-
-        AggregateLifecycle.apply(updatedReportEvent);
     }
 
     @CommandHandler
@@ -176,10 +142,6 @@ public class Report implements Serializable {
         log.info("[@CommandHandler] Handle <UpdateReportDeliveryStatusCommand> for Order Id: {}", cmd.getOrderId());
 
         this.deliveryStatus = cmd.getDeliveryStatus();
-
-        UpdatedReportDeliveryStatusEvent event = new UpdatedReportDeliveryStatusEvent();
-        BeanUtils.copyProperties(cmd, event);
-        AggregateLifecycle.apply(event);
     }
 
     @CommandHandler
