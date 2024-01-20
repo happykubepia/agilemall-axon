@@ -33,13 +33,13 @@ class ReplayEventsController {
     //-- 특정 EventHandler class에 대해 특정 날짜 이후의 Event Replay하여 최종 상태 저장
     @GetMapping("/replay/{processingGroup}/{startDateTime}")
     @Operation(summary = "지정한 Processing Group의 Event Handler를 지정한 시간 이후 Event만 Replay하면서 수행함")
-    @Parameters({
-            @Parameter(name = "processingGroup", in= ParameterIn.PATH, description = "Processing Groupname",
-                    required = true, allowEmptyValue = false, example="orders"),
-            @Parameter(name = "startDateTime", in= ParameterIn.PATH, description = "시작일시(생략 시 모든 Event Replay)",
-                    required = false, allowEmptyValue = true, example = "2024-01-01T00:00:00.00Z")
+    @Parameters(value = {
+            @Parameter(name = "processingGroup", in = ParameterIn.PATH, description = "Processing Groupname",
+                    required = true, example = "orders"),
+            @Parameter(name = "startDateTime", in = ParameterIn.PATH, description = "시작일시(생략 시 모든 Event Replay)",
+                    example = "2024-01-01T00:00:00.00Z")
     })
-    String replayEventFor(
+     String replayEventFor(
             @PathVariable(name = "processingGroup") String processingGroupName,
             @PathVariable(name = "startDateTime") String startDateTime) {
 

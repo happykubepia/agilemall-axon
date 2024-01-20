@@ -35,10 +35,13 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class CompensatingService {
+    private transient final CommandGateway commandGateway;
+    private transient final QueryGateway queryGateway;
     @Autowired
-    private transient CommandGateway commandGateway;
-    @Autowired
-    private transient QueryGateway queryGateway;
+    public CompensatingService(CommandGateway commandGateway, QueryGateway queryGateway) {
+        this.commandGateway = commandGateway;
+        this.queryGateway = queryGateway;
+    }
 
     //==================== 주문 생성 보상 처리 ====================
     public void cancelCreateOrder(HashMap<String, String> aggregateIdMap) {

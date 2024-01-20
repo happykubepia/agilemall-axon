@@ -25,8 +25,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class OrderQueryHandler {
+
+    private final OrderRepository orderRepository;
     @Autowired
-    private OrderRepository orderRepository;
+    public OrderQueryHandler(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
 
     //-- 주문ID에 해당하는 주문 상세정보를 리턴
     @QueryHandler(queryName = Constants.QUERY_ORDER_DETAIL)
@@ -35,10 +39,9 @@ public class OrderQueryHandler {
         Optional<Order> optOrder = orderRepository.findById(orderId);
         if(optOrder.isPresent()) {
             Order order = optOrder.get();
-            List<OrderDetailDTO> orderDetails = order.getOrderDetails().stream()
+            return order.getOrderDetails().stream()
                     .map(o -> new OrderDetailDTO(order.getOrderId(), o.getOrderDetailIdentity().getProductId(), o.getQty(), o.getOrderAmt()))
                     .collect(Collectors.toList());
-            return orderDetails;
         } else {
             return null;
         }

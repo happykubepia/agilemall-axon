@@ -27,11 +27,14 @@ import java.util.Optional;
 @ProcessingGroup("orders")      //전체 Event Replay시 대상 class를 구별하기 위해 부여
 @AllowReplay                    //Event Replay를 활성화 함. 비활성화할 EventHandler에는 @DisallowReplay를 지정
 public class OrderEventsHandler {
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private transient EventGateway eventGateway;
 
+    private final OrderRepository orderRepository;
+    private transient final EventGateway eventGateway;
+    @Autowired
+    public OrderEventsHandler(OrderRepository orderRepository, EventGateway eventGateway) {
+        this.orderRepository = orderRepository;
+        this.eventGateway = eventGateway;
+    }
     //==================== 신규 주문 관련 이벤트 처리 ======================
     @EventHandler
     private void on(CreatedOrderEvent event) {

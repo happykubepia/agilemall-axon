@@ -26,8 +26,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1")
 public class OrderController {
+
+    private final OrderService orderService;
     @Autowired
-    private OrderService orderService;
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     //-- 신규 주문 API
     @PostMapping("/orders")
@@ -46,21 +50,19 @@ public class OrderController {
     @Operation(summary = "주문 수정 API")
     private ResultVO<UpdateOrderCommand> updateOrder(@RequestBody OrderReqUpdateDTO orderReqUpdateDTO) {
         log.info("[@PutMapping '/orders'] Executing updateOrder: {}", orderReqUpdateDTO.toString());
-        ResultVO<UpdateOrderCommand> retVo = orderService.updateOrder(orderReqUpdateDTO);
 
-        return retVo;
+        return orderService.updateOrder(orderReqUpdateDTO);
     }
 
     //-- 주문 취소 API
     @DeleteMapping("/orders/{orderId}")
     @Operation(summary = "주문 취소 API")
     @Parameters({
-            @Parameter(name = "orderId", in= ParameterIn.PATH, description = "주문ID", required = true, allowEmptyValue = false)
+            @Parameter(name = "orderId", in= ParameterIn.PATH, description = "주문ID", required = true)
     })
-    private ResultVO<String> deleteOrder(@PathVariable(name = "orderId", required = true) String orderId) {
+    private ResultVO<String> deleteOrder(@PathVariable(name = "orderId") String orderId) {
         log.info("[@GetMapping '/orders/{userId}'] Executing deleteOrder: {}", orderId);
-        ResultVO<String> retVo = orderService.deleteOrder(orderId);
-        return retVo;
+        return orderService.deleteOrder(orderId);
     }
 
 }

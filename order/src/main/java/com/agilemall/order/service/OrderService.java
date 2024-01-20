@@ -37,12 +37,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class OrderService {
+    private transient final CommandGateway commandGateway;
+    private transient final QueryGateway queryGateway;
+    private final OrderRepository orderRepository;
     @Autowired
-    private transient CommandGateway commandGateway;
-    @Autowired
-    private transient QueryGateway queryGateway;
-    @Autowired
-    private OrderRepository orderRepository;
+    public OrderService(CommandGateway commandGateway, QueryGateway queryGateway, OrderRepository orderRepository) {
+        this.commandGateway = commandGateway;
+        this.queryGateway = queryGateway;
+        this.orderRepository = orderRepository;
+    }
 
     /*
     - 목적: 신규 주문 처리를 진행하기 위한 validation체크 후 주문생성 Command객체를 생성하여 이후 처리를 요청함
@@ -85,7 +88,7 @@ public class OrderService {
         //*참고)Stream: https://futurecreator.github.io/2018/08/26/java-8-streams/
 
         //주문금액합계
-        int totalOrderAmt = newOrderDetails.stream().mapToInt(o->o.getOrderAmt()).sum();
+        int totalOrderAmt = newOrderDetails.stream().mapToInt(OrderDetailDTO::getOrderAmt).sum();
 
         //결제정보 설정
         List<PaymentDetailDTO> newPaymentDetails = orderReqCreateDTO.getPaymentReqDetails().stream()
@@ -93,7 +96,7 @@ public class OrderService {
                 .collect(Collectors.toList());
 
         //결제금액 합계
-        int totalPaymentAmt = newPaymentDetails.stream().mapToInt(o->o.getPaymentAmt()).sum();
+        int totalPaymentAmt = newPaymentDetails.stream().mapToInt(PaymentDetailDTO::getPaymentAmt).sum();
 
         //--Command객체 생성
         CreateOrderCommand createOrderCommand = CreateOrderCommand.builder()
@@ -260,8 +263,7 @@ public class OrderService {
 
         //-- 현재 배송상태를 읽어 주문 삭제 가능한지 검사. 주문 상태가 'CREATED'인 경우만 취소 가능함.
         log.info("===== [Delete Order] #1: <validateOrderDeletableByDeliveryStatus> =====");
-        ResultVO<String> retCheck = new ResultVO<>();
-        retCheck = validateOrderDeletableByDeliveryStatus(orderId);
+        ResultVO<String> retCheck = validateOrderDeletableByDeliveryStatus(orderId);
         if (!retCheck.isReturnCode()) {
             log.info("NOT Deletable: {}", retCheck.getReturnMessage());
             return retCheck;

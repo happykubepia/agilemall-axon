@@ -36,11 +36,16 @@ import java.util.concurrent.TimeUnit;
 public class OrderUpdatingSaga {
     private final HashMap<String, String> aggregateIdMap = new HashMap<>();
 
-    @Autowired
     private transient CommandGateway commandGateway;
     @Autowired
+    public void setCommandGateway(CommandGateway commandGateway) {
+        this.commandGateway = commandGateway;
+    }
     private CompensatingService compensatingService;
-
+    @Autowired
+    public void setCompensatingService(CompensatingService compensatingService) {
+        this.compensatingService = compensatingService;
+    }
     //================== 정상 처리 ========================
 
     //-- 결제 정보 수정 처리 요청

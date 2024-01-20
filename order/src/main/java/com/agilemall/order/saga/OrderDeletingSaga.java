@@ -40,13 +40,23 @@ import java.util.concurrent.TimeUnit;
 public class OrderDeletingSaga {
     private final HashMap<String, String> aggregateIdMap = new HashMap<>();
 
-    @Autowired
     private transient CommandGateway commandGateway;
     @Autowired
+    public void setCommandGateway(CommandGateway commandGateway) {
+        this.commandGateway = commandGateway;
+    }
+
+    private CompensatingService compensatingService;
+    @Autowired
+    public void setCompensatingService(CompensatingService compensatingService) {
+        this.compensatingService = compensatingService;
+    }
+
     private transient QueryGateway queryGateway;
     @Autowired
-    private CompensatingService compensatingService;
-
+    public void setQueryGateway(QueryGateway queryGateway) {
+        this.queryGateway = queryGateway;
+    }
     //======================== 정상 처리 =============================
 
     //-- 결제 정보 삭제 요청

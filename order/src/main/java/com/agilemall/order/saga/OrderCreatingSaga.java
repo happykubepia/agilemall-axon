@@ -42,10 +42,17 @@ public class OrderCreatingSaga {
     //-- 주문ID, 결제ID, 배송ID값을 담은 변수
     private final HashMap<String, String> aggregateIdMap = new HashMap<>();
 
-    @Autowired
     private transient CommandGateway commandGateway;
     @Autowired
+    public void setCommandGateway(CommandGateway commandGateway) {
+        this.commandGateway = commandGateway;
+    }
+
     private CompensatingService compensatingService;
+    @Autowired
+    public void setCompensatingService(CompensatingService compensatingService) {
+        this.compensatingService = compensatingService;
+    }
 
     //================== 정상 처리 프로세스 ====================
 

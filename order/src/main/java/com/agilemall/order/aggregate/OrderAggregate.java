@@ -70,9 +70,11 @@ public class OrderAggregate {
     */
     private final List<OrderDTO> aggregateHistory = new ArrayList<>();
 
-    @Autowired
     private transient CommandGateway commandGateway;
-
+    @Autowired
+    public void setCommandGateway(CommandGateway commandGateway) {
+        this.commandGateway = commandGateway;
+    }
     //Axon framework동작을 위해 비어있는 생성자는 반드시 있어야 함
     public OrderAggregate() {
 
