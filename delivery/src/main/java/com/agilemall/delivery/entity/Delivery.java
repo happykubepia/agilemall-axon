@@ -7,11 +7,12 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 import java.io.Serial;
+import java.io.Serializable;
 
 @Data
 @Entity
 @Table(name = "shipping")
-public class Delivery {
+public class Delivery implements Serializable {
     @Serial
     private static final long serialVersionUID = -5169046106840512530L;
 

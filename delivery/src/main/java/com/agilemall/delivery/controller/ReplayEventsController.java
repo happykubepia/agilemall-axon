@@ -32,9 +32,9 @@ class ReplayEventsController {
     @Operation(summary = "지정한 Processing Group의 Event Handler를 지정한 시간 이후 Event만 Replay하면서 수행함")
     @Parameters({
             @Parameter(name = "processingGroup", in= ParameterIn.PATH, description = "Processing Groupname",
-                    required = true, allowEmptyValue = false, example="orders"),
+                    required = true, example="orders"),
             @Parameter(name = "startDateTime", in= ParameterIn.PATH, description = "시작일시(생략 시 모든 Event Replay)",
-                    required = false, allowEmptyValue = true, example = "2024-01-01T00:00:00.00Z")
+                    example = "2024-01-01T00:00:00.00Z")
     })
     String replayEventFor(
             @PathVariable(name = "processingGroup") String processingGroupName,

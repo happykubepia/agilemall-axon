@@ -30,15 +30,19 @@ import java.util.Optional;
 @ProcessingGroup("delivery")
 @AllowReplay
 public class DeliveryEventsHandler {
-    @Autowired
-    private DeliveryRepository deliveryRepository;
-    @Autowired
-    private transient CommandGateway commandGateway;
-    @Autowired
-    private transient EventGateway eventGateway;
-    @Autowired
-    private transient QueryGateway queryGateway;
 
+    private final DeliveryRepository deliveryRepository;
+    private transient final CommandGateway commandGateway;
+    private transient final EventGateway eventGateway;
+    private transient final QueryGateway queryGateway;
+    @Autowired
+    public DeliveryEventsHandler(DeliveryRepository deliveryRepository, CommandGateway commandGateway,
+                                 EventGateway eventGateway, QueryGateway queryGateway) {
+        this.deliveryRepository = deliveryRepository;
+        this.commandGateway = commandGateway;
+        this.eventGateway = eventGateway;
+        this.queryGateway = queryGateway;
+    }
     @EventHandler
     private void on(CreatedDeliveryEvent event) {
         log.info("[@EventHandler] Handle CreatedDeliveryEvent");

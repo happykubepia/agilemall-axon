@@ -16,8 +16,12 @@ import java.util.Optional;
 @Slf4j
 @Component
 public class ReportQueryHandler {
+
+    private final ReportRepository reportRepository;
     @Autowired
-    ReportRepository reportRepository;
+    public ReportQueryHandler(ReportRepository reportRepository) {
+        this.reportRepository = reportRepository;
+    }
 
     @QueryHandler
     private String handle(GetReportId qry) {

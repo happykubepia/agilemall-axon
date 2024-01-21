@@ -18,8 +18,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class PaymentQueryHandler {
+
+    private final PaymentRepository paymentRepository;
     @Autowired
-    PaymentRepository paymentRepository;
+    public PaymentQueryHandler(PaymentRepository paymentRepository) {
+        this.paymentRepository = paymentRepository;
+    }
 
     @QueryHandler(queryName = Constants.QUERY_REPORT)
     private PaymentDTO handle(String orderId) {

@@ -31,10 +31,14 @@ import java.util.Optional;
 @ProcessingGroup("payment")
 @AllowReplay
 public class PaymentEventHandler {
+
+    private final PaymentRepository paymentRepository;
+    private transient final EventGateway eventGateway;
     @Autowired
-    private PaymentRepository paymentRepository;
-    @Autowired
-    private transient EventGateway eventGateway;
+    public PaymentEventHandler(PaymentRepository paymentRepository, EventGateway eventGateway) {
+        this.paymentRepository = paymentRepository;
+        this.eventGateway = eventGateway;
+    }
 
     @EventHandler
     private void on(CreatedPaymentEvent event) {
@@ -113,13 +117,11 @@ public class PaymentEventHandler {
             eventGateway.publish(new FailedDeletePaymentEvent(event.getPaymentId(), event.getOrderId()));
             return;
         }
-        if(payment != null) {
-            try {
-                paymentRepository.delete(payment);
-            } catch(Exception e) {
-                log.error(e.getMessage());
-                eventGateway.publish(new FailedDeletePaymentEvent(event.getPaymentId(), event.getOrderId()));
-            }
+        try {
+            paymentRepository.delete(payment);
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            eventGateway.publish(new FailedDeletePaymentEvent(event.getPaymentId(), event.getOrderId()));
         }
     }
 

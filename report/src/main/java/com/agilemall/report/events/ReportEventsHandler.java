@@ -15,10 +15,14 @@ import java.util.Optional;
 @Slf4j
 @Component
 public class ReportEventsHandler {
+
+    private transient  final EventGateway eventGateway;
+    private final ReportRepository reportRepository;
     @Autowired
-    private EventGateway eventGateway;
-    @Autowired
-    private ReportRepository reportRepository;
+    public ReportEventsHandler(EventGateway eventGateway, ReportRepository reportRepository) {
+        this.eventGateway = eventGateway;
+        this.reportRepository = reportRepository;
+    }
 
     @EventHandler
     private void on(DeletedReportEvent event) {

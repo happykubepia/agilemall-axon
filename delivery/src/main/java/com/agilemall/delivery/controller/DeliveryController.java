@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,19 +18,22 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Delivery service API", description = "Delivery Application")
 @Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1")
 public class DeliveryController {
+
+    private final DeliveryService deliveryService;
     @Autowired
-    DeliveryService deliveryService;
+    public DeliveryController(DeliveryService deliveryService) {
+        this.deliveryService = deliveryService;
+    }
 
     @GetMapping("/delivery/{orderId}")
     @Operation(summary = "주문ID에 해당하는 배송정보 읽기")
     @Parameters({
-        @Parameter(name = "orderId", in= ParameterIn.PATH, description = "주문ID", required = true, allowEmptyValue = false)
+        @Parameter(name = "orderId", in= ParameterIn.PATH, description = "주문ID", required = true)
     })
     private ResponseEntity<ResultVO<Delivery>> getDelivery(
-            @PathVariable(name = "orderId", required = true) String orderId) {
+            @PathVariable(name = "orderId") String orderId) {
         log.info("[@GetMapping(\"/delivery/{orderId}\")] Executing <getDelivery>: {}", orderId);
         return new ResponseEntity<>(deliveryService.getDelivery(orderId), HttpStatus.OK);
     }

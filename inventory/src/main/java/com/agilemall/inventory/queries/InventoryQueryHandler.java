@@ -22,15 +22,17 @@ import java.util.Optional;
 @Slf4j
 @Component
 public class InventoryQueryHandler {
+
+    private final InventoryRepository inventoryRepository;
     @Autowired
-    private InventoryRepository inventoryRepository;
+    public InventoryQueryHandler(InventoryRepository inventoryRepository) {
+        this.inventoryRepository = inventoryRepository;
+    }
 
     @QueryHandler
     private InventoryDTO handle(GetInventoryByProductIdQuery query) {
         log.info("[@QueryHandler] Handle <GetInventoryByProductIdQuery> for Product Id: {}", query.getProductId());
 
-        int inventoryQty = 0;
-        int unitPrice = 0;
         Optional <Inventory> optInventory = inventoryRepository.findById(query.getProductId());
         if(optInventory.isPresent()) {
             Inventory inventory = optInventory.get();

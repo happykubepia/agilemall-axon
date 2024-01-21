@@ -25,12 +25,17 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class DeliveryService {
+
+    private transient final CommandGateway commandGateway;
+    private transient final QueryGateway queryGateway;
+    private final DeliveryRepository deliveryRepository;
+
     @Autowired
-    private transient CommandGateway commandGateway;
-    @Autowired
-    private transient QueryGateway queryGateway;
-    @Autowired
-    private DeliveryRepository deliveryRepository;
+    public DeliveryService(CommandGateway commandGateway, QueryGateway queryGateway, DeliveryRepository deliveryRepository) {
+        this.commandGateway = commandGateway;
+        this.queryGateway = queryGateway;
+        this.deliveryRepository = deliveryRepository;
+    }
 
     public ResultVO<Delivery> getDelivery(String orderId) {
         log.info("[DeliveryService] Executing <getDelivery> for Order Id: {}", orderId);

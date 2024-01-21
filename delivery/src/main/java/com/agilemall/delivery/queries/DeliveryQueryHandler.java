@@ -16,8 +16,11 @@ import java.util.Optional;
 @Component
 public class DeliveryQueryHandler {
 
+    private final DeliveryRepository deliveryRepository;
     @Autowired
-    DeliveryRepository deliveryRepository;
+    public DeliveryQueryHandler(DeliveryRepository deliveryRepository) {
+        this.deliveryRepository = deliveryRepository;
+    }
 
     @QueryHandler(queryName = Constants.QUERY_REPORT)
     private DeliveryDTO handle(String orderId) {
