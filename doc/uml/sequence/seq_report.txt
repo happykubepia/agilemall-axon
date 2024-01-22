@@ -1,0 +1,49 @@
+/'
+Report 생성/수정 Sequence Diagram
+'/
+@startuml
+
+title Sequence Diagram: 조회레포트 생성/수정 
+
+control OrderCreatingSaga
+participant CompensatingService
+collections OrderQueryHandler
+database OrderRepository
+collections PaymentQueryHandler
+database PaymentRepository
+collections DeliveryQueryHandler
+database DeliveryRepository
+participant Report 
+participant ReportEventHandler
+database ReportRepository
+
+autonumber
+'-- Report 생성/수정 요청
+group 레포트 생성/수정 
+OrderCreatingSaga -> CompensatingService ++: Report 생성/수정 요청 
+CompensatingService -> AxonServer ++: Order 정보 Query 발송 
+AxonServer -> OrderQueryHandler: Push Order 정보 Query 
+OrderQueryHandler <-> OrderRepository: Order 정보 
+AxonServer <-- OrderQueryHandler: Order 정보 
+AxonServer --> CompensatingService --: Order정보 
+
+CompensatingService -> AxonServer ++: Payment 정보 Query 발송 
+AxonServer -> PaymentQueryHandler: Push Payment 정보 Query 
+PaymentQueryHandler <-> PaymentRepository: Payment 정보 
+AxonServer <-- PaymentQueryHandler: Payment 정보 Query 
+AxonServer --> CompensatingService --: Payment 정보 
+
+CompensatingService -> AxonServer ++: Delivery 정보 Query 발송 
+AxonServer -> DeliveryQueryHandler: Push Delivery 정보 Query
+DeliveryQueryHandler <-> DeliveryRepository: Delivery 정보 
+AxonServer <-- DeliveryQueryHandler: Delivery 정보 Query
+AxonServer --> CompensatingService --: Delivery 정보 
+
+CompensatingService -> AxonServer ++: Report 생성/수정 요청 Command  
+AxonServer -> Report: Push Report 생성/수정 요청 Command 
+AxonServer --
+Report -> ReportRepository: Report 생성/수정
+CompensatingService --
+end
+
+@enduml
