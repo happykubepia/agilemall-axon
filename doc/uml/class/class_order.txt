@@ -1,0 +1,200 @@
+/'
+Order Cleass Diagram
+'/
+@startuml
+
+title "Class Diagram: Order"
+
+package order.aggregate {
+	class OrderAggregate {
+		-String orderId
+	    -String userId
+	    -LocalDateTime orderDatetime
+	    -String orderStatus
+	    -int totalOrderAmt
+	    -List<OrderDetailDTO> orderDetails
+	    -String paymentId
+	    -List<PaymentDetailDTO> paymentDetails
+	    -int totalPaymentAmt
+		-CommandGateway commandGateway
+
+		.. Create ..
+		-OrderAggregate(CreateOrderCommand)
+		-void on(CreatedOrderEvent)
+		-void handle(CompleteOrderCreateCommand)
+		-void on(CompletedCreateOrderEvent) 
+		-void handle(CancelCreateOrderCommand)
+		-void on(CancelledCreateOrderEvent)
+		.. Update ..
+		-void handle(UpdateOrderCommand)
+		-void on(UpdatedOrderEvent)
+		-void on(CompleteUpdateOrderCommand)
+		-void handle(CompletedUpdateOrderEvent)
+		-void handle(CancelUpdateOrderCommand)
+		-void on(CancelledUpdateOrderEvent)
+		.. Delete ..
+		-void handle(DeleteOrderCommand)
+		-void on(DeletedDeliveryEvent)
+		-void handle(CompleteDeleteOrderCommand)
+		-void on(CompletedDeleteOrderEvent)
+		-void handle(CancelDeleteOrderCommand)
+		-void on(CancelledDeleteOrderEvent)
+	}
+}
+
+package order.controller {
+	class OrderController {
+		-OrderService orderService
+
+		-createOrder(OrderReqCreateDTO)
+		-updateOrder(OrderReqUpdateDTO)
+		-deleteOrder(String orderId)
+	}
+}
+
+package order.entity {
+	class Order {
+		-String orderId
+	    -String userId
+	    -LocalDateTime orderDatetime
+	    -String orderStatus
+	    -int totalOrderAmt
+		-List<OrderDetail> orderDetails
+	}
+	class OrderDetail {
+		-OrderDetailIdentity orderDetailIdentity
+		-int qty;
+		-int orderAmt;
+	}
+	class OrderDetailIdentity {
+		-String orderId
+		-Strint productId
+	}
+}
+
+package order.events {
+	class OrderEventsHandler {
+		-OrderRepository orderRepository
+		-EventGateway eventGateway
+
+		.. Create ..
+		-void on(CreatedOrderEvent)
+		-void on(CompletedCreateOrderEvent)
+		-void on(CancelledCreateOrderEvent)
+		.. Update ..
+		-void on(UpdatedOrderEvent)
+		-void on(CancelledUpdateOrderEvent)
+		.. Delete ..
+		-void on(DeletedOrderEvent)
+		-void on(CompletedDeleteOrderEvent)
+		-void on(CancelledDeleteOrderEvent)
+	}
+}
+
+package order.queries {
+	class OrderQueryHandler {
+		-OrderRepository orderRepository
+		-List<OrderDetailDTO> handleOrderDetailQuery(String)
+		-OrderDTO handleReportQuery(String)
+	}
+}
+
+package order.repository {
+	interface JpaRepository
+	interface OrderRepository
+}
+
+package order.saga {
+	class OrderCreatingSaga {
+		-CommandGateway commandGateway
+		-CompensatingService compensatingService
+
+		-void on(CreatedOrderEvent)
+		-void on(CreatedPaymentEvent)
+		-void on(CreatedDeliveryEvent)
+		-void on(CompletedCreateOrderEvent)
+		-void on(FailedCreateOrderEvent)
+		-void on(FailedCreatePaymentEvent)
+		-void on(FailedCreateDeliveryEvent)
+		-void on(FailedCompleteCreateOrderEvent)
+		-void on(CancelledCreateOrderEvent)
+	}
+	class OrderUpdatingSaga {
+		-CommandGateway commandGateway
+		-CompensatingService compensatingService
+		-void on(UpdatedOrderEvent)
+		-void on(UpdatedPaymentEvent)
+		-void on(CompletedUpdateOrderEvent)
+		-void on(FailedUpdateOrderEvent)
+		-void on(FailedUpdatePaymentEvent)
+		-void on(FailedCompleteUpdateOrderEvent)
+		-void on(CancelledUpdateOrderEvent)
+	}
+	class OrderDeletingSaga {
+		-CommandGateway commandGateway
+		-QueryGateway queryGateway
+		-CompensatingService compensatingService
+		-void on(DeletedOrderEvent)
+		-void on(DeletedPaymentEvent)
+		-void on(DeletedDeliveryEvent)
+		-void on(DeletedReportEvent)
+		void on(CompletedDeleteOrderEvent)
+		-void on(FailedDeletePaymentEvent)
+		-void on(FailedDeleteDeliveryEvent)
+		-void on(FailedDeleteReportEvent)
+		-void on(FailedCompleteDeleteOrderEvent)
+		-void on(CancelledDeleteOrderEvent)
+	}
+}	
+
+package order.service {
+	class CompensatingService {
+		-CommandGateway commandGateway
+		-QueryGateway queryGateway
+		
+		-void cancelCreateOrder(HashMap)
+		-void cancelCreatePayment(HashMap)
+		-void cancelCreateDelivery(HashMap)
+	}
+	class OrderService {
+		-CommandGateway commandGateway
+		-QueryGateway queryGateway
+		-OrderRepository orderRepository
+
+		+createOrder(OrderReqCreateDTO)
+		+updateOrder(OrderReqUpdateDTO)
+		+deleteOrder(String orderId)
+	}
+}
+
+/'
+package axon <<Node>> {
+	interface CommandGateway
+	interface QueryGateway
+	interface EventGateway
+}
+'/
+
+OrderController --> OrderService: 신규주문 처리 요청
+Order "1" *-> "*" OrderDetail
+OrderDetail "1" *-> "1" OrderDetailIdentity
+OrderEventsHandler --> OrderRepository: CRUD 요청
+OrderQueryHandler --> OrderRepository: 조회 요청
+JpaRepository <|.. OrderRepository
+OrderCreatingSaga --> CompensatingService: 보상처리 요청
+OrderUpdatingSaga --> CompensatingService: 보상처리 요청
+OrderDeletingSaga --> CompensatingService: 보상처리 요청
+OrderService --> OrderRepository: 조회 요청
+OrderRepository ..> Order: 참조
+/'
+OrderCreatingSaga --> CommandGateway
+OrderAggregate --> CommandGateway
+OrderEventsHandler --> EventGateway
+CompensatingService --> QueryGateway
+CompensatingService --> CommandGateway
+OrderService --> CommandGateway
+OrderService --> QueryGateway
+'/
+
+@enduml
+
