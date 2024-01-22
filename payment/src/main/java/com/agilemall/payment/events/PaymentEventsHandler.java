@@ -30,12 +30,12 @@ import java.util.Optional;
 @Component
 @ProcessingGroup("payment")
 @AllowReplay
-public class PaymentEventHandler {
+public class PaymentEventsHandler {
 
     private final PaymentRepository paymentRepository;
     private transient final EventGateway eventGateway;
     @Autowired
-    public PaymentEventHandler(PaymentRepository paymentRepository, EventGateway eventGateway) {
+    public PaymentEventsHandler(PaymentRepository paymentRepository, EventGateway eventGateway) {
         this.paymentRepository = paymentRepository;
         this.eventGateway = eventGateway;
     }

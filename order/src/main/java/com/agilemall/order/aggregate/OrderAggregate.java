@@ -135,9 +135,6 @@ public class OrderAggregate {
     private void handle(CompleteOrderCreateCommand completeOrderCreateCommand) throws RuntimeException {
         log.info("[@CommandHandler] Executing <CompleteOrderCreateCommand> for Order Id: {}", completeOrderCreateCommand.getOrderId());
 
-        if("".equals(completeOrderCreateCommand.getOrderId())) {
-            throw new RuntimeException("Order Id is MUST NULL");
-        }
         CompletedCreateOrderEvent completedCreateOrderEvent = new CompletedCreateOrderEvent();
         BeanUtils.copyProperties(completeOrderCreateCommand, completedCreateOrderEvent);
 

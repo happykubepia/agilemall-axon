@@ -163,7 +163,7 @@ public class CompensatingService {
 
     //==================== 주문, 결제, 배송 레포트 생성/수정 ===========
     public void updateReport(String orderId, boolean isCreate) {
-        log.info("===== START Updating Report =====");
+        log.info("===== START {} Report =====", isCreate?"Create":"Update");
 
         try {
             OrderDTO order = queryGateway.query(Constants.QUERY_REPORT, orderId,
@@ -216,10 +216,11 @@ public class CompensatingService {
                 commandGateway.sendAndWait(cmd, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
             }
 
-            log.info("===== END Updating Report =====");
         }  catch(Exception e) {
             log.info(e.getMessage());
         }
+
+        log.info("===== END {} Report =====", isCreate?"Create":"Update");
     }
 
 }
