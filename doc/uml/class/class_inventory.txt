@@ -1,0 +1,49 @@
+/'
+Inventory Class Diagram
+'/
+@startuml
+
+title "Class Diagram: Inventory"
+
+package inventory.controller {
+	class InventoryController {
+		-CommandGateway commandGateway
+		-register(Inventory)
+	}
+}
+package inventory.entity {
+	class Inventory {
+	    -String productId
+	    -String productName
+	    -int unitPrice
+	    -int inventoryQty
+
+	    -Inventory(CreateInventoryCommand)
+	    -void handle(UpdateInventoryQtyCommand)
+	}
+}
+package inventory.events {
+	class InventoryEventHandler {
+		-InventoryRepository inventoryRepository
+		-void on(CreatedInventoryEvent)
+		-void on(UpdatedInventoryQtyEvent)
+	}
+}
+package inventory.queries {
+	class InventoryQueryHandler {
+		-InventoryRepository inventoryRepository
+		-InventoryDTO handle(GetInventoryByProductIdQuery)
+	}
+}
+package inventory.repository {
+	interface InventoryRepository
+	interface JpaRepository
+}
+
+InventoryEventHandler --> InventoryRepository
+InventoryQueryHandler --> InventoryRepository
+InventoryRepository ..> Inventory
+JpaRepository <|.. InventoryRepository
+
+@enduml
+

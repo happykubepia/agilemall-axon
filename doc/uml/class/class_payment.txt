@@ -1,0 +1,87 @@
+/'
+Payment Class Diagram
+'/
+@startuml
+
+title "Class Diagram: Payment"
+
+package payment.aggregate {
+	class PaymentAggregate {
+	    -String paymentId
+	    -String orderId
+	    -int totalPaymentAmt
+	    -String paymentStatus
+	    -List<PaymentDetail> paymentDetails
+	    -CommandGateway commandGateway
+
+	    .. Creating ..
+	    -PaymentAggregate(CreatePaymentCommand)
+	    -void on(CreatedPaymentEvent)
+	    -void handle(CancelCreatePaymentCommand)
+	    -void on(CancelledCreatePaymentEvent)
+	    .. Updating ..
+	    -void handle(UpdatePaymentCommand)
+	    -void on(UpdatedPaymentEvent)
+	    -void handle(CancelUpdatePaymentCommand)
+	    -void on(CancelledUpdatePaymentEvent)
+	    .. Deleting ..
+	    -void handle(DeletePaymentCommand)
+	    -void on(DeletedPaymentEvent)
+	    -void handle(CancelDeletePaymentCommand)
+	    -void on(CancelledDeletePaymentEvent)
+
+	}
+}
+
+package payment.entity {
+	class Payment {
+	    -String paymentId
+	    -String orderId
+	    -int totalPaymentAmt
+	    -String paymentStatus
+	    -List<PaymentDetail> paymentDetails	
+	}
+	class PaymentDetail {
+		-PaymentDetailIdentity paymentDetailIdentity
+		-int paymentAmt
+	}
+	class PaymentDetailIdentity {
+		-String paymentId
+		-String paymentKind
+	}
+}
+
+package payment.events {
+	class PaymentEventHandler {
+		-PaymentRepository paymentRepository
+		-EventGateway eventGateway
+		.. Creating ..
+		-void on(CreatedPaymentEvent)
+		-void on(CancelledCreatePaymentEvent)
+		.. Updating ..
+		-void on(UpdatedPaymentEvent)
+		.. Deleting ..
+		-void on(DeletedPaymentEvent)
+	}
+}
+
+package payment.queries {
+	class PaymentQueryHandler {
+		-PaymentRepository paymentRepository
+		-PaymentDTO handle(String orderId)
+	}
+}
+package payment.repository {
+	interface PaymentRepository
+	interface JpaRepository
+}
+
+Payment "1" *--> "*" PaymentDetail
+PaymentDetail "1" *--> "1" PaymentDetailIdentity
+PaymentEventHandler --> PaymentRepository: CUD 요청
+PaymentQueryHandler --> PaymentRepository: 조회 요청
+JpaRepository <|.. PaymentRepository
+PaymentRepository ..> Payment: 참조  
+
+@enduml
+

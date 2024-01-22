@@ -1,0 +1,61 @@
+/'
+Report Class Diagram
+'/
+@startuml
+
+title Class Diagram: Report
+
+package report.entiry {
+	class Report {
+	    -String reportId
+	    -String orderId
+	    -String userId
+	    -LocalDateTime orderDatetime
+	    -int totalOrderAmt
+	    -String orderStatus
+	    -String orderDetails
+	    -String paymentId
+	    -int totalPaymentAmt
+	    -String paymentStatus
+	    -String paymentDetails
+	    -String deliveryId
+	    -String deliveryStatus
+
+	    -Report(CreateReportCommand)
+	    -void handle(UpdateReportCommand)
+	    -void handle(UpdateReportDeliveryStatusCommand)
+	    -void handle(DeleteReportCommand)
+	}
+}
+package report.events {
+	class ReportEventsHandler {
+		-EventGateway eventGateway
+		-ReportRepository reportRepository
+
+		-void on(CreatedReportEvent)
+		-void on(UpdatedReportEvent)
+		-void on(UpdatedReportDeliveryStatusEvent)
+		-void on(DeletedReportEvent)
+	}
+}
+package report.queries {
+	class ReportQueryHandler {
+		-ReportRepository reportRepository
+		-String handle(GetReportId qry)
+		-ReportDTO handle(String orderId)
+	}
+}
+package report.repository {
+	interface ReportRepository {
+		Optional<Report> findByOrderId(String orderId)
+	}
+	interface JpaRepository
+}
+
+ReportEventsHandler --> ReportRepository
+ReportQueryHandler --> ReportRepository
+JpaRepository <|.. ReportRepository
+ReportRepository ..> Report
+
+@enduml
+

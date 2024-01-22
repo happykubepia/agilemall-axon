@@ -1,0 +1,94 @@
+/'
+Delivery Class Diagram
+'/
+@startuml
+
+title "Class Diagram: Delivery"
+
+package delivery.aggregate {
+	class DeliveryAggregate {
+		-String deliveryId
+    	-String orderId
+    	-String deliveryStatus
+    	-CommandGateway commandGateway
+
+    	.. Create ..
+    	-DeliveryAggregate(CreateDeliveryCommand)
+    	-void on(CreatedDeliveryEvent)
+    	-void handle(CancelCreateDeliveryCommand)
+    	-void on(CancelledCreateDeliveryEvent)
+		.. Update ..
+		-void handle(UpdateDeliveryCommand)
+		-void on(UpdatedDeliveryEvent)
+		.. Delete ..
+		-void handle(DeleteDeliveryCommand)
+		-void on(DeletedDeliveryEvent)
+		-void handle(CancelDeleteDeliveryCommand)
+		-void on(CancelledDeleteDeliveryEvent)
+	}
+}
+package delivery.controller {
+	class DeliveryController {
+		-DeliveryService deliveryService
+		-getDeivery(String orderId)
+		-updateDeliveryStatus(DeliveryDTO)
+	}
+}
+package delivery.entity {
+	class Delivery {
+		-String deliveryId
+    	-String orderId
+    	-String deliveryStatus
+	}
+}
+package delivery.events {
+	class DeliveryEventsHandler {
+		-DeliveryRepository deliveryRepository
+		-CommandGateway commandGateway
+		-EventGateway eventGateway
+		-QueryGateway queryGateway
+
+		.. Create ..
+		-void on(CreatedDeliveryEvent)
+		-void on(CancelledCreateDeliveryEvent)
+		.. Update ..
+		-void on(UpdatedDeliveryEvent)
+		-void on(CancelledUpdatePaymentEvent)
+		.. Delete ..
+		void on(DeletedDeliveryEvent) 
+	}
+}
+
+package delivery.queries {
+	class DeliveryQueryHandler {
+		-DeliveryRepository deliveryRepository
+		-DeliveryDTO handle(String orderId)
+	}
+}
+
+package delivery.repository {
+	interface DeliveryRepository {
+		Optional<Delivery> findByOrderId(String orderId)
+	}
+	interface JpaRepository
+}
+
+package delivery.service {
+	class DeliveryService {
+		CommandGateway commandGateway
+		QueryGateway queryGateway
+		DeliveryRepository deliveryRepository
+
+		+getDeivery(String orderId)
+		+updateDeliveryStatus(DeliveryDTO)	
+	}
+}
+
+DeliveryController --> DeliveryService: 처리 요청
+DeliveryEventsHandler --> DeliveryRepository: CUD 요청
+DeliveryQueryHandler --> DeliveryRepository: 조회 요청
+DeliveryRepository ..> Delivery: 참조
+DeliveryService --> DeliveryRepository: 조회 요청
+
+@enduml
+
