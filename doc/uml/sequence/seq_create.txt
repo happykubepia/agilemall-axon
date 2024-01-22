@@ -1,88 +1,50 @@
 /'
-신규주문 Sequence Diagram
+Report 생성/수정 Sequence Diagram
 '/
 @startuml
 
-title Sequence Diagram: 신규주문 정상처리
+title Sequence Diagram: 조회레포트 생성/수정 
 
-control OrderController
-participant OrderService
-participant OrderAggregate
 control OrderCreatingSaga
-participant OrderEventHandler
+participant CompensatingService
+collections OrderQueryHandler
 database OrderRepository
-queue AxonServer
-database EventStore
+collections PaymentQueryHandler
+database PaymentRepository
+collections DeliveryQueryHandler
+database DeliveryRepository
+participant Report 
+participant ReportEventHandler
+database ReportRepository
 
 autonumber
-'-- 주문데이터 생성
-group 주문생성
-OrderController -> OrderService ++: 주문 생성 요청
-create entity Inventory
-OrderService -> Inventory: 주문 제품 정보 Query 
-OrderService <-- Inventory: 주문 제품 정보 리턴 
-OrderService -> OrderService ++: 재고 Validation 검사
-OrderService -> AxonServer --++: 생성요청 Command발송 
-OrderController <-- OrderService: 생성요청 완료 리턴 
-OrderService --
-AxonServer -> OrderAggregate --++: Push 생성요청 Command 
-OrderAggregate -> AxonServer --++: 생성완료 Event 생성 
-AxonServer -> EventStore: 생성완료 Event 저장
-AxonServer -> OrderEventHandler: Push 생성완료 Event
-OrderEventHandler -> OrderRepository: 주문데이터 등록 
-end
+'-- Report 생성/수정 요청
+group 레포트 생성/수정 
+OrderCreatingSaga -> CompensatingService ++: Report 생성/수정 요청 
+CompensatingService -> AxonServer ++: Order 정보 Query 발송 
+AxonServer -> OrderQueryHandler: Push Order 정보 Query 
+OrderQueryHandler <-> OrderRepository: Order 정보 
+AxonServer <-- OrderQueryHandler: Order 정보 
+AxonServer --> CompensatingService --: Order정보 
 
-'-- 결제데이터 생성
-group 주문생성 Saga
-group 결제데이터 생성 
-AxonServer -> OrderCreatingSaga --++: Push 주문생성 완료 Event 
-OrderCreatingSaga -> AxonServer ++: 결제생성 요청 Command 발송 
-create participant PaymentAggregate
-AxonServer -> PaymentAggregate --: Push 결제요청 Command 
-PaymentAggregate -> AxonServer ++: 결제생성완료 Event 생성
-AxonServer -> EventStore: 결제생성 Event 등록 
-create participant PaymentEventHandler
-AxonServer -> PaymentEventHandler: push 결제생성 Event
-create database PaymentRepository
-PaymentEventHandler -> PaymentRepository: 결제데이터 등록 
-AxonServer -> OrderCreatingSaga --: Push 결제완료 Event 
-end
+CompensatingService -> AxonServer ++: Payment 정보 Query 발송 
+AxonServer -> PaymentQueryHandler: Push Payment 정보 Query 
+PaymentQueryHandler <-> PaymentRepository: Payment 정보 
+AxonServer <-- PaymentQueryHandler: Payment 정보 Query 
+AxonServer --> CompensatingService --: Payment 정보 
 
-'-- 배송데이터 생성 
-group 배송데이터 생성 
-OrderCreatingSaga -> AxonServer ++: 배송생성 요청 Command 발송 
-create participant DeliveryAggregate
-AxonServer -> DeliveryAggregate --: Push 배송생성 요청 Command 
-DeliveryAggregate -> AxonServer ++: 배송생성 완료 Event 생성
-AxonServer -> EventStore: 배송생성완료 Event 등록 
-create participant DeliveryEventHandler
-AxonServer -> DeliveryEventHandler: push 배송생성 완료 Event
-create database DeliveryRepository
-DeliveryEventHandler -> DeliveryRepository: 배송데이터 등록 
-AxonServer -> OrderCreatingSaga --: Push 배송생성 완료 Event 
-end 
+CompensatingService -> AxonServer ++: Delivery 정보 Query 발송 
+AxonServer -> DeliveryQueryHandler: Push Delivery 정보 Query
+DeliveryQueryHandler <-> DeliveryRepository: Delivery 정보 
+AxonServer <-- DeliveryQueryHandler: Delivery 정보 Query
+AxonServer --> CompensatingService --: Delivery 정보 
 
-'-- 주문완료: 주문상태 변경 
-group 주문완료 
-OrderCreatingSaga->AxonServer ++: 주문완료 요청 Command 발송 
-AxonServer -> OrderAggregate --++: Push 주문완료 요청 Command 
-OrderAggregate -> AxonServer --++: 주문완료 Event 생성 
-AxonServer -> EventStore: 주문완료 Event 저장
-AxonServer -> OrderEventHandler: Push 주문완료 Event 
-OrderEventHandler -> OrderRepository: 주문상태 변경 
-AxonServer -> OrderCreatingSaga --: Push 주문완료 Event 
+CompensatingService -> AxonServer ++: Report 생성/수정 요청 Command  
+AxonServer -> Report: Push Report: 생성/수정 요청 Command 
 AxonServer --
-OrderCreatingSaga --
-end 
-
-'-- Report 생성 요청
-group 레포트 생성
-OrderCreatingSaga -> AxonServer: Report 생성 요청 Command 발송  
-note right of OrderCreatingSaga: CompenSatingService 통해 Command 발송  
-note right of AxonServer: 상세 프로세스는 'Report생성/수정' 참조   
+Report -> ReportRepository: Report 생성/수정 
+CompensatingService --
 end
 
-end
 @enduml
-
 
