@@ -2,12 +2,13 @@ package com.agilemall.order.service;
 /*
 - 목적: OrderController에서 호출되어 Order service에 대한 처리를 한 후 이후 처리는 Aggregate의 Command Handler에 요청함
 */
-import com.agilemall.order.command.DeleteOrderCommand;
+
 import com.agilemall.common.config.Constants;
 import com.agilemall.common.dto.*;
 import com.agilemall.common.queries.GetInventoryByProductIdQuery;
 import com.agilemall.common.vo.ResultVO;
 import com.agilemall.order.command.CreateOrderCommand;
+import com.agilemall.order.command.DeleteOrderCommand;
 import com.agilemall.order.command.UpdateOrderCommand;
 import com.agilemall.order.dto.OrderReqCreateDTO;
 import com.agilemall.order.dto.OrderReqDetailDTO;
@@ -251,6 +252,48 @@ public class OrderService {
             retVo.setReturnCode(false);
             retVo.setReturnMessage(e.getMessage());
         }
+        return retVo;
+    }
+
+    /*
+    - 목적: API Composition패턴을 적용하여 주문, 결제, 배송 현황을 리턴
+    */
+    public ResultVO<OrderStatusDTO> getOrderStatus(String orderId) {
+        log.info("[OrderService] Executing <getOrderStatus>: {}", orderId);
+
+        ResultVO<OrderStatusDTO> retVo = new ResultVO<>();
+
+        try {
+            OrderDTO order = queryGateway.query(Constants.QUERY_REPORT, orderId,
+                    ResponseTypes.instanceOf(OrderDTO.class)).join();
+            PaymentDTO payment = queryGateway.query(Constants.QUERY_REPORT, orderId,
+                    ResponseTypes.instanceOf(PaymentDTO.class)).join();
+            DeliveryDTO delivery = queryGateway.query(Constants.QUERY_REPORT, orderId,
+                    ResponseTypes.instanceOf(DeliveryDTO.class)).join();
+
+            OrderStatusDTO orderStatusDTO = OrderStatusDTO.builder()
+                    .orderId(order.getOrderId())
+                    .userId(order.getUserId())
+                    .orderDatetime(order.getOrderDatetime())
+                    .totalOrderAmt(order.getTotalOrderAmt())
+                    .orderStatus(order.getOrderStatus())
+                    .orderDetails(order.getOrderDetails())
+                    .paymentId(payment.getPaymentId())
+                    .totalPaymentAmt(payment.getTotalPaymentAmt())
+                    .paymentStatus(payment.getPaymentStatus())
+                    .paymentDetails(payment.getPaymentDetails())
+                    .deliveryId(delivery.getDeliveryId())
+                    .deliveryStatus(delivery.getDeliveryStatus())
+                    .build();
+
+            retVo.setReturnCode(true);
+            retVo.setReturnMessage("Success to fetch Order Status");
+            retVo.setResult(orderStatusDTO);
+        } catch(Exception e) {
+            retVo.setReturnCode(false);
+            retVo.setReturnMessage(e.getMessage());
+        }
+
         return retVo;
     }
 

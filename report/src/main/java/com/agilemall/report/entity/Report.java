@@ -134,8 +134,8 @@ public class Report implements Serializable {
         this.paymentDetails = gson.toJson(updateReportCommand.getPaymentDetails());
         this.deliveryId = updateReportCommand.getDeliveryId();
         this.deliveryStatus = updateReportCommand.getDeliveryStatus();
-
     }
+
 
     @CommandHandler
     private void handle(UpdateReportDeliveryStatusCommand cmd) {

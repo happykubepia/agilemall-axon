@@ -2,8 +2,10 @@ package com.agilemall.order.events;
 /*
 - 목적: OrderAggregate에서 생성된 Event 처리를 수행
 */
+
 import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.common.dto.OrderStatusEnum;
+import com.agilemall.common.events.update.UpdatedOrderToReportEvent;
 import com.agilemall.order.entity.Order;
 import com.agilemall.order.entity.OrderDetail;
 import com.agilemall.order.entity.OrderDetailIdentity;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -137,6 +140,7 @@ public class OrderEventsHandler {
             order.setTotalOrderAmt(event.getTotalOrderAmt());
             order.setOrderStatus(OrderStatusEnum.UPTATED.value());
             orderRepository.save(order);
+
         } catch(Exception e) {
             log.error(e.getMessage());
             eventGateway.publish(new FailedUpdateOrderEvent(event.getOrderId()));
@@ -154,6 +158,28 @@ public class OrderEventsHandler {
             Order order = optOrder.get();
             order.setOrderStatus(OrderStatusEnum.COMPLETED.value());
             orderRepository.save(order);
+
+            //-- Report 업데이트를 위해 Event 생성
+            log.info("==== Send <UpdatedOrderToReportEvent> to report for Order Id: {}", event.getOrderId());
+            try {
+                List<OrderDetailDTO> orderDetails = order.getOrderDetails().stream()
+                        .map(o -> new OrderDetailDTO(event.getOrderId(),
+                                o.getOrderDetailIdentity().getProductId(),
+                                o.getQty(),
+                                o.getOrderAmt()))
+                        .collect(Collectors.toList());
+
+                UpdatedOrderToReportEvent updatedOrderToReportEvent = new UpdatedOrderToReportEvent();
+                updatedOrderToReportEvent.setOrderId(event.getOrderId());
+                updatedOrderToReportEvent.setOrderDatetime(order.getOrderDatetime());
+                updatedOrderToReportEvent.setTotalOrderAmt(order.getTotalOrderAmt());
+                updatedOrderToReportEvent.setOrderDetails(orderDetails);
+                updatedOrderToReportEvent.setOrderStatus(OrderStatusEnum.COMPLETED.value());
+                eventGateway.publish(updatedOrderToReportEvent);
+            } catch(Exception e) {
+                log.error(e.getMessage());
+            }
+
         } catch(Exception e) {
             log.error(e.getMessage());
             eventGateway.publish(new FailedCompleteUpdateOrderEvent(event.getOrderId()));

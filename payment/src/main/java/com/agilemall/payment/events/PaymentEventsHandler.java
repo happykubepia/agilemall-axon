@@ -9,6 +9,7 @@ import com.agilemall.common.events.delete.DeletedPaymentEvent;
 import com.agilemall.common.events.delete.FailedDeletePaymentEvent;
 import com.agilemall.common.events.update.FailedUpdatePaymentEvent;
 import com.agilemall.common.events.update.UpdatedPaymentEvent;
+import com.agilemall.common.events.update.UpdatedPaymentToReportEvent;
 import com.agilemall.payment.entity.Payment;
 import com.agilemall.payment.entity.PaymentDetail;
 import com.agilemall.payment.entity.PaymentDetailIdentity;
@@ -19,6 +20,7 @@ import org.axonframework.eventhandling.AllowReplay;
 import org.axonframework.eventhandling.EventHandler;
 import org.axonframework.eventhandling.ResetHandler;
 import org.axonframework.eventhandling.gateway.EventGateway;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -103,6 +105,12 @@ public class PaymentEventsHandler {
             }
 
             paymentRepository.save(payment);
+
+            //-- Report 업데이트를 위해 Event 발행
+            UpdatedPaymentToReportEvent updatedPaymentToReportEvent = new UpdatedPaymentToReportEvent();
+            BeanUtils.copyProperties(event, updatedPaymentToReportEvent);
+            eventGateway.publish(updatedPaymentToReportEvent);
+
         } catch(Exception e) {
             log.error(e.getMessage());
             eventGateway.publish(new FailedUpdatePaymentEvent(event.getPaymentId(), event.getOrderId()));

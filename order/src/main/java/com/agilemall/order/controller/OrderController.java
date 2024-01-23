@@ -6,6 +6,8 @@ package com.agilemall.order.controller;
   - updateOrder: 주문 수정 API
   - deleteOrder: 주문 취소 API
 */
+
+import com.agilemall.common.dto.OrderStatusDTO;
 import com.agilemall.common.vo.ResultVO;
 import com.agilemall.order.command.CreateOrderCommand;
 import com.agilemall.order.command.UpdateOrderCommand;
@@ -52,6 +54,17 @@ public class OrderController {
         log.info("[@PutMapping '/orders'] Executing updateOrder: {}", orderReqUpdateDTO.toString());
 
         return orderService.updateOrder(orderReqUpdateDTO);
+    }
+
+    //-- 주문 상세 정보 API
+    @GetMapping("/orders/{orderId}")
+    @Operation(summary = "주문 상세현황 API")
+    @Parameters({
+            @Parameter(name = "orderId", in= ParameterIn.PATH, description = "주문ID", required = true)
+    })
+    private ResultVO<OrderStatusDTO> getOrderStaus(@PathVariable(name = "orderId") String orderId) {
+        log.info("[@GetMapping '/orders/{userId}'] Executing getOrderStatus: {}", orderId);
+        return orderService.getOrderStatus(orderId);
     }
 
     //-- 주문 취소 API
