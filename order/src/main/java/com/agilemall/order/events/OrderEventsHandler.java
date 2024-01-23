@@ -94,8 +94,15 @@ public class OrderEventsHandler {
     @DisallowReplay
     private void on(CancelledCreateOrderEvent event) {
         log.info("[@EventHandler] Executing <CancelledCreateOrderEvent> for Order Id: {}", event.getOrderId());
-    }
 
+        try {
+            Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+            if (optOrder.isEmpty()) return;
+            orderRepository.delete(optOrder.get());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
     //==================== 주문 수정 관련 이벤트 처리 ======================
     /*
 

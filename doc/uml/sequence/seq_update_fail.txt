@@ -15,39 +15,40 @@ database EventStore
 
 autonumber
 
-'-- 주문수정 완료 실패 처리 
-group 주문수정 완료 처리 실패 보상처리 
-OrderEventHandler -> AxonServer: 주문수정 완료 처리 실패 Event 발송 
-AxonServer -> OrderUpdatingSaga --++: Push 주문수정 완료 실패 Event 
-OrderUpdatingSaga -> CompensatingService ++: 결제수정 취소 요청 
-CompensatingService -> AxonServer --++: 결제수정 취소 Command 발송 
+'-- 주문수정 완료 실패 처리
+group 주문수정 완료 처리 실패 보상처리
+OrderEventHandler -> AxonServer: 주문수정 완료 처리 실패 Event 발송
+AxonServer -> OrderUpdatingSaga --++: Push 주문수정 완료 실패 Event
+OrderUpdatingSaga -> CompensatingService ++: 결제수정 취소 요청
+CompensatingService -> AxonServer --++: 결제수정 취소 Command 발송
 
 create participant PaymentAggregate
-AxonServer -> PaymentAggregate --++: Push 결제수정 취소 Command 
+AxonServer -> PaymentAggregate --++: Push 결제수정 취소 Command
 PaymentAggregate -> AxonServer: 결제수정 취소 완료 Event 생성
-PaymentAggregate -> AxonServer: 이전 결제정보로 결제수정 요청 Command발송 
-note right of PaymentAggregate: AggregateHistory에 저장된 정보 이용 
-AxonServer -> PaymentAggregate --: Push 결제수정 Rollback Command 
+PaymentAggregate -> AxonServer: 이전 결제정보로 결제수정 요청 Command발송
+note right of PaymentAggregate: AggregateHistory에 저장된 정보 이용
+AxonServer -> PaymentAggregate --: Push 결제수정 Rollback Command
 PaymentAggregate -> AxonServer --++: 결제수정 Rollback Event 생성
-AxonServer -> EventStore: 결제수정 Rollback Event 저장 
+AxonServer -> EventStore: 결제수정 Rollback Event 저장
 create participant PaymentEventHandler
-AxonServer -> PaymentEventHandler: Push 결제수정 Rollback Event 
+AxonServer -> PaymentEventHandler: Push 결제수정 Rollback Event
 create database PaymentRepository
-PaymentEventHandler -> PaymentRepository: 결제데이터 Rollback 
-AxonServer -> OrderUpdatingSaga --: Push 결제수정 취소 완료 Event 
-
-'-- 결제데이터 수정 실패 처리 
-group 결제수정 실패 보상처리  
-OrderUpdatingSaga -> CompensatingService ++: 주문수정 취소 요청 
-CompensatingService -> AxonServer --++: 주문수정 취소 Command 발송 
-AxonServer -> OrderAggregate --++: Push 주문등록 취소 Command 
+PaymentEventHandler -> PaymentRepository: 결제데이터 Rollback
+AxonServer -> OrderUpdatingSaga --: Push 결제수정 취소 완료 Event
+autonumber stop
+'-- 결제데이터 수정 실패 처리
+autonumber
+group 결제수정 실패 보상처리
+OrderUpdatingSaga -> CompensatingService ++: 주문수정 취소 요청
+CompensatingService -> AxonServer --++: 주문수정 취소 Command 발송
+AxonServer -> OrderAggregate --++: Push 주문등록 취소 Command
 OrderAggregate -> AxonServer: 주문수정 취소 완료 Event 생성
 OrderAggregate -> AxonServer --++: 이전 주문정보로 주문수정 요청 Command 발송
-note right of OrderAggregate: AggregateHistory에 저장된 정보 이용 
-AxonServer -> EventStore: 주문수정 Rollback Event 저장 
-AxonServer -> OrderEventHandler: Push 주문수정 Rollback Event 
-OrderEventHandler -> OrderRepository: 주문데이터 Rollback  
-AxonServer -> OrderUpdatingSaga --: Push 주문취소 Event 
+note right of OrderAggregate: AggregateHistory에 저장된 정보 이용
+AxonServer -> EventStore: 주문수정 Rollback Event 저장
+AxonServer -> OrderEventHandler: Push 주문수정 Rollback Event
+OrderEventHandler -> OrderRepository: 주문데이터 Rollback
+AxonServer -> OrderUpdatingSaga --: Push 주문취소 Event
 OrderUpdatingSaga --
 end
 end

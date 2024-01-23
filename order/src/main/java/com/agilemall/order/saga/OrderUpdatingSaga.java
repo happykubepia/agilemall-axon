@@ -70,7 +70,7 @@ public class OrderUpdatingSaga {
             //throw new Exception("Error is occurred during handle <UpdatedOrderEvent>");
         } catch(Exception e) {
             log.info(e.getMessage());
-            if(event.isCompensation()) {  //보상처리이면 수행 안함(무한루프 방지)
+            if(event.isCompensation()) {  //보상처리이면 Saga 종료(무한루프 방지)
                 log.info("===== [Update Order] Transaction is Aborted =====");
                 SagaLifecycle.end();
                 return;
