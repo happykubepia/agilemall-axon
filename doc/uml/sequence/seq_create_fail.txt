@@ -31,8 +31,10 @@ create database DeliveryRepository
 DeliveryEventHandler -> DeliveryRepository: 배송데이터 삭제 
 AxonServer -> OrderCreatingSaga --: Push 배송등록 취소 완료 Event 
 
-'-- 배송 생성 실패 처리 
+autonumber stop
 
+'-- 배송 생성 실패 처리 
+autonumber 
 group 배송생성 실패 보상처리  
 OrderCreatingSaga -> CompensatingService ++: 결제등록 취소 요청 
 CompensatingService -> AxonServer --++: 결제등록 취소 Command 발송 
@@ -49,8 +51,10 @@ create database PaymentRepository
 PaymentEventHandler -> PaymentRepository: 결제등록 데이터 삭제 
 AxonServer -> OrderCreatingSaga --: Push 결제취소 완료 Event 
 AxonServer --
+autonumber stop 
 
 '-- 결제데이터 생성 실패 처리 
+autonumber 
 group 결제생성 실패와 주문등록 실패 보상처리  
 OrderCreatingSaga -> CompensatingService ++: 주문등록 취소 요청 
 CompensatingService -> AxonServer --++: 주문등록 취소 Command 발송 
@@ -63,6 +67,7 @@ OrderEventHandler -> OrderRepository: 주문데이터 삭제
 AxonServer -> OrderCreatingSaga --: Push 주문취소 Event 
 AxonServer --
 OrderCreatingSaga --
+autonumber stop 
 end
 end
 end 

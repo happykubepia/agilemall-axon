@@ -346,6 +346,8 @@ public class OrderService {
     private String isValidInventory(List<ResultVO<InventoryDTO>> inventories) {
         log.info("[OrderService] Executing <isValidInventory>");
 
+        if(inventories.isEmpty()) return "재고 정보 없음";
+
         for (ResultVO<InventoryDTO> retVo : inventories) {
             if (!retVo.isReturnCode()) {
                 return "재고없음: " + retVo.getResult().getProductId();
