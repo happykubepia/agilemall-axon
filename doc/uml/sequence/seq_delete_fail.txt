@@ -15,64 +15,70 @@ database EventStore
 
 autonumber
 
-'-- 주문삭제 최종완료 실패 처리 
-group 주문삭제 최종완료 처리 실패 보상처리 
-OrderEventHandler -> AxonServer: 주문삭제 최종완료 처리 실패 Event 발송 
-AxonServer -> OrderDeletingSaga --++: Push 주문삭제 최종완료 실패 Event 
+'-- 주문삭제 최종완료 실패 처리
+group 주문삭제 최종완료 처리 실패 보상처리
+OrderEventHandler -> AxonServer: 주문삭제 최종완료 처리 실패 Event 발송
+AxonServer -> OrderDeletingSaga --++: Push 주문삭제 최종완료 실패 Event
 
-OrderDeletingSaga -> CompensatingService ++: 레포트삭제 취소 요청 
-CompensatingService -> AxonServer: Report 생성요청 Command 발송  
-note right of AxonServer: 상세 프로세스는 'Report생성/수정' 참조   
+OrderDeletingSaga -> CompensatingService ++: 레포트삭제 취소 요청
+CompensatingService -> AxonServer: Report 생성요청 Command 발송
+note right of AxonServer: 상세 프로세스는 'Report생성/수정' 참조
 
-group 레포트 삭제 실패 보상처리 
-OrderDeletingSaga -> CompensatingService ++: 배송삭제 취소 요청 
-CompensatingService -> AxonServer --++: 배송삭제 취소 Command 발송 
+autonumber stop
+autonumber
+group 레포트 삭제 실패 보상처리
+OrderDeletingSaga -> CompensatingService ++: 배송삭제 취소 요청
+CompensatingService -> AxonServer --++: 배송삭제 취소 Command 발송
 
 create participant DeliveryAggregate
-AxonServer -> DeliveryAggregate --++: Push 배송삭제 취소 Command 
+AxonServer -> DeliveryAggregate --++: Push 배송삭제 취소 Command
 DeliveryAggregate -> AxonServer ++: 배송삭제 취소 완료 Event 생성
-DeliveryAggregate -> AxonServer --: 이전 배송정보로 배송생성 요청 Command발송 
-note right of DeliveryAggregate: AggregateHistory에 저장된 정보 이용 
-AxonServer -> DeliveryAggregate --++: Push 배송생성 요청 Command 
+DeliveryAggregate -> AxonServer --: 이전 배송정보로 배송생성 요청 Command발송
+note right of DeliveryAggregate: AggregateHistory에 저장된 정보 이용
+AxonServer -> DeliveryAggregate --++: Push 배송생성 요청 Command
 DeliveryAggregate -> AxonServer --++: 배송생성 완료 Event 생성
-AxonServer -> EventStore: 배송생성 완료 Event 저장 
+AxonServer -> EventStore: 배송생성 완료 Event 저장
 create participant DeliveryEventHandler
-AxonServer -> DeliveryEventHandler: Push 배송생성 요청 Event 
+AxonServer -> DeliveryEventHandler: Push 배송생성 요청 Event
 create database DeliveryRepository
-DeliveryEventHandler -> DeliveryRepository: 배송데이터 생성  
-AxonServer -> OrderDeletingSaga --: Push 배송삭제 취소 완료 Event 
+DeliveryEventHandler -> DeliveryRepository: 배송데이터 생성
+AxonServer -> OrderDeletingSaga --: Push 배송삭제 취소 완료 Event
 
+autonumber stop
+autonumber
 group 배송 삭제 실패 보상처리
-OrderDeletingSaga -> CompensatingService ++: 결제삭제 취소 요청 
-CompensatingService -> AxonServer --++: 결제삭제 취소 Command 발송 
+OrderDeletingSaga -> CompensatingService ++: 결제삭제 취소 요청
+CompensatingService -> AxonServer --++: 결제삭제 취소 Command 발송
 
 create participant PaymentAggregate
-AxonServer -> PaymentAggregate --++: Push 결제삭제 취소 Command 
+AxonServer -> PaymentAggregate --++: Push 결제삭제 취소 Command
 PaymentAggregate -> AxonServer ++: 결제삭제 취소 완료 Event 생성
-PaymentAggregate -> AxonServer --: 이전 결제정보로 결제생성 요청 Command발송 
-note right of PaymentAggregate: AggregateHistory에 저장된 정보 이용 
-AxonServer -> PaymentAggregate --++: Push 결제생성 요청 Command 
+PaymentAggregate -> AxonServer --: 이전 결제정보로 결제생성 요청 Command발송
+note right of PaymentAggregate: AggregateHistory에 저장된 정보 이용
+AxonServer -> PaymentAggregate --++: Push 결제생성 요청 Command
 PaymentAggregate -> AxonServer --++: 결제생성 완료 Event 생성
-AxonServer -> EventStore: 결제생성 완료 Event 저장 
+AxonServer -> EventStore: 결제생성 완료 Event 저장
 create participant PaymentEventHandler
-AxonServer -> PaymentEventHandler: Push 결제생성 요청 Event 
+AxonServer -> PaymentEventHandler: Push 결제생성 요청 Event
 create database PaymentRepository
-PaymentEventHandler -> PaymentRepository: 결제데이터 생성  
-AxonServer -> OrderDeletingSaga --: Push 결제삭제 취소 완료 Event 
+PaymentEventHandler -> PaymentRepository: 결제데이터 생성
+AxonServer -> OrderDeletingSaga --: Push 결제삭제 취소 완료 Event
 
-group 결제 삭제 실패와 주문삭제 실패 보상처리  
-OrderDeletingSaga -> CompensatingService ++: 주문삭제 취소 요청 
-CompensatingService -> AxonServer --++: 주문삭제 취소 Command 발송 
-AxonServer -> OrderAggregate --++: Push 주문삭제 취소 Command 
+autonumber stop
+autonumber
+group 결제 삭제 실패와 주문삭제 실패 보상처리
+OrderDeletingSaga -> CompensatingService ++: 주문삭제 취소 요청
+CompensatingService -> AxonServer --++: 주문삭제 취소 Command 발송
+AxonServer -> OrderAggregate --++: Push 주문삭제 취소 Command
 OrderAggregate -> AxonServer --++: 주문삭제 취소 완료 Event 생성
 AxonServer++
-AxonServer -> EventStore: 주문삭제 취소 완료 Event 저장(배송상태 Rollback) 
-AxonServer -> OrderEventHandler: Push 주문삭제 취소 완료 Event 
-OrderEventHandler -> OrderRepository: 주문상태 Rollback 
-AxonServer -> OrderDeletingSaga --: Push 주문삭제 취소 완료 Event 
+AxonServer -> EventStore: 주문삭제 취소 완료 Event 저장(배송상태 Rollback)
+AxonServer -> OrderEventHandler: Push 주문삭제 취소 완료 Event
+OrderEventHandler -> OrderRepository: 주문상태 Rollback
+AxonServer -> OrderDeletingSaga --: Push 주문삭제 취소 완료 Event
 AxonServer --
 OrderDeletingSaga --
-end 
+end
 end
 end
 end

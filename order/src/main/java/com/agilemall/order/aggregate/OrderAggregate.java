@@ -321,6 +321,7 @@ public class OrderAggregate {
                                 order.getOrderId(), o.getOrderDetailIdentity().getProductId(),
                                 o.getQty(), o.getOrderAmt()))
                         .collect(Collectors.toList()));
+        order.setTotalOrderAmt(orderAggregate.totalOrderAmt);
         return order;
     }
 }

@@ -46,14 +46,21 @@ public class OrderUpdatingSaga {
     public void setCompensatingService(CompensatingService compensatingService) {
         this.compensatingService = compensatingService;
     }
-    //================== 정상 처리 ========================
 
+    //================== 정상 처리 ========================
     //-- 결제 정보 수정 처리 요청
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void on(UpdatedOrderEvent event) {
         log.info("[Saga] UpdatedOrderEvent is received for Order Id: {}", event.getOrderId());
         log.info("===== [Update Order] #4: <UpdatePaymentCommand> =====");
+
+        if(event.isCompensation()) {
+            log.info("This event is compensation. So, Do nothing.");
+            SagaLifecycle.end();
+            return;
+        }
+
         aggregateIdMap.put(ServiceNameEnum.ORDER.value(), event.getOrderId());
         aggregateIdMap.put(ServiceNameEnum.PAYMENT.value(), event.getPaymentId());
 
@@ -86,6 +93,10 @@ public class OrderUpdatingSaga {
         log.info("[Saga] UpdatedPaymentEvent is received for Order Id: {}", event.getOrderId());
         log.info("===== [Update Order] #5: <CompletedOrderUpdateCommand> =====");
 
+        if(event.isCompensation()) {
+            log.info("This event is compensation. So, Do nothing.");
+            return;
+        }
         CompleteUpdateOrderCommand cmd = CompleteUpdateOrderCommand.builder()
                 .orderId(event.getOrderId())
                 .orderStatus(OrderStatusEnum.COMPLETED.value())
@@ -93,8 +104,11 @@ public class OrderUpdatingSaga {
 
         try {
             commandGateway.sendAndWait(cmd, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+            //throw new RuntimeException("주문수정 보상처리 테스트");
         } catch(Exception e) {
             log.error(e.getMessage());
+            log.info("===== [Update Order] Compensation <CancelUpdatePaymentCommand> ==== ");
+            compensatingService.cancelUpdatePayment(aggregateIdMap);      //이전 결제 정보로 rollback처리 요청
             log.info("===== [Update Order] Compensation <CancelUpdateOrderCommand> ==== ");
             compensatingService.cancelUpdateOrder(aggregateIdMap);  //이전 주문 정보로 rollback 처리
         }

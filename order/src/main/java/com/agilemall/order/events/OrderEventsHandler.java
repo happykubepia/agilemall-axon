@@ -188,6 +188,7 @@ public class OrderEventsHandler {
 
     @EventHandler
     private void on(CancelledUpdateOrderEvent event) {
+
         log.info("[@EventHandler] Executing <CancelledUpdateOrderEvent> for Order Id: {}", event.getOrderId());
 
     }
