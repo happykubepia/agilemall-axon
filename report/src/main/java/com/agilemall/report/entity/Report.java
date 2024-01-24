@@ -149,5 +149,6 @@ public class Report implements Serializable {
         log.info("[@CommandHandler] Handle <DeleteReportCommand> for Order Id: {}", deleteReportCommand.getOrderId());
 
         AggregateLifecycle.apply(new DeletedReportEvent(deleteReportCommand.getReportId(), deleteReportCommand.getOrderId()));
+        AggregateLifecycle.markDeleted();
     }
 }

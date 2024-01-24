@@ -28,25 +28,6 @@ public class ReportEventsHandler {
         this.reportRepository = reportRepository;
     }
 
-    @EventHandler
-    private void on(DeletedReportEvent event) {
-        log.info("[@EventHandler] Handle <DeletedReportEvent> for Order Id: {}", event.getOrderId());
-
-        Optional<Report> optReport = reportRepository.findById(event.getReportId());
-        if(optReport.isEmpty()) {
-            log.info("Can't find Report info for Order Id: {}", event.getOrderId());
-            eventGateway.publish(new FailedDeleteReportEvent(event.getReportId(), event.getOrderId()));
-            return;
-        }
-
-        try {
-            reportRepository.delete(optReport.get());
-        } catch(Exception e) {
-            log.error(e.getMessage());
-            eventGateway.publish(new FailedDeleteReportEvent(event.getReportId(), event.getOrderId()));
-        }
-    }
-
     /*
     - 목적: Order데이터 변경 시 Update Report using CQRS패턴
     */

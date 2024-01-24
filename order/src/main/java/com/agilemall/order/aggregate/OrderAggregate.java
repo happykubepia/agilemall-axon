@@ -21,7 +21,6 @@ import com.agilemall.common.command.create.CancelCreateOrderCommand;
 import com.agilemall.common.dto.OrderDTO;
 import com.agilemall.common.dto.OrderDetailDTO;
 import com.agilemall.common.dto.OrderStatusEnum;
-import com.agilemall.common.events.delete.DeletedDeliveryEvent;
 import com.agilemall.order.command.*;
 import com.agilemall.order.entity.OrderDetail;
 import com.agilemall.order.entity.OrderDetailIdentity;
@@ -278,8 +277,8 @@ public class OrderAggregate {
         AggregateLifecycle.apply(new DeletedOrderEvent(deleteOrderCommand.getOrderId()));
     }
     @EventSourcingHandler
-    private void on(DeletedDeliveryEvent event) {
-        log.info("[@EventSourcingHandler] Executing <DeletedDeliveryEvent> for Order Id: {}", event.getOrderId());
+    private void on(DeletedOrderEvent event) {
+        log.info("[@EventSourcingHandler] Executing <DeletedOrderEvent> for Order Id: {}", event.getOrderId());
         this.orderStatus = OrderStatusEnum.ORDER_CANCLLED.value();
     }
 
@@ -291,7 +290,7 @@ public class OrderAggregate {
     @EventSourcingHandler
     private void on(CompletedDeleteOrderEvent event) {
         log.info("[@EventSourcingHandler] Executing <CompletedDeleteOrderEvent> for Order Id: {}", event.getOrderId());
-
+        AggregateLifecycle.markDeleted();
     }
 
     @CommandHandler

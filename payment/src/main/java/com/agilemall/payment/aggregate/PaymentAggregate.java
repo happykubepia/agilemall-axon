@@ -181,7 +181,8 @@ public class PaymentAggregate {
     private void on(DeletedPaymentEvent event) {
         log.info("[@EventSourcingHandler] Executing DeletedPaymentEvent for Order Id: {} and Payment Id: {}",
                 event.getOrderId(), event.getPaymentId());
-        this.paymentStatus = PaymentStatusEnum.ORDER_CANCLLED.value();
+        //this.paymentStatus = PaymentStatusEnum.ORDER_CANCLLED.value();
+        AggregateLifecycle.markDeleted();
     }
 
     @CommandHandler

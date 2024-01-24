@@ -120,7 +120,6 @@ public class DeliveryAggregate {
 
 
     //================== 배송 정보 삭제 요청 Command 처리 =====================
-
     @CommandHandler
     private void handle(DeleteDeliveryCommand deleteDeliveryCommand) {
         log.info("[@EventSourcingHandler] Executing DeleteDeliveryCommand for Delivery Id : {}", deleteDeliveryCommand.getDeliveryId());
@@ -131,7 +130,8 @@ public class DeliveryAggregate {
     @EventSourcingHandler
     private void on(DeletedDeliveryEvent event) {
         log.info("[@EventSourcingHandler] Executing DeletedPaymentEvent for Delivery Id : {}", event.getDeliveryId());
-        this.deliveryStatus = DeliveryStatusEnum.ORDER_CANCLLED.value();
+        //this.deliveryStatus = DeliveryStatusEnum.ORDER_CANCLLED.value();
+        AggregateLifecycle.markDeleted();
     }
 
     @CommandHandler
