@@ -162,14 +162,15 @@ public class OrderDeletingSaga {
             commandGateway.sendAndWait(completeDeleteOrderCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
         } catch(Exception e) {
             log.error(e.getMessage());
-            log.info("===== [Delete Order] Compensation <CancelDeleteReportCommand> =====");
-            compensatingService.cancelDeleteReport(aggregateIdMap);     //이전 레포트 정보로 rollback 요청
+
             log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
             compensatingService.cancelDeleteDelivery(aggregateIdMap);   //이전 배송 정보로 rollback 요청
             log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
             compensatingService.cancelDeletePayment(aggregateIdMap);    //이전 결제 정보로 rollback 요청
             log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
             compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
+            log.info("===== [Delete Order] Compensation <CancelDeleteReportCommand> =====");
+            compensatingService.cancelDeleteReport(aggregateIdMap);     //이전 레포트 정보로 rollback 요청
         }
     }
 
@@ -220,14 +221,14 @@ public class OrderDeletingSaga {
     private void on(FailedCompleteDeleteOrderEvent event) {
         log.info("[Saga] [FailedCompleteDeleteOrderEvent] is received for Order Id: {}", event.getOrderId());
 
-        log.info("===== [Delete Order] Compensation <CancelDeleteReportCommand> =====");
-        compensatingService.cancelDeleteReport(aggregateIdMap);     //이전 레포트 정보로 rollback 요청
         log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
         compensatingService.cancelDeleteDelivery(aggregateIdMap);   //이전 배송 정보로 rollback 요청
         log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
         compensatingService.cancelDeletePayment(aggregateIdMap);    //이전 결제 정보로 rollback 요청
         log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
         compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
+        log.info("===== [Delete Order] Compensation <CancelDeleteReportCommand> =====");
+        compensatingService.cancelDeleteReport(aggregateIdMap);     //이전 레포트 정보로 rollback 요청
     }
 
     //-- 주문 삭제 실패에 대한 보상 처리 완료 시
