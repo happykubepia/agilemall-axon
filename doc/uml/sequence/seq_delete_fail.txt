@@ -46,30 +46,21 @@ AxonServer --
 
 autonumber stop
 autonumber
-group 결제 삭제 실패와 주문삭제 실패 시 보상처리
-OrderDeletingSaga -> CompensatingService ++: 주문삭제 취소 요청
-CompensatingService -> AxonServer --++: 주문삭제 취소 Command 발송
-AxonServer -> OrderAggregate --++: Push 주문삭제 취소 Command
-OrderAggregate -> AxonServer --++: 주문삭제 취소 완료 Event 생성
+group 결제 삭제 실패와 주문 소프트 삭제 실패 시 보상처리
+OrderDeletingSaga -> CompensatingService ++: 주문 소프트 삭제 취소 요청
+CompensatingService -> AxonServer --++: 주문 소프트 삭제 취소 Command 발송
+AxonServer -> OrderAggregate --++: Push 주문 소프트 삭제 취소 Command
+OrderAggregate -> AxonServer --++: 주문 소프트 삭제 취소 완료 Event 생성
 AxonServer++
-AxonServer -> EventStore: 주문삭제 취소 완료 Event 저장(배송상태 Rollback)
-AxonServer -> OrderEventHandler: Push 주문삭제 취소 완료 Event
+AxonServer -> EventStore: 주문상태 Rollback
+AxonServer -> OrderEventHandler: Push 주문 소프트 삭제 취소 완료 Event
 OrderEventHandler -> OrderRepository: 주문상태 Rollback
-AxonServer -> OrderDeletingSaga --: Push 주문삭제 취소 완료 Event
+AxonServer -> OrderDeletingSaga --: Push 주문 소프트 삭제 취소 완료 Event
 AxonServer --
 end
 end
 end
 
-group 레포트 재생성
-autonumber stop
-autonumber
-OrderDeletingSaga -> CompensatingService ++: 레포트삭제 취소 요청
-CompensatingService -> AxonServer: Report 생성요청 Command 발송
-note right of AxonServer: 상세 프로세스는 'Report생성/수정' 참조
-CompensatingService --
-OrderDeletingSaga --
-end
 
 end
 
