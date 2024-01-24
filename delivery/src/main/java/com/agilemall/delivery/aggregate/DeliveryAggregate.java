@@ -5,10 +5,8 @@ import com.agilemall.common.command.create.CreateDeliveryCommand;
 import com.agilemall.common.command.delete.CancelDeleteDeliveryCommand;
 import com.agilemall.common.command.delete.DeleteDeliveryCommand;
 import com.agilemall.common.dto.DeliveryDTO;
-import com.agilemall.common.dto.DeliveryStatusEnum;
 import com.agilemall.common.events.create.CancelledCreateDeliveryEvent;
 import com.agilemall.common.events.create.CreatedDeliveryEvent;
-import com.agilemall.common.events.delete.CancelledDeleteDeliveryEvent;
 import com.agilemall.common.events.delete.DeletedDeliveryEvent;
 import com.agilemall.delivery.command.UpdateDeliveryCommand;
 import com.agilemall.delivery.events.UpdatedDeliveryEvent;
@@ -138,10 +136,6 @@ public class DeliveryAggregate {
     private void handle(CancelDeleteDeliveryCommand cancelDeleteDeliveryCommand) {
         log.info("[@EventSourcingHandler] Executing CancelDeleteDeliveryCommand for Delivery Id : {}", cancelDeleteDeliveryCommand.getOrderId());
 
-        AggregateLifecycle.apply(new CancelledDeleteDeliveryEvent(
-                cancelDeleteDeliveryCommand.getDeleveryId(),
-                cancelDeleteDeliveryCommand.getOrderId(), true));
-
         //-- 삭제 취소시 rollback은 이전 배송정보를 생성하는 것이므로 이전 배송정보를 읽어 생성 요청 Command를 보냄
         if (this.aggregateHistory.isEmpty()) return;
         DeliveryDTO delivery = this.aggregateHistory.get(this.aggregateHistory.size() - 1);
@@ -152,11 +146,6 @@ public class DeliveryAggregate {
                 .isCompensation(true)
                 .build();
         commandGateway.send(cmd);
-    }
-
-    @EventSourcingHandler
-    private void on(CancelledDeleteDeliveryEvent event) {
-        log.info("[@EventSourcingHandler] Executing CancelledDeleteDeliveryEvent for Delivery Id : {}", event.getDeliveryId());
     }
 
     //========= Aggregate 객체 복사

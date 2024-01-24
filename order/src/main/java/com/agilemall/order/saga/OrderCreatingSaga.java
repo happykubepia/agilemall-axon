@@ -29,6 +29,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
+import org.axonframework.modelling.saga.SagaLifecycle;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,13 @@ public class OrderCreatingSaga {
         log.info("[Saga] <CreatedOrderEvent> is received for Order Id: {}", event.getOrderId());
         log.info("===== [Create Order] #3: <CreatePaymentCommand> =====");
 
+        //-- 보상처리인 경우 더 이상 진행안되게 함
+        if(event.isCompensation()) {
+            log.info("This event is compensation. So, Do nothing.");
+            SagaLifecycle.end();
+            return;
+        }
+
         aggregateIdMap.put(ServiceNameEnum.ORDER.value(), event.getOrderId());
 
         //결제 처리 요청 Command메시지 생성
@@ -89,6 +97,12 @@ public class OrderCreatingSaga {
     private void on(CreatedPaymentEvent event) {
         log.info("[Saga] <CreatedPaymentEvent> is received for Order Id: {}", event.getOrderId());
         log.info("===== [Create Order] #4: <CreateDeliveryCommand> =====");
+
+        //-- 보상처리인 경우 더 이상 진행안되게 함
+        if(event.isCompensation()) {
+            log.info("This event is compensation. So, Do nothing.");
+            return;
+        }
 
         aggregateIdMap.put(ServiceNameEnum.PAYMENT.value(), event.getPaymentId());
 

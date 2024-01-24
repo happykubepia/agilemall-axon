@@ -8,10 +8,8 @@ import com.agilemall.common.command.update.CancelUpdatePaymentCommand;
 import com.agilemall.common.command.update.UpdatePaymentCommand;
 import com.agilemall.common.dto.PaymentDTO;
 import com.agilemall.common.dto.PaymentDetailDTO;
-import com.agilemall.common.dto.PaymentStatusEnum;
 import com.agilemall.common.events.create.CancelledCreatePaymentEvent;
 import com.agilemall.common.events.create.CreatedPaymentEvent;
-import com.agilemall.common.events.delete.CancelledDeletePaymentEvent;
 import com.agilemall.common.events.delete.DeletedPaymentEvent;
 import com.agilemall.common.events.update.CancelledUpdatePaymentEvent;
 import com.agilemall.common.events.update.UpdatedPaymentEvent;
@@ -189,9 +187,6 @@ public class PaymentAggregate {
     private void handle(CancelDeletePaymentCommand cancelDeletePaymentCommand) {
         log.info("[@EventSourcingHandler] Executing CancelDeletePaymentCommand for Order Id: {} and Payment Id: {}",
                 cancelDeletePaymentCommand.getOrderId(), cancelDeletePaymentCommand.getPaymentId());
-        AggregateLifecycle.apply(new CancelledDeletePaymentEvent(
-                cancelDeletePaymentCommand.getPaymentId(),
-                cancelDeletePaymentCommand.getOrderId(), true));
 
         //-- 이전 결제 정보를 담은 Command객체를 담아 생성 요청을 보냄
         if(this.aggregateHistory.isEmpty()) return;
@@ -204,12 +199,6 @@ public class PaymentAggregate {
                 .isCompensation(true)
                 .build();
         commandGateway.send(cmd);
-    }
-    @EventSourcingHandler
-    private void on(CancelledDeletePaymentEvent event) {
-        log.info("[@EventSourcingHandler] Executing CancelledDeletePaymentEvent for Order Id: {} and Payment Id: {}",
-                event.getOrderId(), event.getPaymentId());
-
     }
 
     private PaymentDTO cloneAggregate(PaymentAggregate paymentAggregate) {
