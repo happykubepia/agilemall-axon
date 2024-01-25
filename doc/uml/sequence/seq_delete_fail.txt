@@ -20,6 +20,8 @@ group 주문삭제 최종완료 처리 실패 시 보상처리
 OrderEventHandler -> AxonServer: 주문삭제 최종완료 처리 실패 Event 발송
 AxonServer -> OrderDeletingSaga --++: Push 주문삭제 최종완료 실패 Event
 
+autonumber stop
+autonumber
 group 레포트 삭제 실패 시 보상처리
 OrderDeletingSaga -> CompensatingService ++: 배송삭제 취소 요청
 CompensatingService -> AxonServer --++: 배송삭제 취소 Command 발송
