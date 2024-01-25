@@ -23,4 +23,5 @@ public class CreateOrderCommand {
     List<PaymentDetailDTO> paymentDetails;
     int totalPaymentAmt;
 
+    boolean isCompensation;
 }

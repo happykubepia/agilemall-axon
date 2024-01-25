@@ -21,4 +21,5 @@ public class CreatedOrderEvent {
     private List<PaymentDetailDTO> paymentDetails;
     private int totalPaymentAmt;
 
+    private boolean isCompensation;
 }

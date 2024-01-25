@@ -1,7 +1,5 @@
 package com.agilemall.report.events;
 
-import com.agilemall.common.events.delete.DeletedReportEvent;
-import com.agilemall.common.events.delete.FailedDeleteReportEvent;
 import com.agilemall.common.events.update.UpdatedOrderToReportEvent;
 import com.agilemall.common.events.update.UpdatedPaymentToReportEvent;
 import com.agilemall.report.entity.Report;
@@ -10,7 +8,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.eventhandling.EventHandler;
-import org.axonframework.eventhandling.gateway.EventGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,12 +16,9 @@ import java.util.Optional;
 @Slf4j
 @Component
 public class ReportEventsHandler {
-
-    private transient  final EventGateway eventGateway;
     private final ReportRepository reportRepository;
     @Autowired
-    public ReportEventsHandler(EventGateway eventGateway, ReportRepository reportRepository) {
-        this.eventGateway = eventGateway;
+    public ReportEventsHandler(ReportRepository reportRepository) {
         this.reportRepository = reportRepository;
     }
 

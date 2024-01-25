@@ -203,19 +203,6 @@ public class OrderDeletingSaga {
         compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
     }
 
-    //-- 레포트 정보 삭제 실패 시 보상 처리 요청
-    @SagaEventHandler(associationProperty = "orderId")
-    private void on(FailedDeleteReportEvent event) {
-        log.info("[Saga] <FailedDeleteReportEvent> is received for Order Id: {}", event.getOrderId());
-
-        log.info("===== [Delete Order] Compensation <CancelDeleteDeliveryCommand> =====");
-        compensatingService.cancelDeleteDelivery(aggregateIdMap);   //이전 배송 정보로 rollback 요청
-        log.info("===== [Delete Order] Compensation <CancelDeletePaymentCommand> =====");
-        compensatingService.cancelDeletePayment(aggregateIdMap);    //이전 결제 정보로 rollback 요청
-        log.info("===== [Delete Order] Compensation <CancelDeleteOrderCommand> =====");
-        compensatingService.cancelDeleteOrder(aggregateIdMap);      //이전 주문 정보로 rollback 요청
-    }
-
     //-- 주문 삭제 최종 처리 실패 시 처리 요청
     @SagaEventHandler(associationProperty = "orderId")
     private void on(FailedCompleteDeleteOrderEvent event) {
