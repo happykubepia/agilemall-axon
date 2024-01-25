@@ -274,11 +274,6 @@ public class OrderAggregate {
         log.info("[@EventSourcingHandler] Executing <CompleteDeleteOrderCommand> for Order Id: {}", completeDeleteOrderCommand.getOrderId());
         AggregateLifecycle.apply(new CompletedDeleteOrderEvent(completeDeleteOrderCommand.getOrderId()));
     }
-    @EventSourcingHandler
-    private void on(CompletedDeleteOrderEvent event) {
-        log.info("[@EventSourcingHandler] Executing <CompletedDeleteOrderEvent> for Order Id: {}", event.getOrderId());
-        //AggregateLifecycle.markDeleted();
-    }
 
     @CommandHandler
     private void handle(CancelDeleteOrderCommand cancelDeleteOrderCommand) {
