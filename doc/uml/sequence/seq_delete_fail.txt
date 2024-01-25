@@ -26,7 +26,6 @@ CompensatingService -> AxonServer --++: 배송삭제 취소 Command 발송
 
 create participant DeliveryAggregate
 AxonServer -> DeliveryAggregate --++: Push 배송삭제 취소 Command
-DeliveryAggregate -> AxonServer ++: 배송삭제 취소 완료 Event 생성
 DeliveryAggregate -> AxonServer --: 이전 배송정보로 배송생성 요청 Command발송
 note right of DeliveryAggregate: AggregateHistory에 저장된 정보 이용
 / note right of AxonServer: 이후 배송생성 프로세스(21번~26번) 수행
@@ -38,7 +37,6 @@ OrderDeletingSaga -> CompensatingService ++: 결제삭제 취소 요청
 CompensatingService -> AxonServer --++: 결제삭제 취소 Command 발송
 create participant PaymentAggregate
 AxonServer -> PaymentAggregate --++: Push 결제삭제 취소 Command
-PaymentAggregate -> AxonServer ++: 결제삭제 취소 완료 Event 생성
 PaymentAggregate -> AxonServer --: 이전 결제정보로 결제생성 요청 Command발송
 note right of PaymentAggregate: AggregateHistory에 저장된 정보 이용
 / note right of AxonServer: 이후 결제생성 프로세스(14번~19번) 수행
