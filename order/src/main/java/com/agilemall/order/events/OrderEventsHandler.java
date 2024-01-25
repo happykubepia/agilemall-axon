@@ -138,7 +138,7 @@ public class OrderEventsHandler {
             }
             order.setOrderDetails(order.getOrderDetails());
             order.setTotalOrderAmt(event.getTotalOrderAmt());
-            order.setOrderStatus(OrderStatusEnum.UPTATED.value());
+            order.setOrderStatus(event.getOrderStatus());
             orderRepository.save(order);
 
         } catch(Exception e) {

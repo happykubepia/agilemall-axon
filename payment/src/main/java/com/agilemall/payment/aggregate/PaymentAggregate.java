@@ -8,6 +8,7 @@ import com.agilemall.common.command.update.CancelUpdatePaymentCommand;
 import com.agilemall.common.command.update.UpdatePaymentCommand;
 import com.agilemall.common.dto.PaymentDTO;
 import com.agilemall.common.dto.PaymentDetailDTO;
+import com.agilemall.common.dto.PaymentStatusEnum;
 import com.agilemall.common.events.create.CancelledCreatePaymentEvent;
 import com.agilemall.common.events.create.CreatedPaymentEvent;
 import com.agilemall.common.events.delete.DeletedPaymentEvent;
@@ -143,28 +144,18 @@ public class PaymentAggregate {
     private void handle(CancelUpdatePaymentCommand cancelUpdatePaymentCommand) {
         log.info("[@CommandHandler] Executing CancelUpdatePaymentCommand for Order Id: {} and Payment Id: {}",
                 cancelUpdatePaymentCommand.getOrderId(), cancelUpdatePaymentCommand.getPaymentId());
-        CancelledUpdatePaymentEvent cancelledUpdatePaymentEvent = new CancelledUpdatePaymentEvent();
-        BeanUtils.copyProperties(cancelUpdatePaymentCommand, cancelledUpdatePaymentEvent);
 
-        AggregateLifecycle.apply(cancelledUpdatePaymentEvent);
-
-        //-- 이전 결제정보를 담은 결제 정보 수정 Command를 발송함
         if(this.aggregateHistory.isEmpty()) return;
         PaymentDTO payment = this.aggregateHistory.get(this.aggregateHistory.size()-1);
-        UpdatePaymentCommand cmd = UpdatePaymentCommand.builder()
-                .paymentId(payment.getPaymentId())
-                .orderId(payment.getOrderId())
-                .totalPaymentAmt(payment.getTotalPaymentAmt())
-                .paymentStatus(payment.getPaymentStatus())
-                .paymentDetails(payment.getPaymentDetails())
-                .isCompensation(cancelUpdatePaymentCommand.isCompensation())
-                .build();
-        commandGateway.send(cmd);
-    }
 
-    @EventSourcingHandler
-    private void on(CancelledUpdatePaymentEvent event) {
-        log.info("[@EventSourcingHandler] Executing <CancelledUpdatePaymentEvent> for Order Id: {}", event.getOrderId());
+        UpdatedPaymentEvent event = new UpdatedPaymentEvent();
+        event.setPaymentId(payment.getPaymentId());
+        event.setOrderId(payment.getOrderId());
+        event.setTotalPaymentAmt(payment.getTotalPaymentAmt());
+        event.setPaymentDetails(payment.getPaymentDetails());
+        event.setPaymentStatus(payment.getPaymentStatus());
+        event.setCompensation(true);
+        AggregateLifecycle.apply(event);
 
     }
 
@@ -179,8 +170,8 @@ public class PaymentAggregate {
     private void on(DeletedPaymentEvent event) {
         log.info("[@EventSourcingHandler] Executing DeletedPaymentEvent for Order Id: {} and Payment Id: {}",
                 event.getOrderId(), event.getPaymentId());
-        //this.paymentStatus = PaymentStatusEnum.ORDER_CANCLLED.value();
-        AggregateLifecycle.markDeleted();
+        this.paymentStatus = PaymentStatusEnum.ORDER_CANCLLED.value();
+        //AggregateLifecycle.markDeleted();
     }
 
     @CommandHandler
@@ -188,17 +179,16 @@ public class PaymentAggregate {
         log.info("[@EventSourcingHandler] Executing CancelDeletePaymentCommand for Order Id: {} and Payment Id: {}",
                 cancelDeletePaymentCommand.getOrderId(), cancelDeletePaymentCommand.getPaymentId());
 
-        //-- 이전 결제 정보를 담은 Command객체를 담아 생성 요청을 보냄
+        //-- 이전 결제 정보를 담은 Event객체를 담아 생성처리가 되게 함
         if(this.aggregateHistory.isEmpty()) return;
         PaymentDTO payment = this.aggregateHistory.get(this.aggregateHistory.size()-1);
-        CreatePaymentCommand cmd = CreatePaymentCommand.builder()
-                .paymentId(payment.getPaymentId())
-                .orderId(payment.getOrderId())
-                .totalPaymentAmt(payment.getTotalPaymentAmt())
-                .paymentDetails(payment.getPaymentDetails())
-                .isCompensation(true)
-                .build();
-        commandGateway.send(cmd);
+        CreatedPaymentEvent event = new CreatedPaymentEvent();
+        event.setPaymentId(payment.getPaymentId());
+        event.setOrderId(payment.getOrderId());
+        event.setTotalPaymentAmt(payment.getTotalPaymentAmt());
+        event.setPaymentDetails(payment.getPaymentDetails());
+        event.setCompensation(true);
+        AggregateLifecycle.apply(event);
     }
 
     private PaymentDTO cloneAggregate(PaymentAggregate paymentAggregate) {

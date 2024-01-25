@@ -5,6 +5,7 @@ import com.agilemall.common.command.create.CreateDeliveryCommand;
 import com.agilemall.common.command.delete.CancelDeleteDeliveryCommand;
 import com.agilemall.common.command.delete.DeleteDeliveryCommand;
 import com.agilemall.common.dto.DeliveryDTO;
+import com.agilemall.common.dto.DeliveryStatusEnum;
 import com.agilemall.common.events.create.CancelledCreateDeliveryEvent;
 import com.agilemall.common.events.create.CreatedDeliveryEvent;
 import com.agilemall.common.events.delete.DeletedDeliveryEvent;
@@ -116,7 +117,6 @@ public class DeliveryAggregate {
         this.aggregateHistory.add(cloneAggregate(this));
     }
 
-
     //================== 배송 정보 삭제 요청 Command 처리 =====================
     @CommandHandler
     private void handle(DeleteDeliveryCommand deleteDeliveryCommand) {
@@ -128,24 +128,24 @@ public class DeliveryAggregate {
     @EventSourcingHandler
     private void on(DeletedDeliveryEvent event) {
         log.info("[@EventSourcingHandler] Executing DeletedPaymentEvent for Delivery Id : {}", event.getDeliveryId());
-        //this.deliveryStatus = DeliveryStatusEnum.ORDER_CANCLLED.value();
-        AggregateLifecycle.markDeleted();
+        this.deliveryStatus = DeliveryStatusEnum.ORDER_CANCLLED.value();
+        //AggregateLifecycle.markDeleted();
     }
 
     @CommandHandler
     private void handle(CancelDeleteDeliveryCommand cancelDeleteDeliveryCommand) {
         log.info("[@EventSourcingHandler] Executing CancelDeleteDeliveryCommand for Delivery Id : {}", cancelDeleteDeliveryCommand.getOrderId());
 
-        //-- 삭제 취소시 rollback은 이전 배송정보를 생성하는 것이므로 이전 배송정보를 읽어 생성 요청 Command를 보냄
+        //-- 삭제 취소시 rollback은 이전 배송정보를 생성하는 것이므로 이전 배송정보를 읽어 생성 요청 Event를 발행
         if (this.aggregateHistory.isEmpty()) return;
         DeliveryDTO delivery = this.aggregateHistory.get(this.aggregateHistory.size() - 1);
-        CreateDeliveryCommand cmd = CreateDeliveryCommand.builder()
-                .deliveryId(delivery.getDeliveryId())
-                .orderId(delivery.getOrderId())
-                .deliveryStatus(delivery.getDeliveryStatus())
-                .isCompensation(true)
-                .build();
-        commandGateway.send(cmd);
+
+        CreatedDeliveryEvent event = new CreatedDeliveryEvent();
+        event.setDeliveryId(delivery.getDeliveryId());
+        event.setOrderId(delivery.getOrderId());
+        event.setDeliveryStatus(delivery.getDeliveryStatus());
+        event.setCompensation(true);
+        AggregateLifecycle.apply(event);
     }
 
     //========= Aggregate 객체 복사

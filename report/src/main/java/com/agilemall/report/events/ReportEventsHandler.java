@@ -1,5 +1,6 @@
 package com.agilemall.report.events;
 
+import com.agilemall.common.events.delete.DeletedReportEvent;
 import com.agilemall.common.events.update.UpdatedOrderToReportEvent;
 import com.agilemall.common.events.update.UpdatedPaymentToReportEvent;
 import com.agilemall.report.entity.Report;
@@ -21,6 +22,21 @@ public class ReportEventsHandler {
         this.reportRepository = reportRepository;
     }
 
+    @EventHandler
+    private void on(DeletedReportEvent event) {
+        log.info("[@EventHandler] Handle <DeletedReportEvent> for Order Id: {}", event.getOrderId());
+
+        Optional<Report> optReport = reportRepository.findByOrderId(event.getOrderId());
+        if(optReport.isEmpty()) {
+            log.info("Can't find Report info for Order Id: {}", event.getOrderId());
+            return;
+        }
+        try {
+            reportRepository.delete(optReport.get());
+        } catch(Exception e) {
+            log.error(e.getMessage());
+        }
+    }
     /*
     - 목적: Order데이터 변경 시 Update Report using CQRS패턴
     */

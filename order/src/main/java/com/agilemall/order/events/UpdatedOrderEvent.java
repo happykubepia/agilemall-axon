@@ -18,5 +18,6 @@ public class UpdatedOrderEvent {
     private List<OrderDetailDTO> orderDetails;
     private List<PaymentDetailDTO> paymentDetails;
     private int totalPaymentAmt;
+    private String orderStatus;
     private boolean isCompensation;
 }

@@ -238,6 +238,7 @@ public class OrderService {
                 .paymentId(payment.getPaymentId())
                 .paymentDetails(newPaymentDetails)
                 .totalPaymentAmt(totalPaymentAmt)
+                .orderStatus(OrderStatusEnum.UPTATED.value())
                 .build();
 
         //-- 주문 수정 Command 발송

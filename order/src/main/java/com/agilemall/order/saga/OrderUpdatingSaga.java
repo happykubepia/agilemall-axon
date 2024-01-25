@@ -121,8 +121,13 @@ public class OrderUpdatingSaga {
         log.info("[Saga] [CompletedUpdateOrderEvent] is finished for Order Id: {}", event.getOrderId());
         log.info("===== [Updating Order] Transaction is Finished =====");
 
+        if(event.isCompensation()) {
+            log.info("This event is compensation. So, Do nothing.");
+            return;
+        }
+
         //-- Report service에 주문, 결제, 배송 정보 업데이트: Report update처리를 CQRS패턴으로 변경하여 수행 안함
-        //compensatingService.updateReport(event.getOrderId(), false);
+        compensatingService.updateReport(event.getOrderId(), false);
     }
 
     //================= 보상 처리 =========================

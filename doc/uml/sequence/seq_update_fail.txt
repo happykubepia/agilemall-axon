@@ -24,13 +24,9 @@ CompensatingService -> AxonServer --++: 결제수정 취소 Command 발송
 
 create participant PaymentAggregate
 AxonServer -> PaymentAggregate --++: Push 결제수정 취소 Command
-PaymentAggregate -> AxonServer ++: 결제수정 취소 완료 Event 생성
-PaymentAggregate -> AxonServer --: 이전 결제정보로 결제수정 요청 Command발송
-note right of PaymentAggregate: AggregateHistory에 저장된 정보 이용
-AxonServer -> EventStore: 결제수정 취소 완료 Event 저장
-create participant PaymentEventHandler
-AxonServer -> PaymentEventHandler: Push 결제수정 취소 완료 Event
-AxonServer -> OrderUpdatingSaga --: Push 결제수정 취소 완료 Event
+PaymentAggregate -> AxonServer --: 이전 결제정보로 결제수정 완료 Event 생성
+note left of PaymentAggregate: AggregateHistory에 저장된 정보 이용
+/ note left of AxonServer: 주문수정 20번~24번 수행
 autonumber stop
 '-- 결제데이터 수정 실패 처리
 autonumber
@@ -39,10 +35,9 @@ OrderUpdatingSaga -> CompensatingService ++: 주문수정 취소 요청
 CompensatingService -> AxonServer --++: 주문수정 취소 Command 발송
 AxonServer -> OrderAggregate --++: Push 주문등록 취소 Command
 OrderAggregate -> AxonServer ++: 주문수정 취소 완료 Event 생성
-OrderAggregate -> AxonServer --: 이전 주문정보로 주문수정 요청 Command 발송
+OrderAggregate -> AxonServer --: 이전 주문정보로 주문수정완료 Event 생성
 note right of OrderAggregate: AggregateHistory에 저장된 정보 이용
-AxonServer -> EventStore: 주문수정 취소 완료 Event 저장
-AxonServer -> OrderEventsHandler: Push 주문수정 취소 완료 Event
+/ note right of AxonServer: 주문수정 14번~17번 수행
 AxonServer -> OrderUpdatingSaga --: Push 주문수정 취소 완료 Event
 OrderUpdatingSaga --
 end

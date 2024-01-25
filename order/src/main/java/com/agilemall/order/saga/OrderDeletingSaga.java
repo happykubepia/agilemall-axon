@@ -159,7 +159,8 @@ public class OrderDeletingSaga {
 
         //주문 삭제 최종 처리 요청
         try {
-            commandGateway.sendAndWait(completeDeleteOrderCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+            //commandGateway.sendAndWait(completeDeleteOrderCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+            throw new RuntimeException("주문삭제 보상처리 테스트");
         } catch(Exception e) {
             log.error(e.getMessage());
 

@@ -190,7 +190,7 @@ public class OrderAggregate {
         this.aggregateHistory.add(cloneAggregate(this));    //보상처리를 위해 이전 정보 저장
 
         this.orderDatetime = event.getOrderDatetime();
-        this.orderStatus = OrderStatusEnum.UPTATED.value();
+        this.orderStatus = event.getOrderStatus();
         this.totalOrderAmt = event.getTotalOrderAmt();
         List<OrderDetail> orderDetails = this.orderDetails.stream().toList();
         this.orderDetails.clear();
@@ -240,34 +240,21 @@ public class OrderAggregate {
     private void handle(CancelUpdateOrderCommand cancelUpdateOrderCommand) {
         log.info("[@CommandHandler] Executing <CancelUpdateOrderCommand> for Order Id: {}", cancelUpdateOrderCommand.getOrderId());
 
-        CancelledUpdateOrderEvent cancelledUpdateOrderEvent = new CancelledUpdateOrderEvent();
-        cancelledUpdateOrderEvent.setOrderId(cancelUpdateOrderCommand.getOrderId());
+        AggregateLifecycle.apply(new CancelledUpdateOrderEvent(cancelUpdateOrderCommand.getOrderId()));
 
-        AggregateLifecycle.apply(cancelledUpdateOrderEvent);
-
-        //-- send UpdateOrderCommand to compensate
         if(this.aggregateHistory.isEmpty()) return;
-
         OrderDTO order = this.aggregateHistory.get(this.aggregateHistory.size() - 1);
-        UpdateOrderCommand cmd = UpdateOrderCommand.builder()
-                .orderId(order.getOrderId())
-                .orderDatetime(order.getOrderDatetime())
-                .totalOrderAmt(order.getTotalOrderAmt())
-                .orderDetails(order.getOrderDetails())
-                .isCompensation(cancelUpdateOrderCommand.isCompensation())           //보상처리 Command 표시
-                .build();
 
-        //불필요한 메모리 사용 방지를 위해 초기화함
-        //@EventSourcingHandler on <UpdatedOrderEvent>에서 다시 적재됨
-
-        commandGateway.send(cmd);
-    }
-
-    @EventSourcingHandler
-    private void on(CancelledUpdateOrderEvent event) {
-        log.info("[@EventSourcingHandler] Executing <CancelledUpdateOrderEvent> for Order Id: {}", event.getOrderId());
+        UpdatedOrderEvent event = new UpdatedOrderEvent();
+        event.setOrderId(order.getOrderId());
+        event.setOrderDatetime(order.getOrderDatetime());
+        event.setTotalOrderAmt(order.getTotalOrderAmt());
+        event.setOrderDetails(order.getOrderDetails());
+        event.setCompensation(true);
+        AggregateLifecycle.apply(event);
 
     }
+
     //============== END:주문 수정 Command 처리 ===================
 
     //============== START:주문 취소 Command 처리 ===================
@@ -290,7 +277,7 @@ public class OrderAggregate {
     @EventSourcingHandler
     private void on(CompletedDeleteOrderEvent event) {
         log.info("[@EventSourcingHandler] Executing <CompletedDeleteOrderEvent> for Order Id: {}", event.getOrderId());
-        AggregateLifecycle.markDeleted();
+        //AggregateLifecycle.markDeleted();
     }
 
     @CommandHandler

@@ -20,5 +20,6 @@ public class UpdateOrderCommand {
     List<OrderDetailDTO> orderDetails;
     List<PaymentDetailDTO> paymentDetails;
     int totalPaymentAmt;
+    String orderStatus;
     boolean isCompensation;
 }
