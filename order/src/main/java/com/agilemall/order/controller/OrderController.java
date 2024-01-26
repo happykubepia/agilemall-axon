@@ -7,7 +7,7 @@ package com.agilemall.order.controller;
   - deleteOrder: 주문 취소 API
 */
 
-import com.agilemall.common.dto.OrderStatusDTO;
+import com.agilemall.order.dto.OrderStatusDTO;
 import com.agilemall.common.vo.ResultVO;
 import com.agilemall.order.command.CreateOrderCommand;
 import com.agilemall.order.command.UpdateOrderCommand;

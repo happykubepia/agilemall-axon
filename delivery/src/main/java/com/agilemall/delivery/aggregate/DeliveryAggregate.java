@@ -38,12 +38,6 @@ public class DeliveryAggregate {
 
     private final List<DeliveryDTO> aggregateHistory = new ArrayList<>();
 
-    private transient CommandGateway commandGateway;
-    @Autowired
-    public void setCommandGateway(CommandGateway commandGateway) {
-        this.commandGateway = commandGateway;
-    }
-
     public DeliveryAggregate() {
 
     }

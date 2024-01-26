@@ -1,0 +1,18 @@
+
+@startuml
+title CQRS 패턴
+
+component Services {
+  component Order
+  component Payment
+  component Report
+}
+component Queue
+
+Order --> Queue: 주문데이터 변경 Event
+Payment --> Queue: 결제정보 변경 Event
+Report <-- Queue: Push 주문/결제 변경 Event
+Report --> Report: 조회레포트 갱신
+
+@enduml
+

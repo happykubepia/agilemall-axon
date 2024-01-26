@@ -1,0 +1,20 @@
+
+@startuml
+title API Composition 패턴
+
+component Client
+
+component Services {
+  component Order
+  component Payment
+  component Delivery
+}
+
+Client --> Order: 주문상세현황 요청
+Order --> Order: 주문정보 Query
+Order --> Payment: 결제정보 Query
+Order --> Delivery: 배송정보 Query
+Client <-- Order: 주문상세현황 리턴
+
+@enduml
+

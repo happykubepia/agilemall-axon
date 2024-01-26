@@ -49,12 +49,6 @@ public class PaymentAggregate {
 
     private final List<PaymentDTO> aggregateHistory = new ArrayList<>();
 
-    private transient CommandGateway commandGateway;
-    @Autowired
-    public void setCommandGateway(CommandGateway commandGateway) {
-        this.commandGateway = commandGateway;
-    }
-
     public PaymentAggregate() {
 
     }

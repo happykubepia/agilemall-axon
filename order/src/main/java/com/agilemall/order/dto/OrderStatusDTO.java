@@ -1,5 +1,7 @@
-package com.agilemall.common.dto;
+package com.agilemall.order.dto;
 
+import com.agilemall.common.dto.OrderDetailDTO;
+import com.agilemall.common.dto.PaymentDetailDTO;
 import lombok.Builder;
 import lombok.Value;
 
